@@ -124,6 +124,23 @@
       radial-gradient(120% 80% at 12% 0%, rgb(255 255 255 / 0.35), transparent 60%),
       radial-gradient(90% 90% at 100% 100%, rgb(168 128 79 / 0.18), transparent 60%);
   }
+  /* A kraft band torn off a ticket pad: half-punched holes along its top and bottom edges.
+     The holes are the cream ground showing through, so use it on bands that sit on cream. */
+  .perforated::before,
+  .perforated::after {
+    content: "";
+    position: absolute;
+    inset-inline: 0;
+    height: 12px;
+    background: radial-gradient(circle, var(--color-cream) 5px, transparent 5.5px) 0 0 / 17px 12px repeat-x;
+    pointer-events: none;
+  }
+  .perforated::before {
+    top: -6px;
+  }
+  .perforated::after {
+    bottom: -6px;
+  }
   .press {
     transition: transform 160ms var(--ease-out);
   }
