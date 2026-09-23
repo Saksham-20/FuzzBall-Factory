@@ -25,7 +25,7 @@ export function MakerNote() {
         <div className="shell">
           <div className="relative mx-auto max-w-[54rem]">
             {/* Desk props beside the note: a ball of butter yarn with the hook resting on it. */}
-            <CrochetHook className="absolute top-20 -left-1 hidden h-60 w-7 -rotate-[14deg] md:block lg:-left-9" />
+            <CrochetHook wound={false} className="absolute top-20 -left-1 hidden h-60 w-7 -rotate-[14deg] md:block lg:-left-9" />
             <YarnBall tone="butter" spin={false} className="absolute bottom-4 -left-8 hidden w-28 md:block lg:-left-20 lg:w-32" />
 
             <Reveal kind="drop" data-placeholder="maker-note" className="relative mx-auto max-w-2xl">
