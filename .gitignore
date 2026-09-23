@@ -1,0 +1,2 @@
+# Local-only notes with real server details (the public copy is docs/DEPLOY_VPS.md).
+*.local.md

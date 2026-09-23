@@ -1,0 +1,426 @@
+@import "tailwindcss";
+
+/*
+ * FuzzBall Factory — "The Factory Floor"
+ * Cream paper ground, cocoa ink, kraft job tickets, butter tape.
+ * Rose is reserved for the one live thing: the yarn thread and active state.
+ */
+/* Hover only on devices that really hover (not touch). Use as `hf:hover:…`. */
+@custom-variant hf (@media (hover: hover) and (pointer: fine));
+
+@theme static {
+  --color-cream: #f6eee3;
+  --color-paper: #fcf8f2;
+  --color-cocoa: #3f2619;
+  --color-brown: #6b4228;
+  --color-brown-soft: #8a6249;
+  --color-kraft: #d4ae80;
+  --color-kraft-light: #e8d3b4;
+  --color-kraft-deep: #a8804f;
+  --color-butter: #f4cd52;
+  --color-butter-deep: #d9ab1f;
+  --color-rose: #c98586;
+  --color-rose-deep: #9c4f55;
+  --color-rose-wash: #f3dcd8;
+
+  --color-ok: #4f7a45;
+  --color-ok-wash: #e1ecd6;
+  --color-warn: #8a5d08;
+  --color-warn-wash: #faeccb;
+  --color-err: #a8322d;
+  --color-err-wash: #f7dcd8;
+
+  --color-line: color-mix(in oklab, #6b4228 18%, transparent);
+  --color-line-strong: color-mix(in oklab, #6b4228 34%, transparent);
+
+  --font-display: var(--f-modak), "Arial Rounded MT Bold", ui-rounded, sans-serif;
+  --font-sans: var(--f-figtree), ui-sans-serif, system-ui, sans-serif;
+  --font-stencil: var(--f-stencil), var(--f-figtree), ui-sans-serif, sans-serif;
+
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+
+  --shadow-ticket: 0 1px 1px rgb(63 38 25 / 0.06), 0 6px 18px -6px rgb(63 38 25 / 0.22);
+  --shadow-lift: 0 2px 2px rgb(63 38 25 / 0.06), 0 18px 36px -14px rgb(63 38 25 / 0.32);
+
+  --radius-ticket: 14px;
+}
+
+@layer base {
+  html {
+    background: var(--color-cream);
+    color: var(--color-cocoa);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    scrollbar-color: var(--color-kraft-deep) var(--color-cream);
+    accent-color: var(--color-rose-deep);
+  }
+  body {
+    background: var(--color-cream);
+    color: var(--color-cocoa);
+    font-family: var(--font-sans);
+    overflow-x: clip;
+  }
+  ::selection {
+    background: var(--color-butter);
+    color: var(--color-cocoa);
+  }
+  input,
+  textarea {
+    caret-color: var(--color-rose-deep);
+  }
+  a {
+    text-underline-offset: 0.22em;
+    text-decoration-thickness: 1.5px;
+  }
+  :focus-visible {
+    outline: 2.5px solid var(--color-rose-deep);
+    outline-offset: 3px;
+    border-radius: 6px;
+  }
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+  p {
+    text-wrap: pretty;
+  }
+  ::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--color-cream);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-kraft);
+    border-radius: 99px;
+    border: 3px solid var(--color-cream);
+  }
+}
+
+@layer utilities {
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+  .font-display {
+    font-family: var(--font-display);
+    font-weight: 400;
+    letter-spacing: -0.005em;
+    line-height: 0.92;
+  }
+  .font-stencil {
+    font-family: var(--font-stencil);
+    font-weight: 800;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+  }
+  /* Kraft paper: two soft tints from the material itself */
+  .kraft {
+    background-color: var(--color-kraft-light);
+    background-image:
+      radial-gradient(120% 80% at 12% 0%, rgb(255 255 255 / 0.35), transparent 60%),
+      radial-gradient(90% 90% at 100% 100%, rgb(168 128 79 / 0.18), transparent 60%);
+  }
+  .press {
+    transition: transform 160ms var(--ease-out);
+  }
+  .press:active {
+    transform: scale(0.97);
+  }
+  /* Page gutter that reserves the conveyor column for the yarn thread */
+  .shell {
+    width: 100%;
+    max-width: 1280px;
+    margin-inline: auto;
+    padding-inline: 16px;
+  }
+  @media (min-width: 768px) {
+    .shell {
+      padding-inline: 32px;
+    }
+  }
+  @media (min-width: 1024px) {
+    .shell {
+      padding-inline: 48px;
+    }
+  }
+  .conveyor-indent {
+    padding-left: 44px;
+  }
+  @media (min-width: 768px) {
+    .conveyor-indent {
+      padding-left: 104px;
+    }
+  }
+}
+
+/* ── Scroll reveals: content is visible by default; JS arms them after mount ── */
+[data-reveal][data-armed]:not([data-in]) {
+  opacity: 0;
+  transform: translateY(16px);
+}
+[data-reveal="stamp"][data-armed]:not([data-in]) {
+  transform: scale(1.14) rotate(-7deg);
+}
+[data-reveal="drop"][data-armed]:not([data-in]) {
+  transform: translateY(-28px) rotate(-3deg);
+}
+[data-reveal="slide"][data-armed]:not([data-in]) {
+  transform: translateX(32px);
+}
+[data-reveal][data-armed] {
+  transition:
+    opacity 600ms var(--ease-out),
+    transform 700ms var(--ease-out);
+  transition-delay: var(--d, 0ms);
+}
+
+/* ── Hero entrance (CSS only, works without JS) ── */
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+}
+@keyframes ball-in {
+  from {
+    opacity: 0;
+    transform: scale(0.92) rotate(-8deg);
+  }
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes tape {
+  to {
+    transform: translateX(-50%);
+  }
+}
+@keyframes march {
+  to {
+    stroke-dashoffset: -36;
+  }
+}
+@keyframes hook-spin {
+  0%,
+  100% {
+    transform: rotate(-14deg);
+  }
+  50% {
+    transform: rotate(14deg);
+  }
+}
+.hero-rise {
+  animation: rise 700ms var(--ease-out) both;
+  animation-delay: calc(var(--i, 0) * 70ms + 120ms);
+}
+.hero-ball {
+  animation: ball-in 900ms var(--ease-out) both;
+  animation-delay: 60ms;
+}
+.tape-track {
+  animation: tape 42s linear infinite;
+}
+.tape:hover .tape-track {
+  animation-play-state: paused;
+}
+@keyframes sway {
+  0%,
+  100% {
+    transform: rotate(-7deg);
+  }
+  50% {
+    transform: rotate(7deg);
+  }
+}
+.ball-wraps {
+  transform-origin: 200px 200px;
+  animation: sway 9s var(--ease-in-out) infinite;
+}
+.thread-march {
+  animation: march 1.4s linear infinite;
+}
+
+/* ── Placeholder overlay: `data-placeholder` marks anything that must be replaced ── */
+html[data-show-placeholders] [data-placeholder] {
+  outline: 2px dashed var(--color-butter-deep);
+  outline-offset: 2px;
+}
+html[data-show-placeholders] [data-placeholder]::after {
+  content: "PLACEHOLDER · " attr(data-placeholder);
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 60;
+  padding: 2px 6px;
+  background: var(--color-butter);
+  color: var(--color-cocoa);
+  font: 800 10px/1.2 var(--font-stencil);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-rise,
+  .hero-ball,
+  .tape-track,
+  .ball-wraps,
+  .thread-march {
+    animation: none;
+  }
+  [data-reveal][data-armed]:not([data-in]) {
+    opacity: 1;
+    transform: none;
+  }
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+/* ── Conveyor: the node the thread has reached goes live (the one rose element) ── */
+[data-station-node] {
+  transition:
+    background-color 300ms var(--ease-out),
+    transform 300ms var(--ease-out);
+}
+[data-station-node][data-live] {
+  background-color: var(--color-rose-deep);
+}
+
+/* ── Dialogs and menus ── */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes fade-out {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes drawer-in {
+  from {
+    transform: translateX(100%);
+  }
+}
+@keyframes drawer-out {
+  to {
+    transform: translateX(100%);
+  }
+}
+@keyframes menu-in {
+  from {
+    transform: translateX(-100%);
+  }
+}
+@keyframes menu-out {
+  to {
+    transform: translateX(-100%);
+  }
+}
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+}
+@keyframes bump {
+  0% {
+    transform: scale(0.6);
+  }
+  60% {
+    transform: scale(1.18);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* ── Wishlist heart burst ── */
+@keyframes heart-dot {
+  from {
+    opacity: 1;
+    transform: rotate(var(--a)) translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: rotate(var(--a)) translateY(-26px) scale(0.5);
+  }
+}
+.heart-dot {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  margin: -2.5px;
+  border-radius: 50%;
+  background: var(--color-rose);
+  animation: heart-dot 420ms var(--ease-out) forwards;
+}
+@media (prefers-reduced-motion: reduce) {
+  .heart-dot {
+    display: none;
+  }
+}
+
+/* ── checkout ── */
+html[data-hide-wa] [data-wa-button] {
+  display: none;
+}
+@keyframes stamp-down {
+  from {
+    opacity: 0;
+    transform: scale(1.15) rotate(-7deg);
+  }
+  60% {
+    opacity: 1;
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.stamp-down {
+  animation: stamp-down 260ms var(--ease-out) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .stamp-down {
+    animation: none;
+  }
+}
+
+/* ── admin print ── */
+/* The packing slip is portalled into <body> as .print-slip; printing hides everything else. */
+.print-slip {
+  display: none;
+}
+@media print {
+  @page {
+    margin: 14mm;
+  }
+  body > *:not(.print-slip) {
+    display: none !important;
+  }
+  html,
+  body {
+    background: #fff !important;
+    color: #000 !important;
+  }
+  .print-slip {
+    display: block !important;
+    background: #fff;
+    color: #000;
+    font-family: var(--font-sans);
+  }
+  .print-slip * {
+    mix-blend-mode: normal;
+  }
+}
