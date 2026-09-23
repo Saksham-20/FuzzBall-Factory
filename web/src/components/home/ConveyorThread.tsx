@@ -80,9 +80,11 @@ export function ConveyorThread() {
       const hero = wrap!.querySelector("[data-hero]");
       if (!start || nodes.length === 0 || !hero) return;
 
-      const small = wb.width < 768;
+      // Tailwind's md/lg queries, not the wrapper width: that leaves out a classic scrollbar and
+      // ignores the reader's font size, so the route could disagree with the layout.
+      const small = !window.matchMedia("(min-width: 48rem)").matches;
       // Below lg the hero stacks (ball above the copy), so the thread has to cross above the headline.
-      const stacked = wb.width < 1024;
+      const stacked = !window.matchMedia("(min-width: 64rem)").matches;
       const S = rel(start.getBoundingClientRect());
       const N = nodes.map((n) => rel(n.getBoundingClientRect()));
       const gx = N[0][0];

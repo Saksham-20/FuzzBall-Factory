@@ -168,12 +168,12 @@
     margin-inline: auto;
     padding-inline: 16px;
   }
-  @media (min-width: 768px) {
+  @media (min-width: 48rem) {
     .shell {
       padding-inline: 32px;
     }
   }
-  @media (min-width: 1024px) {
+  @media (min-width: 64rem) {
     .shell {
       padding-inline: 48px;
     }
@@ -181,7 +181,7 @@
   .conveyor-indent {
     padding-left: 44px;
   }
-  @media (min-width: 768px) {
+  @media (min-width: 48rem) {
     .conveyor-indent {
       padding-left: 104px;
     }
