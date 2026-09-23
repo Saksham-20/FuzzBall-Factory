@@ -81,6 +81,8 @@ export function ConveyorThread() {
       if (!start || nodes.length === 0 || !hero) return;
 
       const small = wb.width < 768;
+      // Below lg the hero stacks (ball above the copy), so the thread has to cross above the headline.
+      const stacked = wb.width < 1024;
       const S = rel(start.getBoundingClientRect());
       const N = nodes.map((n) => rel(n.getBoundingClientRect()));
       const gx = N[0][0];
@@ -88,14 +90,28 @@ export function ConveyorThread() {
       const D = Math.max(120, heroBottom - 100 - S[1]);
       const amp = small ? 5 : 12;
 
-      // Ball → gutter. Desktop: leaves toward the lower left and sweeps under the copy.
-      // Phone: crosses to the gutter above the headline, then drops beside the copy.
-      const pts: Pt[] = small
+      // Evenly spaced points along a long crossing (tablet) keep the spline's tangents short,
+      // so it turns into the gutter cleanly instead of overshooting and kinking.
+      const x0 = S[0] - 50;
+      const x1 = gx + 60;
+      const steps = Math.max(0, Math.floor((x0 - x1) / 120));
+      const crossing: Pt[] = Array.from({ length: steps }, (_, j) => {
+        const t = (j + 1) / (steps + 1);
+        return [x0 + (x1 - x0) * t, S[1] + 26 + 5 * t + 3 * Math.sin(Math.PI * t)];
+      });
+
+      // Ball → gutter. Side by side: leaves toward the lower left and sweeps under the copy.
+      // Stacked: crosses to the gutter above the headline, then drops beside the copy.
+      const pts: Pt[] = stacked
         ? [
             S,
-            [S[0] - 50, S[1] + 26],
-            [gx + 44, S[1] + 30],
-            [gx + amp, S[1] + 64],
+            [x0, S[1] + 26],
+            ...crossing,
+            // a rounded corner into the gutter
+            [x1, S[1] + 31],
+            [gx + 26, S[1] + 38],
+            [gx + amp + 2, S[1] + 62],
+            [gx + amp, S[1] + 96],
             [gx + amp * 0.5, heroBottom - 100],
             [gx + amp * 0.6, heroBottom - 44],
           ]
@@ -119,13 +135,18 @@ export function ConveyorThread() {
         pts.push(n);
         prev = n;
       });
+      // A longer tail below the last node, so the hook parked on the loose end clears the node too.
       const last = N[N.length - 1];
-      pts.push([gx + 4, last[1] + 70]);
-      pts.push([gx + 8, last[1] + 130]);
+      pts.push([gx + 2, last[1] + 95]);
+      pts.push([gx - 2, last[1] + 200]);
 
-      // The thread ends loose: a small curl, waiting for you to pick it up.
+      // The thread ends loose: a small curl, waiting for you to pick it up. It turns back into
+      // the gutter, so neither the curl nor the hook parked on its tip lands on the copy or labels.
       const e = pts[pts.length - 1];
-      const curl = ` C ${e[0] + 2} ${e[1] + 34} ${e[0] + 46} ${e[1] + 34} ${e[0] + 46} ${e[1] + 8} C ${e[0] + 46} ${e[1] - 14} ${e[0] + 14} ${e[1] - 16} ${e[0] + 12} ${e[1] + 4}`;
+      const k = small ? 0.55 : 1;
+      const cx = (dx: number) => e[0] - dx * k;
+      const cy = (dy: number) => e[1] + dy * k;
+      const curl = ` C ${cx(2)} ${cy(34)} ${cx(46)} ${cy(34)} ${cx(46)} ${cy(8)} C ${cx(46)} ${cy(-14)} ${cx(14)} ${cy(-16)} ${cx(12)} ${cy(4)}`;
       const d = smoothPath(pts) + curl;
 
       s!.setAttribute("viewBox", `0 0 ${wb.width} ${wb.height}`);
