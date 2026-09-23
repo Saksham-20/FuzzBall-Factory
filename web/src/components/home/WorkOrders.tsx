@@ -21,7 +21,7 @@ export function WorkOrders() {
       id="work-orders"
       n="04"
       name="Work Orders"
-      className="kraft py-[clamp(4.5rem,9vw,7.5rem)]"
+      className="kraft perforated py-[clamp(4.5rem,9vw,7.5rem)]"
       style={{ ["--hole" as string]: "var(--color-kraft-light)" }}
     >
       <div className="grid items-center gap-14 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16">
@@ -81,10 +81,17 @@ export function WorkOrders() {
                   <p className="tabular text-lg font-bold">8 days</p>
                 </div>
               </div>
+              {/* The status stamps land in order once the ticket has dropped in. */}
               <div className="flex flex-wrap items-center gap-3 pt-1">
-                <Stamp label="Requested" rotate={-3} />
-                <Stamp label="Quoted" rotate={2} />
-                <Stamp label="Accepted" tone="live" shape="circle" rotate={-8} />
+                <span className="stamp-seq" style={{ ["--sd" as string]: "560ms" }}>
+                  <Stamp label="Requested" rotate={-3} />
+                </span>
+                <span className="stamp-seq" style={{ ["--sd" as string]: "860ms" }}>
+                  <Stamp label="Quoted" rotate={2} />
+                </span>
+                <span className="stamp-seq" style={{ ["--sd" as string]: "1160ms" }}>
+                  <Stamp label="Accepted" tone="live" shape="circle" rotate={-8} />
+                </span>
               </div>
               <div className="flex items-center gap-2 pt-1">
                 <Badge tone="sample">Example only</Badge>

@@ -194,6 +194,15 @@
 [data-reveal][data-armed]:not([data-in]) .grow-bar {
   clip-path: inset(0 100% 0 0 round 99px);
 }
+[data-reveal][data-armed] .stamp-seq {
+  transition:
+    opacity 120ms ease-out var(--sd, 0ms),
+    transform 320ms var(--ease-out) var(--sd, 0ms);
+}
+[data-reveal][data-armed]:not([data-in]) .stamp-seq {
+  opacity: 0;
+  transform: scale(1.4);
+}
 
 /* ── Hero entrance (CSS only, works without JS) ── */
 @keyframes rise {
