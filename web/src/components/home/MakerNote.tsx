@@ -21,7 +21,7 @@ const TILT = [-3, 2, -1.5, 3, -2, 1.5];
 export function MakerNote() {
   return (
     <>
-      <section className="py-[clamp(4rem,9vw,7rem)]">
+      <section className="overflow-x-clip py-[clamp(4rem,9vw,7rem)]">
         <div className="shell">
           <div className="relative mx-auto max-w-[54rem]">
             {/* Desk props beside the note: a ball of butter yarn with the hook resting on it. */}
@@ -49,7 +49,7 @@ export function MakerNote() {
                   src="/brand/logo-mark-circle.png"
                   alt=""
                   aria-hidden
-                  className="absolute -right-3 -bottom-8 size-20 rotate-[10deg] object-contain drop-shadow-[0_4px_6px_rgb(63_38_25/0.22)] sm:-right-7 sm:size-24"
+                  className="absolute -right-2 -bottom-7 size-16 rotate-[10deg] object-contain drop-shadow-[0_4px_6px_rgb(63_38_25/0.22)] sm:-right-7 sm:-bottom-8 sm:size-24"
                 />
               </div>
             </Reveal>
