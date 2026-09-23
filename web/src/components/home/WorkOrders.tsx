@@ -20,7 +20,7 @@ export function WorkOrders() {
       id="work-orders"
       n="04"
       name="Work Orders"
-      className="kraft"
+      className="kraft py-[clamp(4.5rem,9vw,7.5rem)]"
       style={{ ["--hole" as string]: "var(--color-kraft-light)" }}
     >
       <div className="grid items-center gap-14 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16">
