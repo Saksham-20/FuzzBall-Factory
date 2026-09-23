@@ -178,6 +178,23 @@
   transition-delay: var(--d, 0ms);
 }
 
+/* Explainers that play once as their block reveals. Like the reveals, they only
+   hide anything after JS has armed the block, so no-JS and reduced motion see them whole. */
+[data-reveal][data-armed] .stitch-draw {
+  clip-path: inset(0 0 0 0);
+  transition: clip-path 900ms var(--ease-out) calc(var(--d, 0ms) + 160ms);
+}
+[data-reveal][data-armed]:not([data-in]) .stitch-draw {
+  clip-path: inset(0 100% 0 0);
+}
+[data-reveal][data-armed] .grow-bar {
+  clip-path: inset(0 0 0 0 round 99px);
+  transition: clip-path 900ms var(--ease-out) calc(var(--d, 0ms) + var(--gd, 220ms));
+}
+[data-reveal][data-armed]:not([data-in]) .grow-bar {
+  clip-path: inset(0 100% 0 0 round 99px);
+}
+
 /* ── Hero entrance (CSS only, works without JS) ── */
 @keyframes rise {
   from {
