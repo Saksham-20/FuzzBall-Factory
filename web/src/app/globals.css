@@ -239,7 +239,7 @@
   }
 }
 .ball-wraps {
-  transform-origin: 200px 200px;
+  transform-origin: 50% 50%;
   animation: sway 9s var(--ease-in-out) infinite;
 }
 .thread-march {
