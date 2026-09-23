@@ -57,7 +57,7 @@ export function YarnRoom() {
             ))}
           </dl>
 
-          <Reveal as="p" delay={100} className="mt-6 max-w-[58ch] text-[15px] leading-relaxed text-brown">
+          <Reveal as="p" delay={100} className="mt-6 max-w-[58ch] leading-relaxed text-brown">
             Colours can look a little different from screen to screen, and from one yarn batch to the next. Want to see the
             real thing first?{" "}
             <a href={waRealLight()} target="_blank" rel="noopener noreferrer" className="font-semibold text-cocoa underline">

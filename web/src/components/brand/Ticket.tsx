@@ -24,7 +24,7 @@ export function Ticket({ head, hole = true, tone = "kraft", className, children,
       {...rest}
     >
       {head ? (
-        <div className="font-stencil tabular mb-2 flex items-center justify-between px-1 pt-3 text-[11px] text-brown">
+        <div className="font-stencil tabular mb-2 flex items-center justify-between gap-3 px-1 pt-3 text-[12px] text-brown">
           <span>{head[0]}</span>
           {head[1] ? <span>{head[1]}</span> : null}
         </div>

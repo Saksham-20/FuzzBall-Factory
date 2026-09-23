@@ -21,7 +21,7 @@ export function StationNode({ n, name, className }: Props) {
         {n}
       </span>
       <span
-        className="font-stencil relative left-[22px] mt-3 hidden text-[11px] whitespace-nowrap text-brown md:block"
+        className="font-stencil relative left-[22px] mt-3 hidden text-[12px] whitespace-nowrap text-brown md:block"
         style={{ writingMode: "vertical-rl", transform: "rotate(180deg)" }}
       >
         {name}

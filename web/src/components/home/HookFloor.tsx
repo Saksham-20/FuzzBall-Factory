@@ -36,14 +36,14 @@ export function HookFloor() {
               <Reveal as="li" key={s.t} delay={i * 70}>
                 <Chain />
                 <h3 className="mt-3 text-lg font-bold">{s.t}</h3>
-                <p className="mt-1 text-[15px] leading-relaxed text-brown">{s.d}</p>
+                <p className="mt-1 leading-relaxed text-brown">{s.d}</p>
               </Reveal>
             ))}
           </ol>
 
           <Reveal data-placeholder="copy-leadtimes" className="relative mt-14">
             <h3 className="text-lg font-bold">How long until it leaves?</h3>
-            <p className="mt-1 max-w-[52ch] text-[15px] leading-relaxed text-brown">
+            <p className="mt-1 max-w-[52ch] leading-relaxed text-brown">
               Ready-to-ship pieces are already made. Made-to-order pieces are crocheted after you order, so they take longer. The exact
               time is on every product.
             </p>
@@ -58,7 +58,7 @@ export function HookFloor() {
               <div className="col-[4/span_7] h-3.5 rounded-full bg-kraft-deep" />
               <div aria-hidden className="col-span-10 mt-2 grid grid-cols-10 border-t border-line-strong">
                 {Array.from({ length: 10 }, (_, d) => (
-                  <span key={d} className="font-stencil tabular border-l border-line-strong pt-1 pl-1 text-[11px] text-brown-soft first:border-l-0">
+                  <span key={d} className="font-stencil tabular border-l border-line-strong pt-1 pl-1 text-[12px] text-brown-soft first:border-l-0">
                     {d + 1}
                   </span>
                 ))}

@@ -55,7 +55,7 @@ export function Hero() {
             <YarnBall tone="rose" tailAnchor title="A ball of rose-coloured yarn" />
             <Ticket
               head={["Batch #001", "One of one"]}
-              className="ticket-swing absolute -right-2 -bottom-3 w-[132px] rotate-[5deg] md:-right-4 md:-bottom-5 md:w-[168px]"
+              className="ticket-swing absolute -right-2 -bottom-3 w-[156px] rotate-[5deg] md:-right-4 md:-bottom-5 md:w-[176px]"
             >
               <p className="px-1 pb-1.5 text-[13px] leading-snug font-semibold text-cocoa md:text-[15px]">Wound by hand, ready to unspool.</p>
             </Ticket>

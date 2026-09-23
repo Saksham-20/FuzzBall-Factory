@@ -34,7 +34,7 @@ export function WorkOrders() {
                 <span className="font-stencil tabular grid size-8 place-items-center rounded-full bg-cocoa text-[13px] text-cream">{i + 1}</span>
                 <div>
                   <h3 className="font-bold">{s.t}</h3>
-                  <p className="mt-0.5 text-[15px] leading-relaxed text-brown">{s.d}</p>
+                  <p className="mt-0.5 leading-relaxed text-brown">{s.d}</p>
                 </div>
               </Reveal>
             ))}
@@ -61,22 +61,22 @@ export function WorkOrders() {
           >
             <div className="space-y-4 px-1 pb-2">
               <div>
-                <p className="font-stencil text-[11px] text-brown-soft">Request</p>
+                <p className="font-stencil text-[12px] text-brown-soft">Request</p>
                 <p className="mt-1 leading-snug">
                   A small crochet bear in a graduation cap. Cream and navy, about 15 cm. For my sister&apos;s graduation on 12 December.
                 </p>
               </div>
               <div className="grid grid-cols-3 gap-3 border-y border-line py-3 text-sm">
                 <div>
-                  <p className="font-stencil text-[11px] text-brown-soft">Quote</p>
+                  <p className="font-stencil text-[12px] text-brown-soft">Quote</p>
                   <p className="tabular text-lg font-bold">₹1,850</p>
                 </div>
                 <div>
-                  <p className="font-stencil text-[11px] text-brown-soft">To start</p>
+                  <p className="font-stencil text-[12px] text-brown-soft">To start</p>
                   <p className="tabular text-lg font-bold">₹925</p>
                 </div>
                 <div>
-                  <p className="font-stencil text-[11px] text-brown-soft">Ready in</p>
+                  <p className="font-stencil text-[12px] text-brown-soft">Ready in</p>
                   <p className="tabular text-lg font-bold">8 days</p>
                 </div>
               </div>
