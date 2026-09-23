@@ -23,17 +23,25 @@ export function Shelf() {
         The shelf
       </Reveal>
 
-      <nav aria-label="Shop by category" className="mt-8 border-b border-line">
+      <nav
+        aria-label="Shop by category"
+        className="mt-8 border-b border-line"
+        // Every door word shares one size: the widest word (estimated from its letters) fills its row.
+        style={{ ["--door-em" as string]: Math.max(...doors.map((d) => d.c.word.length)) * 0.56 }}
+      >
         {doors.map(({ c, list }, i) => (
           <Reveal key={c.slug} delay={i * 40}>
             <Link
               href={`/shop/${c.slug}`}
-              className="group relative block overflow-hidden border-t border-line py-1.5 outline-offset-[-4px] md:py-1"
+              className="group relative flex items-center gap-2 overflow-hidden border-t border-line py-1.5 outline-offset-[-4px] sm:gap-3 md:py-1"
             >
-              <span
-                className={`font-display block text-[clamp(3.75rem,14.5vw,11.5rem)] leading-[0.86] whitespace-nowrap text-cocoa transition-transform duration-300 ease-out hf:group-hover:translate-x-3`}
-              >
-                {c.word}
+              <span className="@container min-w-0 flex-1">
+                <span
+                  className="font-display block leading-[0.86] whitespace-nowrap text-cocoa transition-transform duration-300 ease-out hf:group-hover:translate-x-3"
+                  style={{ fontSize: "min(11.5rem, calc(100cqi / var(--door-em)))" }}
+                >
+                  {c.word}
+                </span>
               </span>
               <span
                 aria-hidden
@@ -41,7 +49,7 @@ export function Shelf() {
               >
                 <Image src={c.image} alt="" fill sizes="190px" className="object-cover" />
               </span>
-              <span className="font-stencil tabular absolute top-1/2 right-2 flex -translate-y-1/2 items-center gap-2 rounded-full bg-butter px-3.5 py-2 text-[12px] text-cocoa ring-4 ring-cream md:right-3 md:px-4">
+              <span className="font-stencil tabular relative z-10 mr-2 flex min-w-[3.25rem] shrink-0 items-center justify-between gap-2 rounded-full bg-butter px-3.5 py-2 text-[12px] text-cocoa ring-4 ring-cream sm:min-w-[12rem] md:mr-3 md:px-4">
                 <span className="hidden sm:inline">
                   {list.length} {list.length === 1 ? "piece" : "pieces"} · from {formatINR(lowestPrice(list))}
                 </span>
