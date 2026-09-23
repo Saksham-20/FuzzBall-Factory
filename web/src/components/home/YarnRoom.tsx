@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { Ticket } from "@/components/brand/Ticket";
+import { YarnBall } from "@/components/brand/YarnBall";
 import { Reveal } from "@/components/ui/Reveal";
 import { StationSection } from "@/components/home/StationSection";
 import { waRealLight } from "@/lib/whatsapp";
@@ -46,9 +47,9 @@ export function YarnRoom() {
 
           <dl data-placeholder="copy-fibers" className="relative mt-8 divide-y divide-line border-y border-line">
             {FIBERS.map((f, i) => (
-              <Reveal key={f.name} delay={i * 50} className="grid grid-cols-[auto_1fr] items-baseline gap-x-4 gap-y-1 py-4 sm:grid-cols-[11rem_1fr]">
+              <Reveal key={f.name} delay={i * 50} className="grid grid-cols-[auto_1fr] items-center gap-x-4 gap-y-1.5 py-4 sm:grid-cols-[11rem_1fr]">
                 <dt className="flex items-center gap-3 font-bold">
-                  <span aria-hidden className="size-4 shrink-0 rounded-full border border-line-strong" style={{ background: f.hex }} />
+                  <YarnBall color={f.hex} small spin={false} className="size-8 shrink-0" />
                   {f.name}
                 </dt>
                 <dd className="col-span-2 text-brown sm:col-span-1">{f.feel}</dd>
