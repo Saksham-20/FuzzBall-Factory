@@ -43,7 +43,7 @@ export function WhatsAppButton() {
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Chat with us on WhatsApp"
-        className="press grid size-14 place-items-center rounded-full bg-cocoa text-cream shadow-lift transition-colors duration-150 [@media(hover:hover)_and_(pointer:fine)]:hover:bg-brown"
+        className="press grid size-14 place-items-center rounded-full bg-cocoa text-cream shadow-lift ring-[3px] ring-cream transition-colors duration-150 [@media(hover:hover)_and_(pointer:fine)]:hover:bg-brown"
       >
         <MessageCircle className="size-6" strokeWidth={1.8} />
       </a>
