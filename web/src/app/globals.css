@@ -141,6 +141,20 @@
   .perforated::after {
     bottom: -6px;
   }
+  /* A strip of butter tape pinning paper down: translucent, with slightly torn ends. */
+  .tape-strip {
+    background: color-mix(in oklab, var(--color-butter) 78%, transparent);
+    mix-blend-mode: multiply;
+    clip-path: polygon(0 12%, 4% 0, 96% 6%, 100% 18%, 97% 88%, 100% 100%, 3% 95%, 0 84%);
+  }
+  /* A wooden peg clipping a photo to the line, with the seam down its middle. */
+  .peg {
+    width: 10px;
+    height: 26px;
+    border-radius: 3px;
+    background: linear-gradient(90deg, #a8804f 0 44%, #6b4228 44% 56%, #a8804f 56%);
+    box-shadow: 0 1px 2px rgb(63 38 25 / 0.3);
+  }
   .press {
     transition: transform 160ms var(--ease-out);
   }
@@ -309,6 +323,18 @@
     transform: none;
   }
 }
+/* Pegged photos hang tilted from their peg and swing the other way when you point at one. */
+.hang-photo {
+  position: relative;
+  transform: rotate(var(--tilt, 0deg));
+  transform-origin: 50% 6px;
+  transition: transform 560ms cubic-bezier(0.34, 1.45, 0.64, 1);
+}
+@media (hover: hover) and (pointer: fine) {
+  .hang-photo:hover {
+    transform: rotate(calc(var(--tilt, 0deg) * -0.8));
+  }
+}
 .ticket-swing {
   transform-origin: 50% 11px;
   animation: ticket-swing 1500ms cubic-bezier(0.37, 0, 0.63, 1) 420ms both;
@@ -343,6 +369,9 @@ html[data-show-placeholders] [data-placeholder]::after {
   .thread-march,
   .ticket-swing {
     animation: none;
+  }
+  .hang-photo {
+    transition: none;
   }
   [data-reveal][data-armed]:not([data-in]) {
     opacity: 1;
