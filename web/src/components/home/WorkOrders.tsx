@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 import { Ticket } from "@/components/brand/Ticket";
 import { Stamp } from "@/components/brand/Stamp";
 import { Badge } from "@/components/ui/Badge";
@@ -39,13 +40,13 @@ export function WorkOrders() {
               </Reveal>
             ))}
           </ol>
-          <div className="mt-8 flex flex-wrap gap-3">
+          <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3">
             <Button asChild size="lg">
               <Link href="/custom">Start a work order</Link>
             </Button>
-            <Button asChild size="lg" variant="secondary">
-              <Link href="/shop">Customize something from the shelf</Link>
-            </Button>
+            <Link href="/shop" className="inline-flex min-h-11 items-center gap-1.5 font-semibold text-cocoa underline">
+              Customize something from the shelf <ArrowRight className="size-4" />
+            </Link>
           </div>
           <p className="mt-5 max-w-[52ch] text-sm text-brown">
             We can&apos;t make licensed characters (Disney, Sanrio, anime and the like). Original designs only.
