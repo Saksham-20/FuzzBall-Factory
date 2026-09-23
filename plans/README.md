@@ -1,6 +1,6 @@
 # Animation plans
 
-Written by the `improve-animations` audit of the storefront home on 2026-09-23 (branch `design/landing-polish`, commit `3241ba4`). Each plan is self-contained: exact files, current code, target values, steps, boundaries and a feel check, so any agent can execute it without this conversation.
+Written by the `improve-animations` audit of the storefront home on 2026-09-23 (branch `design/landing-polish`; line references match commit `7cc98fe`). Each plan is self-contained: exact files, current code, target values, steps, boundaries and a feel check, so any agent can execute it without this conversation.
 
 These cover the motion that already existed before the landing polish. The motion added in that polish (hand-wound yarn ball, batch ticket swing, stitch glyphs, lead-time bars, work-order stamps, pegged photo swing) was built to the same rules and is not re-planned here.
 
@@ -28,8 +28,8 @@ No plan depends on another's code. 002 and 003 both edit `web/src/app/globals.cs
 | --- | --- | --- | --- | --- | --- |
 | 1 | MEDIUM | Easing & duration | `web/src/app/globals.css:158` | `.press` shorthand resets `transition-property` to `transform`, discarding the colour/shadow transitions of 17 components (hover snaps) | Plan 001 |
 | 2 | MEDIUM | Purpose & cohesion | `web/src/components/ui/Reveal.tsx:37`, `web/src/app/globals.css:192-210`, 8 headings | Same fade-and-rise on nearly every block, fired late (8% visible inside a 10%-shrunk viewport), 600-700ms | Plan 002 |
-| 3 | LOW | Missed opportunity | `web/src/components/brand/StationNode.tsx:18`, `ConveyorThread.tsx:201` | Thread reaching a station only recolours the node; `data-reveal="stamp"` is dead | Plan 003 |
-| 4 | LOW | Performance | `web/src/components/home/ConveyorThread.tsx:205-208` | `data-live` rewritten on every node every scroll frame | Plan 003 |
+| 3 | LOW | Missed opportunity | `web/src/components/brand/StationNode.tsx:18`, `ConveyorThread.tsx:203` | Thread reaching a station only recolours the node; `data-reveal="stamp"` is dead | Plan 003 |
+| 4 | LOW | Performance | `web/src/components/home/ConveyorThread.tsx:207-210` | `data-live` rewritten on every node every scroll frame | Plan 003 |
 | 5 | LOW | Performance | `web/src/app/globals.css:283`, `:298` | Ball sway and marquee loop forever off screen | Plan 004 |
 | 6 | LOW | Performance | `web/src/components/store/Header.tsx:35` | `backdrop-filter` is interpolated on the scroll-state change | Plan 005 |
 | 7 | LOW | Cohesion | `web/src/components/store/ProductTicket.tsx` (second image) | Hover crossfade shows both photos at once midway | Not planned: a `filter: blur(2px)` mask during the fade would hide it; judge by eye first |

@@ -1,7 +1,7 @@
 # 005 — Header: stop animating `backdrop-filter`
 
 - **Status**: TODO
-- **Commit**: 3241ba4
+- **Commit**: 7cc98fe
 - **Severity**: LOW
 - **Category**: Performance
 - **Estimated scope**: 1 file, 1 line

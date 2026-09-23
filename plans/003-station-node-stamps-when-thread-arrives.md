@@ -1,7 +1,7 @@
 # 003 — Station node stamps when the thread reaches it (and stop per-frame attribute churn)
 
 - **Status**: TODO
-- **Commit**: 3241ba4
+- **Commit**: 7cc98fe
 - **Severity**: LOW (missed opportunity + small perf fix)
 - **Category**: Missed opportunities / Performance
 - **Estimated scope**: 3 files, ~20 lines
@@ -31,7 +31,7 @@
 2. **Attribute churn on every scroll frame.** `render()` rewrites `data-live` on every node on every frame, even when nothing changed, which invalidates style for attribute selectors each frame:
 
 ```ts
-// web/src/components/home/ConveyorThread.tsx:201 — current
+// web/src/components/home/ConveyorThread.tsx:203 — current
       // The node the thread has just reached goes live (rose): the one live thing.
       const readY = pt.y;
       let live: Element | null = null;
