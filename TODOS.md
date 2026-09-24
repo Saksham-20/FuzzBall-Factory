@@ -64,25 +64,17 @@
 **Priority:** P2
 **Depends on:** None
 
-### Account orders page scrolls sideways on small phones
+### Account pages scroll sideways on small phones
 
-**What:** At 320px `/account/orders` scrolls 33px sideways. The screen-reader text `, order FB-…` (`web/src/components/account/OrdersClient.tsx:74`) sits inside a truncated paragraph, but it is absolutely positioned against the ticket, so the paragraph's clipping doesn't contain it.
+**What:** Four account pages are wider than a 320px screen (sample data unless noted):
+- `/account/orders`, 33px: the screen-reader text `, order FB-…` (`web/src/components/account/OrdersClient.tsx:74`) sits inside a truncated paragraph but is absolutely positioned against the ticket, so the paragraph's clipping doesn't contain it.
+- `/account/custom/[wo]`, 67px (27px at 360px): the Attach photo / Send message row (`web/src/components/account/custom/MessageThread.tsx:116`) doesn't wrap and widens the single-column grid in `WorkOrderDetail.tsx:113`.
+- `/account`, 3px, and 190px with a long work order title (the form allows 60 characters): the grid sections in `web/src/components/account/OverviewClient.tsx:73` and `:96` have no `min-w-0` below md, so a truncated title still counts at full width.
+- `/account/orders/FB-1023`, 3px: the "Ask about this order on WhatsApp" button (`OrderDetailClient.tsx:248`) doesn't wrap.
 
-**Why:** Sideways scroll on phones makes the whole page wobble under the thumb.
+**Why:** Sideways scroll makes the whole page wobble under the thumb, on the pages customers use after buying.
 
-**Context:** Move the order number into the link's accessible name (for example `aria-label`) or put the sr-only text outside the truncated `<p>`. The e2e "never scrolls sideways" check could cover account pages once signed in (see the address-card spec for the mock sign-in).
-
-**Effort:** S
-**Priority:** P2
-**Depends on:** None
-
-### Work order pages scroll sideways on phones
-
-**What:** `/account/custom/[wo]` scrolls 67px sideways at 320px and 27px at 360px: the Attach photo / Send message row in `web/src/components/account/custom/MessageThread.tsx:116` doesn't wrap, and it widens the single-column grid in `WorkOrderDetail.tsx:113`.
-
-**Why:** Same wobble, on the page where customers answer quotes.
-
-**Context:** `flex-wrap` on the button row, and `min-w-0` (or `grid-cols-1`) for the grid's single column below lg.
+**Context:** The address list had the same grid bug and was fixed with `min-w-0` on its items (`AddressesClient.tsx`). Fixes: move the order number into the link's accessible name or outside the truncated `<p>`; `flex-wrap` on the button rows; `min-w-0` on the overview sections. Then extend the e2e "never scrolls sideways" check to signed-in pages (the address-card spec shows the mock sign-in).
 
 **Effort:** S
 **Priority:** P2
