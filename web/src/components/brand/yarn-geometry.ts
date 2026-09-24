@@ -18,7 +18,7 @@ const unit = (v: V3): V3 => {
 };
 
 const range = (from: number, to: number, count: number) =>
-  Array.from({ length: count }, (_, i) => from + ((to - from) * i) / (count - 1));
+  count === 1 ? [(from + to) / 2] : Array.from({ length: count }, (_, i) => from + ((to - from) * i) / (count - 1));
 
 interface Strand {
   d: string;
@@ -32,6 +32,8 @@ interface Strand {
 function strand(n: V3, h: number, reverse = false): Strand | null {
   const [nx, ny, nz] = n;
   const L = Math.hypot(nx, ny);
+  // An axis pointing straight at the viewer has no in-page direction to build the circle from.
+  if (L < 1e-6) throw new Error("yarn-geometry: a wrap axis can't point straight out of the page");
   const r = R * Math.sqrt(Math.max(0, 1 - h * h));
   if (r < 1) return null;
   // Orthonormal basis of the circle's plane: u lies in the page, v = n × u.
@@ -70,7 +72,11 @@ function strand(n: V3, h: number, reverse = false): Strand | null {
 function band(n: V3, w: number) {
   const top = strand(n, w);
   const bottom = strand(n, -w, true);
-  if (!top?.a || !top.b || !top.arc || !bottom?.a || !bottom.b || !bottom.arc) return "";
+  // Both edges must cross the rim for the band to close along it. The axes and widths below all
+  // do; this fails loudly at build time if a tweak breaks that, instead of dropping the fill.
+  if (!top?.a || !top.b || !top.arc || !bottom?.a || !bottom.b || !bottom.arc) {
+    throw new Error(`yarn-geometry: band of width ${w} doesn't reach the rim on both edges`);
+  }
   const angle = (p: P2) => Math.atan2(p[1] - C, p[0] - C);
   const rim = (p: P2, q: P2) => {
     let d = angle(q) - angle(p);
