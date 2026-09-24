@@ -76,6 +76,30 @@
 **Priority:** P2
 **Depends on:** None
 
+### Account orders page scrolls sideways on small phones
+
+**What:** At 320px `/account/orders` scrolls 33px sideways. The screen-reader text `, order FB-…` (`web/src/components/account/OrdersClient.tsx:74`) sits inside a truncated paragraph, but it is absolutely positioned against the ticket, so the paragraph's clipping doesn't contain it.
+
+**Why:** Sideways scroll on phones makes the whole page wobble under the thumb.
+
+**Context:** Move the order number into the link's accessible name (for example `aria-label`) or put the sr-only text outside the truncated `<p>`. The e2e "never scrolls sideways" check could cover account pages once signed in (see the address-card spec for the mock sign-in).
+
+**Effort:** S
+**Priority:** P2
+**Depends on:** None
+
+### Work order pages scroll sideways on phones
+
+**What:** `/account/custom/[wo]` scrolls 67px sideways at 320px and 27px at 360px: the Attach photo / Send message row in `web/src/components/account/custom/MessageThread.tsx:116` doesn't wrap, and it widens the single-column grid in `WorkOrderDetail.tsx:113`.
+
+**Why:** Same wobble, on the page where customers answer quotes.
+
+**Context:** `flex-wrap` on the button row, and `min-w-0` (or `grid-cols-1`) for the grid's single column below lg.
+
+**Effort:** S
+**Priority:** P2
+**Depends on:** None
+
 ### Address labels: the API allows 40 characters, the form 30
 
 **What:** `SaveAddressDto.label` is `@TrimmedString(1, 40)` (`api/src/account/dto/account.dto.ts:40`); the web form caps it at 30 (`AddressesClient.tsx`).
