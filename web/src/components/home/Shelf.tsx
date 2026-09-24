@@ -7,11 +7,19 @@ import { StationSection } from "@/components/home/StationSection";
 import { categories, lowestPrice, products, productsIn } from "@/lib/mock/catalog";
 import { formatINR } from "@/lib/format";
 
+/**
+ * Modak's average advance per letter, in em: door words are sized from their length alone.
+ * Wide letters run over it (m ≈ 0.84em, w ≈ 0.76em), so a longest word heavy in them can slide
+ * under its chip. Measure the rendered word instead once category words come from the admin.
+ */
+const MODAK_EM_PER_LETTER = 0.56;
 
 export function Shelf() {
   const doors = categories
     .map((c) => ({ c, list: productsIn(c.slug) }))
     .filter((d) => d.list.length > 0);
+  // Every door word shares one size: the widest word fills its row.
+  const doorEm = (Math.max(...doors.map((d) => d.c.word.length)) * MODAK_EM_PER_LETTER).toFixed(2);
   const fresh = [...products]
     .filter((p) => p.variants.some((v) => v.stock > 0))
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
@@ -23,12 +31,7 @@ export function Shelf() {
         The shelf
       </Reveal>
 
-      <nav
-        aria-label="Shop by category"
-        className="mt-8 border-b border-line"
-        // Every door word shares one size: the widest word (estimated from its letters) fills its row.
-        style={{ ["--door-em" as string]: Math.max(...doors.map((d) => d.c.word.length)) * 0.56 }}
-      >
+      <nav aria-label="Shop by category" className="mt-8 border-b border-line">
         {doors.map(({ c, list }, i) => (
           <Reveal key={c.slug} delay={i * 40}>
             <Link
@@ -36,9 +39,11 @@ export function Shelf() {
               className="group relative flex items-center gap-2 overflow-hidden border-t border-line py-1.5 outline-offset-[-4px] sm:gap-3 md:py-1"
             >
               <span className="@container min-w-0 flex-1">
+                {/* The class is the fallback size: a browser without container units drops the inline
+                    value at parse time (it holds no var(), which would defer that and lose both). */}
                 <span
-                  className="font-display block leading-[0.86] whitespace-nowrap text-cocoa transition-transform duration-300 ease-out hf:group-hover:translate-x-3"
-                  style={{ fontSize: "min(11.5rem, calc(100cqi / var(--door-em)))" }}
+                  className="font-display block text-[clamp(3.75rem,14.5vw,11.5rem)] leading-[0.86] whitespace-nowrap text-cocoa transition-transform duration-300 ease-out hf:group-hover:translate-x-3"
+                  style={{ fontSize: `min(11.5rem, calc(100cqi / ${doorEm}))` }}
                 >
                   {c.word}
                 </span>
