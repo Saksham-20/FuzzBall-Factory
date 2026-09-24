@@ -14,18 +14,6 @@
 **Priority:** P1
 **Depends on:** None
 
-### Turn off SSH password login on the VPS
-
-**What:** Set `PasswordAuthentication no` and `PermitRootLogin prohibit-password` in `sshd_config`, then reload sshd.
-
-**Why:** The server offers password login for root (a refused key reports `Permission denied (publickey,password)`), which invites brute force on a box that also serves a live site.
-
-**Context:** Key login already works. Keep a second SSH session open while reloading, so a mistake can't lock you out.
-
-**Effort:** S
-**Priority:** P2
-**Depends on:** None
-
 ### Seed and config checks only run in production
 
 **What:** `api/prisma/seed.ts` refuses the sample admin password only when `NODE_ENV === 'production'`, and `api/src/config/env.ts:47` skips the JWT secret checks outside production.
@@ -191,3 +179,17 @@
 **Depends on:** None
 
 ## Completed
+
+### Turn off SSH password login on the VPS
+
+**What:** Set `PasswordAuthentication no` and `PermitRootLogin prohibit-password` in `sshd_config`, then reload sshd.
+
+**Why:** The server offered password login for root, which invites brute force on a box that also serves a live site.
+
+**Context:** Key login already works. A drop-in in `sshd_config.d` whose name sorts before the cloud-init file (sshd keeps the first value it reads) holds the setting; delete it and reload sshd to undo.
+
+**Effort:** S
+**Priority:** P2
+**Depends on:** None
+
+**Completed:** 2026-09-24 (not versioned yet)
