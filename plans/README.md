@@ -26,11 +26,11 @@ No plan depends on another's code. 001, 002, 003 and 004 all edit `web/src/app/g
 
 | # | Severity | Category | Location | Finding | Fix summary |
 | --- | --- | --- | --- | --- | --- |
-| 1 | MEDIUM | Easing & duration | `web/src/app/globals.css:161` | `.press` shorthand resets `transition-property` to `transform`, discarding the colour/shadow transitions of 17 components (hover snaps) | Plan 001 |
-| 2 | MEDIUM | Purpose & cohesion | `web/src/components/ui/Reveal.tsx:38`, `web/src/app/globals.css:195-213`, 8 headings | Same fade-and-rise on nearly every block, fired late (8% visible inside a 10%-shrunk viewport), 600-700ms | Plan 002 |
+| 1 | MEDIUM | Easing & duration | `web/src/app/globals.css:163` | `.press` shorthand resets `transition-property` to `transform`, discarding the colour/shadow transitions of 17 components (hover snaps) | Plan 001 |
+| 2 | MEDIUM | Purpose & cohesion | `web/src/components/ui/Reveal.tsx:38`, `web/src/app/globals.css:197-215`, 8 headings | Same fade-and-rise on nearly every block, fired late (8% visible inside a 10%-shrunk viewport), 600-700ms | Plan 002 |
 | 3 | LOW | Missed opportunity | `web/src/components/brand/StationNode.tsx:18`, `ConveyorThread.tsx:205` | Thread reaching a station only recolours the node; `data-reveal="stamp"` is dead | Plan 003 |
 | 4 | LOW | Performance | `web/src/components/home/ConveyorThread.tsx:209-212` | `data-live` rewritten on every node every scroll frame | Plan 003 |
-| 5 | LOW | Performance | `web/src/app/globals.css:303`, `:318` | Ball sway and marquee loop forever off screen | Plan 004 |
+| 5 | LOW | Performance | `web/src/app/globals.css:305`, `:323` | Ball sway and marquee loop forever off screen | Plan 004 |
 | 6 | LOW | Performance | `web/src/components/store/Header.tsx:35` | `backdrop-filter` is interpolated on the scroll-state change | Plan 005 |
 | 7 | LOW | Cohesion | `web/src/components/store/ProductTicket.tsx` (second image) | Hover crossfade shows both photos at once midway | Not planned: a `filter: blur(2px)` mask during the fade would hide it; judge by eye first |
 | 8 | LOW | Easing & duration | `web/src/components/store/WhatsAppButton.tsx` (nudge) | Nudge tooltip exits at the same 300ms as it enters | Not planned: exit at ~200ms if it ever feels slow to leave |

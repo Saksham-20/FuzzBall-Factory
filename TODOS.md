@@ -92,39 +92,13 @@
 **Priority:** P3
 **Depends on:** None
 
-## Accessibility
+### The tape runs out of words on wide screens
 
-### Footer focus ring is 2.44:1 on cocoa (FINDING-012)
+**What:** `web/src/components/brand/Tape.tsx` renders its words twice and the loop moves the track by one copy, so the strip stays full only while one copy is at least as wide as the tape. One copy is about 1,110px on the home page and 990px on the sign-in panel. On a 1440px screen the right end of the home tape runs bare for about a third of every 42-second loop (up to 360px of empty tape); at 1920px for three quarters of it; at 2560px all the time.
 
-**What:** The global `:focus-visible` ring is rose-deep `#9c4f55`; on the cocoa footer `#3f2619` that is 2.44:1, below the 3:1 minimum for non-text contrast, on every footer link and the WhatsApp chip.
+**Why:** Bare tape at the end of the strip reads as a glitch on the hero, at the widths most laptops and desktops have.
 
-**Why:** Keyboard users lose their place in the footer.
-
-**Context:** `outline: 2.5px solid var(--focus-ring, var(--color-rose-deep))` in `globals.css`, and `[--focus-ring:var(--color-butter)]` on the footer. From the 2026-09-23 design audit.
-
-**Effort:** S
-**Priority:** P2
-**Depends on:** None
-
-### "Ready to ship" badge text is 4.09:1 (FINDING-013)
-
-**What:** `--color-ok` `#4f7a45` on `--color-ok-wash` `#e1ecd6` at 11px (`components/ui/Badge.tsx`) is below 4.5:1.
-
-**Why:** It is the label that decides purchases.
-
-**Context:** Darken `--color-ok` to about `#466e3d`. One token.
-
-**Effort:** S
-**Priority:** P2
-**Depends on:** None
-
-### The tape marquee has no pause control (FINDING-014)
-
-**What:** The tape loops forever and pauses only on mouse hover or the OS reduced-motion setting (`components/brand/Tape.tsx`, the `.tape-track` rule in `globals.css`); keyboard and touch users can't stop it (WCAG 2.2.2).
-
-**Why:** Moving content that can't be paused fails WCAG and distracts readers.
-
-**Context:** A small pause/play `<button aria-pressed>` on the tape toggling `animation-play-state`, plus pause on `:focus-within`. Pairs with `plans/004`.
+**Context:** Render four copies and move the track by `-25%` instead of `-50%` (the `tape` keyframes in `globals.css`): the same speed, and the strip stays full up to about 3,300px. Keep the extra copies `aria-hidden` like the second one. `plans/004` adds `data-loop` to the same `.tape-track` element.
 
 **Effort:** S
 **Priority:** P2
@@ -179,6 +153,48 @@
 **Why:** The server offered password login for root, which invites brute force on a box that also serves a live site.
 
 **Context:** Key login already works. A drop-in in `sshd_config.d` whose name sorts before the cloud-init file (sshd keeps the first value it reads) holds the setting; delete it and reload sshd to undo.
+
+**Effort:** S
+**Priority:** P2
+**Depends on:** None
+
+**Completed:** 2026-09-24 (not versioned yet)
+
+### Footer focus ring is 2.44:1 on cocoa (FINDING-012)
+
+**What:** The global `:focus-visible` ring was rose-deep `#9c4f55`; on the cocoa footer `#3f2619` that is 2.44:1, below the 3:1 minimum for non-text contrast, on every footer link and the WhatsApp chip.
+
+**Why:** Keyboard users lost their place in the footer.
+
+**Context:** The ring now reads `var(--focus-ring, var(--color-rose-deep))` in `globals.css`. The footer and the admin bulk-actions bar (also cocoa) set `[--focus-ring:var(--color-butter)]`: 9.1:1. `e2e/a11y.spec.ts` measures it.
+
+**Effort:** S
+**Priority:** P2
+**Depends on:** None
+
+**Completed:** 2026-09-24 (not versioned yet)
+
+### "Ready to ship" badge text is 4.09:1 (FINDING-013)
+
+**What:** `--color-ok` `#4f7a45` on `--color-ok-wash` `#e1ecd6` at 11px (`components/ui/Badge.tsx`) was below 4.5:1.
+
+**Why:** It is the label that decides purchases.
+
+**Context:** `--color-ok` is now `#466e3d`: 4.83:1 on the wash, and darker everywhere else the token is used. `e2e/a11y.spec.ts` measures the shop badges.
+
+**Effort:** S
+**Priority:** P2
+**Depends on:** None
+
+**Completed:** 2026-09-24 (not versioned yet)
+
+### The tape marquee has no pause control (FINDING-014)
+
+**What:** The tape looped forever and paused only on mouse hover or the OS reduced-motion setting; keyboard and touch users couldn't stop it (WCAG 2.2.2).
+
+**Why:** Moving content that can't be paused fails WCAG and distracts readers.
+
+**Context:** `components/brand/TapeToggle.tsx`: a pause button (`aria-pressed`) on the tape at the page's left content edge, clear of the WhatsApp button, remembered across pages and hidden under reduced motion, where the tape is already still. Pointing at the words still holds them. No pause on `:focus-within`: with the button focused, pressing play would not visibly restart the tape. The sign-in panel was hidden from screen readers as a whole; now its pieces are, so the button stays reachable. `plans/004` is updated to leave the button's state alone.
 
 **Effort:** S
 **Priority:** P2

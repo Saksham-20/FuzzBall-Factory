@@ -16,19 +16,19 @@ The same fade-and-rise runs on almost every block of the home page, section head
 ```
 
 ```css
-/* web/src/app/globals.css:195 — current */
+/* web/src/app/globals.css:197 — current */
 [data-reveal][data-armed]:not([data-in]) {
   opacity: 0;
   transform: translateY(16px);
 }
-/* web/src/app/globals.css:208 — current */
+/* web/src/app/globals.css:210 — current */
 [data-reveal][data-armed] {
   transition:
     opacity 600ms var(--ease-out),
     transform 700ms var(--ease-out);
   transition-delay: var(--d, 0ms);
 }
-/* web/src/app/globals.css:247 — current (the pegged photo line: its photos carry their own timing) */
+/* web/src/app/globals.css:249 — current (the pegged photo line: its photos carry their own timing) */
 [data-reveal="line"][data-armed] .hang {
   transition:
     opacity 600ms var(--ease-out),
@@ -90,9 +90,9 @@ Headings and lone paragraphs wrapped in `Reveal` (all generic `rise`):
 Line numbers are hints; each step's quoted code is the anchor.
 
 1. `web/src/components/ui/Reveal.tsx` (currently line 38): change the observer options object `{ rootMargin: "0px 0px -10% 0px", threshold: 0.08 }` to `{ rootMargin: "0px 0px -4% 0px", threshold: 0.01 }`.
-2. `web/src/app/globals.css`, in the `[data-reveal][data-armed]:not([data-in]) { ... }` rule quoted in **Problem** (currently line 195): `translateY(16px)` → `translateY(12px)`.
-3. Same file, in the `[data-reveal][data-armed] { ... }` rule quoted in **Problem** (currently line 208): `opacity 600ms` → `opacity 450ms`, `transform 700ms` → `transform 550ms`.
-4. Same file, in the `[data-reveal="line"][data-armed] .hang { ... }` rule quoted in **Problem** (currently line 247): the same two changes, so the pegged photos keep pace with every other reveal. Leave its `transition-delay` line alone.
+2. `web/src/app/globals.css`, in the `[data-reveal][data-armed]:not([data-in]) { ... }` rule quoted in **Problem** (currently line 197): `translateY(16px)` → `translateY(12px)`.
+3. Same file, in the `[data-reveal][data-armed] { ... }` rule quoted in **Problem** (currently line 210): `opacity 600ms` → `opacity 450ms`, `transform 700ms` → `transform 550ms`.
+4. Same file, in the `[data-reveal="line"][data-armed] .hang { ... }` rule quoted in **Problem** (currently line 249): the same two changes, so the pegged photos keep pace with every other reveal. Leave its `transition-delay` line alone.
 5. For each of the eight elements listed in **Problem**: replace `<Reveal as="h2" className="X">…</Reveal>` with `<h2 className="X">…</h2>` (same for `as="h3"` → `<h3>` and `as="p"` → `<p>`), keeping `className` and children exactly; drop the `delay` prop. Keep every other `Reveal` in those files.
 6. Each of those files still uses `Reveal` elsewhere, so keep the `Reveal` import. Run lint to confirm no unused import remains.
 

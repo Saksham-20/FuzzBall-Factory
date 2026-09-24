@@ -20,7 +20,7 @@
 ```
 
 ```css
-/* web/src/app/globals.css:423 — current */
+/* web/src/app/globals.css:428 — current */
 [data-station-node] {
   transition:
     background-color 300ms var(--ease-out),
@@ -109,7 +109,7 @@
 Line numbers are hints; each step's quoted code is the anchor.
 
 1. `web/src/components/brand/StationNode.tsx`: delete the line `data-reveal="stamp"` (currently line 18). Nothing else changes.
-2. `web/src/app/globals.css`, in the `[data-station-node] { ... }` rule quoted in **Problem 1** (currently line 423): make it `transition: background-color 300ms var(--ease-out);` (drop the `transform` part).
+2. `web/src/app/globals.css`, in the `[data-station-node] { ... }` rule quoted in **Problem 1** (currently line 428): make it `transition: background-color 300ms var(--ease-out);` (drop the `transform` part).
 3. `web/src/components/home/ConveyorThread.tsx`: add `liveEl`, `liveIndex`, `canStamp`, `INPUTS` and `allowStamps` from **Target** beside the other `let` state (after `let started = false;`).
 4. Same file: replace the block quoted in **Problem 2** (from the comment line through the closing `}` of the second `for`) with the render block in **Target**.
 5. Same file: add the `INPUTS` listener loop right after `window.addEventListener("resize", schedule);`, and the matching removal loop inside the cleanup, after `window.removeEventListener("resize", schedule);`.

@@ -11,7 +11,7 @@
 `.press` is the shared press-feedback utility (scale on `:active`). It is declared with the `transition` **shorthand**, and it sits later in the utilities layer than Tailwind's generated classes, so it wins the cascade and resets `transition-property` to `transform` only:
 
 ```css
-/* web/src/app/globals.css:161 — current */
+/* web/src/app/globals.css:163 — current */
   .press {
     transition: transform 160ms var(--ease-out);
   }
@@ -60,7 +60,7 @@ className="press transition-[transform,box-shadow] duration-150 ease-out ..."
 
 ## Steps
 
-1. In `web/src/app/globals.css`, replace the single line `transition: transform 160ms var(--ease-out);` inside `.press { ... }` (currently line 162) with the three lines from **Target**. Leave `.press:active` untouched.
+1. In `web/src/app/globals.css`, replace the single line `transition: transform 160ms var(--ease-out);` inside `.press { ... }` (currently line 164) with the three lines from **Target**. Leave `.press:active` untouched.
 
 ## Boundaries
 
