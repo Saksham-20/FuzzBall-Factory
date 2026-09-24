@@ -7,6 +7,9 @@
  */
 /* Hover only on devices that really hover (not touch). Use as `hf:hover:…`. */
 @custom-variant hf (@media (hover: hover) and (pointer: fine));
+/* lg, on a screen tall enough to hold a pinned station ticket whole (~690px with its offset).
+   Shorter laptops scroll the ticket instead of pinning it half below the fold. */
+@custom-variant lg-tall (@media (min-width: 64rem) and (min-height: 46rem));
 
 @theme static {
   --color-cream: #f6eee3;
@@ -235,6 +238,23 @@
   transform: scale(1.4);
 }
 
+/* A pegged line reveals as one block, so photos scrolled out of a phone strip aren't left
+   waiting: the line stays put and the photos (`.hang`, ordered by --i) drop onto it in turn. */
+[data-reveal="line"][data-armed]:not([data-in]) {
+  opacity: 1;
+  transform: none;
+}
+[data-reveal="line"][data-armed] .hang {
+  transition:
+    opacity 600ms var(--ease-out),
+    transform 700ms var(--ease-out);
+  transition-delay: calc(var(--d, 0ms) + var(--i, 0) * 40ms);
+}
+[data-reveal="line"][data-armed]:not([data-in]) .hang {
+  opacity: 0;
+  transform: translateY(-12px);
+}
+
 /* ── Hero entrance (CSS only, works without JS) ── */
 @keyframes rise {
   from {
@@ -323,7 +343,9 @@
     transform: none;
   }
 }
-/* Pegged photos hang tilted from their peg and swing the other way when you point at one. */
+/* Pegged photos hang tilted from their peg and swing the other way when you point at one.
+   The hover sits on the still `.hang` slot, not the photo: a photo that swung out from under
+   the pointer would lose its own hover and swing back, over and over. */
 .hang-photo {
   position: relative;
   transform: rotate(var(--tilt, 0deg));
@@ -331,7 +353,7 @@
   transition: transform 600ms var(--ease-out);
 }
 @media (hover: hover) and (pointer: fine) {
-  .hang-photo:hover {
+  .hang:hover > .hang-photo {
     transform: rotate(calc(var(--tilt, 0deg) * -0.8));
   }
 }
@@ -374,6 +396,21 @@ html[data-show-placeholders] [data-placeholder]::after {
     transition: none;
   }
   [data-reveal][data-armed]:not([data-in]) {
+    opacity: 1;
+    transform: none;
+  }
+  /* Reveals only arm with motion allowed, but Reduce Motion can be switched on after that:
+     the explainers and pegged photos inside an armed block then show whole, without playing. */
+  [data-reveal][data-armed] :is(.stitch-draw, .grow-bar, .stamp-seq, .hang) {
+    transition: none;
+  }
+  [data-reveal][data-armed]:not([data-in]) .stitch-draw {
+    clip-path: inset(0 0 0 0);
+  }
+  [data-reveal][data-armed]:not([data-in]) .grow-bar {
+    clip-path: inset(0 0 0 0 round 99px);
+  }
+  [data-reveal][data-armed]:not([data-in]) :is(.stamp-seq, .hang) {
     opacity: 1;
     transform: none;
   }

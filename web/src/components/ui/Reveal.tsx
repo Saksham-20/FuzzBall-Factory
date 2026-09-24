@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, type ComponentPropsWithoutRef, type ElementType } from "react";
 
-type Kind = "rise" | "stamp" | "drop" | "slide";
+/** `line` keeps the block still and drops its `.hang` children in turn (a pegged photo line). */
+type Kind = "rise" | "stamp" | "drop" | "slide" | "line";
 
 interface Props extends ComponentPropsWithoutRef<"div"> {
   kind?: Kind;

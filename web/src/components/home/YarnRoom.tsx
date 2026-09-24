@@ -18,7 +18,7 @@ export function YarnRoom() {
   return (
     <StationSection id="yarn-room" n="01" name="Yarn Room">
       <div className="grid items-start gap-12 lg:grid-cols-[0.85fr_1.15fr] lg:gap-16">
-        <Reveal kind="drop" className="mx-auto w-full max-w-[420px] lg:sticky lg:top-28 lg:mx-0">
+        <Reveal kind="drop" className="mx-auto w-full max-w-[420px] lg:top-28 lg:mx-0 lg-tall:sticky">
           <Ticket
             data-placeholder="sample-photo"
             head={["Yarn Room", "Stock check"]}

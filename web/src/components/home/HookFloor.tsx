@@ -124,7 +124,7 @@ export function HookFloor() {
           </Reveal>
         </div>
 
-        <Reveal kind="drop" className="mx-auto w-full max-w-[380px] lg:sticky lg:top-28 lg:mx-0">
+        <Reveal kind="drop" className="mx-auto w-full max-w-[380px] lg:top-28 lg:mx-0 lg-tall:sticky">
           <Ticket data-placeholder="sample-photo" head={["Hook Floor", "Close-up"]} className="rotate-2">
             <div className="relative aspect-[3/4] overflow-hidden rounded-[10px]">
               <Image
