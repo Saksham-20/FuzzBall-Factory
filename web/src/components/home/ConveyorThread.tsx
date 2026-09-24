@@ -95,7 +95,9 @@ export function ConveyorThread() {
       // Evenly spaced points along a long crossing (tablet) keep the spline's tangents short,
       // so it turns into the gutter cleanly instead of overshooting and kinking.
       const x0 = S[0] - 50;
-      const x1 = gx + 60;
+      // Never right of x0: on the narrowest phones the corner would otherwise sit behind the
+      // crossing's start, and the line would double back on itself.
+      const x1 = Math.min(gx + 60, x0 - 12);
       const steps = Math.max(0, Math.floor((x0 - x1) / 120));
       const crossing: Pt[] = Array.from({ length: steps }, (_, j) => {
         const t = (j + 1) / (steps + 1);
