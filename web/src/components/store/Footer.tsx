@@ -10,7 +10,7 @@ const head = "font-stencil mb-4 text-[12px] text-kraft";
 
 export function Footer() {
   return (
-    <footer className="bg-cocoa text-cream">
+    <footer className="bg-cocoa text-cream [--focus-ring:var(--color-butter)]">
       <div className="shell pt-20 pb-10">
         <p className="font-display text-[clamp(2.5rem,7.2vw,6.5rem)] text-cream">Handmade with love</p>
 

@@ -134,7 +134,7 @@ export function ProductsClient() {
       </Toolbar>
 
       {picked.length ? (
-        <div role="region" aria-label="Bulk actions" className="sticky top-2 z-20 flex flex-wrap items-center gap-2 rounded-ticket bg-cocoa px-4 py-2 text-cream shadow-lift">
+        <div role="region" aria-label="Bulk actions" className="sticky top-2 z-20 flex flex-wrap items-center gap-2 rounded-ticket bg-cocoa px-4 py-2 text-cream shadow-lift [--focus-ring:var(--color-butter)]">
           <p aria-live="polite" className="mr-auto font-semibold">{picked.length} selected</p>
           <Button size="md" variant="tape" onClick={() => bulk("PUBLISHED")} disabled={!!busy}>{busy === "PUBLISHED" ? "Publishing…" : "Publish"}</Button>
           <Button size="md" variant="secondary" onClick={() => bulk("ARCHIVED")} disabled={!!busy}>{busy === "ARCHIVED" ? "Archiving…" : "Archive"}</Button>
