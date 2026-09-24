@@ -70,6 +70,11 @@ describe("WRAPS", () => {
       }
     });
 
+    it(`${detail} detail: every band has its shadow`, () => {
+      // YarnBall draws nothing for a missing shadow, so losing one would go unseen.
+      for (const l of WRAPS[detail].layers) if (l.fill) expect(l.shadow).toBeTruthy();
+    });
+
     it(`${detail} detail: every band and its shadow close along the rim`, () => {
       const bands = WRAPS[detail].layers.flatMap((l) => [l.fill, l.shadow]).filter((d): d is string => Boolean(d));
       expect(bands.length).toBeGreaterThan(0);

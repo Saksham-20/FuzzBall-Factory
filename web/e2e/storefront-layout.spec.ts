@@ -57,8 +57,10 @@ test.describe("address cards", () => {
     const fit = await head.evaluate((el) => {
       const [label, badge] = [...el.children] as HTMLElement[];
       const ticket = el.parentElement!.getBoundingClientRect();
+      const clip = getComputedStyle(label);
       return {
-        labelCutShort: label.scrollWidth > label.clientWidth,
+        // Longer than its box, and clipped with an ellipsis rather than spilling under the badge.
+        labelCutShort: label.scrollWidth > label.clientWidth && clip.overflowX === "hidden" && clip.textOverflow === "ellipsis",
         badgeWhole: badge.scrollWidth <= badge.clientWidth + 0.5 && badge.getBoundingClientRect().right <= ticket.right + 0.5,
         sidewaysScroll: document.documentElement.scrollWidth - document.documentElement.clientWidth,
       };
