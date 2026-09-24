@@ -23,6 +23,9 @@ npm run start:dev                # http://localhost:4000  (watch mode)
 Generate real secrets: `openssl rand -base64 48` for `JWT_ACCESS_SECRET` and `JWT_REFRESH_SECRET`
 (production requires 32+ chars and rejects placeholders). Env is validated with zod at boot
 (`src/config/env.ts`): a bad or missing variable fails fast with one readable message.
+Two variables are read outside that schema: `HOST` sets the listen address (`127.0.0.1` keeps the API
+behind a reverse proxy; unset, it listens on every interface), and `SEED_SAMPLES=true` makes `npm run seed`
+add the sample users, catalogue and coupons even when `NODE_ENV=production`, which skips them by default.
 
 Seeded logins (dev only, password `fuzzball123`): `admin@fuzzball.test` (admin, from `ADMIN_EMAIL` /
 `ADMIN_PASSWORD`), `maya@example.com`, `arjun@example.com`, `sophie@example.com`.
@@ -42,6 +45,7 @@ Seeded logins (dev only, password `fuzzball123`): `admin@fuzzball.test` (admin, 
 | `npm run prisma:deploy` | `prisma migrate deploy` (production) |
 | `npm run prisma:studio` | browse the data |
 | `npm run seed` | idempotent seed (`prisma/seed.ts`, run through `jiti`) |
+| `npm run deploy` | `nest deploy`, NestJS's own cloud (Mau). Not how the test server is deployed: see [`../docs/DEPLOY_VPS.md`](../docs/DEPLOY_VPS.md) |
 
 Reset the local database completely: `npx prisma migrate reset` (drops, re-migrates, re-seeds).
 

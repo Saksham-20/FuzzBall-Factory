@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-09-24T17:12:28Z",
+  "generatedAt": "2026-09-24T17:41:05Z",
   "title": "Design System: FuzzBall Factory",
   "extensions": {
     "colorMeta": {
@@ -507,7 +507,7 @@
       },
       {
         "name": "The Ring Contrast Rule",
-        "body": "A focus ring keeps 3:1 against the surface it sits on: rose-deep on paper and cream, butter on cocoa (every cocoa surface sets `--focus-ring` to butter).",
+        "body": "A focus ring keeps 3:1 against the surface it sits on: rose-deep on paper and cream, butter on cocoa (every cocoa surface, from the footer to your own message bubbles, sets `--focus-ring` to butter).",
         "section": "colors"
       },
       {
@@ -522,7 +522,7 @@
       },
       {
         "name": "The Table Rule",
-        "body": "A surface either rests on the paper or lifts off it. No glow and no coloured halo.",
+        "body": "A surface either rests on the paper or lifts off it, on a warm, offset shadow. Nothing glows.",
         "section": "elevation"
       }
     ],
@@ -533,7 +533,7 @@
       "Do keep small text on washes and butter at 4.5:1 or better (Ready to ship is `ok` #466e3d on `ok-wash`, 4.8:1).",
       "Do set batch, order and work-order numbers in stencil labels with tabular numerals.",
       "Do put hover effects only on devices that hover, and give every press a 0.97 scale.",
-      "Do give every looping motion a way to stop, and stop it under reduced motion.",
+      "Do give moving text a pause button (the tape has one), and stop every loop under reduced motion.",
       "Do label sample photos and products as samples until the maker's own arrive."
     ],
     "donts": [

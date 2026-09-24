@@ -8,7 +8,7 @@
 
 **Why:** In development mode the API exposes the public mock-payment confirm route, skips the JWT secret strength check, and the seed falls back to the sample admin password unless `ADMIN_PASSWORD` is set. The source is public, so anyone can read how.
 
-**Context:** `docs/DEPLOY_VPS.md` explains why the test API runs `NODE_ENV=development` (HTTP only, so production's `Secure` cookies would break login; mock payments need non-production). The real address and SSH details are in `docs/DEPLOY_VPS.local.md` (gitignored). The server shares its box with another live site, so an admin takeover there reaches further than test data. Moving to a domain with HTTPS lets the API switch to production and closes all three.
+**Context:** `docs/DEPLOY_VPS.md` explains why the test API runs `NODE_ENV=development` (HTTP only, so production's `Secure` cookies would break login; mock payments need non-production). The real address and SSH details are in `docs/DEPLOY_VPS.local.md` (gitignored). Moving to a domain with HTTPS lets the API switch to production and closes all three.
 
 **Effort:** S
 **Priority:** P1
@@ -40,13 +40,13 @@
 
 ## Storefront (web)
 
-### Home page reads the mock catalogue even in real-API mode
+### Parts of the storefront read the mock catalogue even in real-API mode
 
-**What:** `Shelf.tsx` and `MakerNote.tsx` import `@/lib/mock/catalog` directly, so `NEXT_PUBLIC_USE_MOCK=false` still shows sample pieces on the home page.
+**What:** These import `@/lib/mock/catalog` directly, so `NEXT_PUBLIC_USE_MOCK=false` still serves sample data in them: the home page (`Shelf.tsx`, `MakerNote.tsx`), the header and footer category menus, category pages (`shop/[category]/page.tsx`, which returns a 404 for any category not in the sample set), product page metadata, JSON-LD and share images (`p/[slug]/page.tsx`, `opengraph-image.tsx`), `sitemap.ts`, the shop's colour filter (`ShopClient.tsx`) and `lib/state/productCache.ts`.
 
-**Why:** Once real products exist, the home page would keep showing the samples.
+**Why:** Once real products exist, these keep showing the samples and real categories return a 404. It blocks going live on real data.
 
-**Context:** Route home data through `lib/api` like the shop does. The door-word sizing in `Shelf.tsx` then sees real category words, so measure the rendered word instead of the per-letter estimate (see `MODAK_EM_PER_LETTER`).
+**Context:** Route them through `lib/api` like the shop list does. The door-word sizing in `Shelf.tsx` then sees real category words, so measure the rendered word instead of the per-letter estimate (see `MODAK_EM_PER_LETTER`).
 
 **Effort:** M
 **Priority:** P2
@@ -146,13 +146,13 @@
 
 ## Completed
 
-### Turn off SSH password login on the VPS
+### Turn off SSH password login on the test server
 
-**What:** Set `PasswordAuthentication no` and `PermitRootLogin prohibit-password` in `sshd_config`, then reload sshd.
+**What:** The test server now accepts SSH keys only; password login is off.
 
-**Why:** The server offered password login for root, which invites brute force on a box that also serves a live site.
+**Why:** Password login on an internet-facing server invites brute-force attempts.
 
-**Context:** Key login already works. A drop-in in `sshd_config.d` whose name sorts before the cloud-init file (sshd keeps the first value it reads) holds the setting; delete it and reload sshd to undo.
+**Context:** Key login already worked. The setting, the file that holds it and how to undo it are in `docs/DEPLOY_VPS.local.md` (gitignored).
 
 **Effort:** S
 **Priority:** P2

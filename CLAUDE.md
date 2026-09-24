@@ -16,14 +16,17 @@ FuzzBall Factory — e-commerce site for a solo maker's handmade crochet product
 2. `docs/PLAN.md` — stack decision, IA, data model, state machines, business rules
 3. `docs/IMPLEMENTATION_PLAN.md` — ordered tasks with specs and "Done when" checks. **Follow it task by task.**
 4. `.impeccable/surfaces/web-src-app-page-tsx.md` — locked visual direction ("The Factory Floor")
-5. `docs/research-brief.md` — domain research
+5. `DESIGN.md` — the visual system as built: tokens, components, named rules (sidecar: `.impeccable/design.json`)
+6. `docs/research-brief.md` — domain research
+
+Also: `TODOS.md` (deferred work by priority), `plans/` (self-contained fixes for the storefront's motion; `plans/README.md` gives the order), `docs/BUILD_GUIDE.md` (page-building conventions), `docs/DEPLOY_VPS.md` (the test server; real addresses live only in the gitignored `docs/DEPLOY_VPS.local.md`).
 
 ## Current state
 
-- **UI is built** (`web/`): landing, shop, product, custom work orders, cart/checkout, track, auth, account, admin, content pages. Runs on a mock data layer (`web/src/lib/api/*`, localStorage) by default (`NEXT_PUBLIC_USE_MOCK`); a real-API switch is being wired.
-- `api/` — NestJS + Prisma + Postgres backend, built with unit + e2e tests (`npm test`, `npm run test:e2e`). Endpoint map in `docs/API.md`. Payments run in mock mode until Razorpay keys are set.
+- **UI is built** (`web/`): landing, shop, product, custom work orders, cart/checkout, track, auth, account, admin, content pages. Runs on a mock data layer (`web/src/lib/api/*`, localStorage) by default; `NEXT_PUBLIC_USE_MOCK=false` sends each call to the real API instead (`web/src/lib/api/real/*`, `NEXT_PUBLIC_API_URL`). Several parts still import `lib/mock/catalog` directly (home, header and footer menus, category pages, product metadata, sitemap; see `TODOS.md`).
+- `api/` — NestJS + Prisma + Postgres backend, built with unit + e2e tests (`npm test`, `npm run test:e2e`). Endpoint map in `docs/API.md`. Online payment works in mock mode only: the API fakes it in development without Razorpay keys (in production without keys it is off), and the storefront's live Razorpay checkout isn't wired yet (`settlePayment` in `web/src/lib/api/http.ts` refuses with a 501).
 - **Placeholders are tagged**: `PLACEHOLDER(id)` in code, `data-placeholder` in the DOM (footer toggle shows them), full registry in `docs/PLACEHOLDERS.md`. Sample photos in `web/public/samples/` are not the maker's products. Keep registry up to date when adding any stand-in.
-- Still needed from the maker: logo files, real products/photos/prices, WhatsApp number, legal details, Razorpay/Cloudinary/Resend accounts.
+- Still needed from the maker: real products/photos/prices, WhatsApp number, legal details, Razorpay/Cloudinary/Resend accounts.
 
 ## Commands (web)
 
@@ -33,8 +36,10 @@ npm run dev        # http://localhost:3000
 npm run build
 npm run lint
 npm test           # unit (vitest): src/**/*.test.ts
-npm run test:e2e   # layout regressions in Chromium (Playwright): builds into .next-e2e, serves on :3310
+npm run test:e2e   # layout and accessibility regressions in Chromium (Playwright): builds into .next-e2e, serves on :3310
 ```
+
+`npm run build` writes `web/.next`. If a local `next start` is serving that folder, build into another one: `NEXT_DIST_DIR=.next-verify npx next build`.
 
 ## Commands (api)
 
@@ -51,7 +56,7 @@ This is NOT the Next.js in training data. Read `web/node_modules/next/dist/docs/
 
 ## Design rules
 
-Use the `impeccable` skill (craft-floor) + `emil-design-eng` for all UI work. Rose colour is reserved for the yarn thread and active state. No eyebrow labels, gradient text, emoji icons, or invented claims (reviews, counts). Logo is a placeholder component until the user supplies files.
+Use the `impeccable` skill (craft-floor) + `emil-design-eng` for all UI work. Rose colour is reserved for the yarn thread and active state. No eyebrow labels, gradient text, emoji icons, or invented claims (reviews, counts). The logo is the maker's own artwork (`web/public/brand/`, rendered by `LogoMark`).
 
 ## Skill routing
 

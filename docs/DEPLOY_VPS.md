@@ -1,6 +1,6 @@
 # Test deployment on the shared VPS
 
-Test site only: `http://<vps-ip>` (plain HTTP, no domain yet, `X-Robots-Tag: noindex`). Runs beside another live site on the same box without touching it. The real address, SSH user and host notes live in `docs/DEPLOY_VPS.local.md`, which is gitignored; keep them out of this public file.
+Test site only: `http://<vps-ip>` (plain HTTP, no domain yet, `X-Robots-Tag: noindex`). The real address, SSH user and host notes live in `docs/DEPLOY_VPS.local.md`, which is gitignored; keep them out of this public file.
 
 | Piece | Where |
 |---|---|

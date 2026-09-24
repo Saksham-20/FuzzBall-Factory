@@ -49,11 +49,11 @@ Work top to bottom. Each task has **Do**, **Files**, and **Done when**. Do not s
 ### 0.5 Already done (do NOT redo)
 - `web/` scaffolded (create-next-app, TS, Tailwind v4, ESLint, `src/`, alias `@/*`).
 - Dependencies installed: `motion gsap @gsap/react lenis clsx tailwind-merge class-variance-authority sonner lucide-react react-hook-form zod @hookform/resolvers @radix-ui/react-{dialog,dropdown-menu,tabs,accordion,select,popover,checkbox,radio-group,slot}`.
-- `web/src/app/globals.css` — full token set (colours, easing, shadows, utilities `.kraft`, `.perf-top`, `.press`, `.tabular`, `.font-display`, `.font-stencil`, marquee keyframes, reduced-motion). Keep and extend; do not replace.
+- `web/src/app/globals.css` — full token set (colours, easing, shadows, utilities `.kraft`, `.perforated`, `.press`, `.tabular`, `.font-display`, `.font-stencil`, marquee keyframes, reduced-motion). Keep and extend; do not replace.
 - `web/src/lib/types.ts` — all domain types (Product, Order, CustomRequest, Quote, etc.). Extend rather than duplicate.
 - `web/public/samples/*` — 19 openly-licensed placeholder crochet photos + `PROVENANCE.md`. These are NOT the maker's products.
 - `PRODUCT.md`, `docs/PLAN.md`, `docs/research-brief.md`, `.impeccable/surfaces/web-src-app-page-tsx.md`.
-- Still to delete: the default `web/src/app/page.tsx` content and `web/public/*.svg` Next demo icons (Task 1.1).
+- Since deleted (Task 1.1): the default `web/src/app/page.tsx` and the `web/public/*.svg` Next demo icons. The home page now lives at `web/src/app/(store)/page.tsx`.
 
 ---
 

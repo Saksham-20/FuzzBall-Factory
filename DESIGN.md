@@ -159,7 +159,7 @@ A warm, papery palette: ink and paper carry almost everything, butter is the one
 
 ### Tertiary
 - **Dusty Rose Thread** (`rose`): the yarn thread and yarn-ball glyphs.
-- **Deep Rose** (`rose-deep`): the live state. The station node the thread has reached, the live step on timelines, field focus borders, the focus ring on light grounds, the caret and native form accents.
+- **Deep Rose** (`rose-deep`): the live state. The station node the thread has reached, the live step on timelines, field focus borders, the focus ring on light grounds and the text caret.
 - **Rose Wash** (`rose-wash`): the halo around a live timeline step.
 
 ### Neutral
@@ -179,7 +179,7 @@ A warm, papery palette: ink and paper carry almost everything, butter is the one
 
 **The Loud Butter Rule.** Butter is the only loud colour. Keep it to small areas: tape, a chip, a badge, a selection.
 
-**The Ring Contrast Rule.** A focus ring keeps 3:1 against the surface it sits on: rose-deep on paper and cream, butter on cocoa (every cocoa surface sets `--focus-ring` to butter).
+**The Ring Contrast Rule.** A focus ring keeps 3:1 against the surface it sits on: rose-deep on paper and cream, butter on cocoa (every cocoa surface, from the footer to your own message bubbles, sets `--focus-ring` to butter).
 
 ## Typography
 
@@ -207,13 +207,13 @@ Headings balance their lines and paragraphs avoid orphans (`text-wrap: balance` 
 
 Content sits in a centred shell up to 1280px wide, with side gutters of 16px on phones, 32px from 768px and 48px from 1024px. On the home page a conveyor column is kept free on the left for the yarn thread: content that the thread runs past is indented 44px (104px from 768px), and numbered station nodes sit on the thread.
 
-Breakpoints are Tailwind's defaults (640, 768, 1024, 1280px) plus one of the project's own: station tickets pin while scrolling only on screens at least 1024px wide and 736px tall, so a shorter laptop scrolls them rather than pinning one half off screen. Hover effects apply only on devices that really hover.
+Breakpoints are Tailwind's defaults (640, 768, 1024, 1280px) plus one of the project's own: station tickets pin while scrolling only on screens at least 1024px wide and 736px tall, so a shorter laptop scrolls them rather than pinning one half off screen. Hover effects go behind the `hf:` variant, for devices that really hover; a few older ones (dialog close buttons, the admin sidebar, footer links) still apply on touch.
 
-The layout is mobile-first for mid-range Android phones and never scrolls sideways, down to 320px. Grids of product tickets run two-up on phones.
+The layout is mobile-first for mid-range Android phones. The home page never scrolls sideways down to 320px (the browser tests check it); four account pages still do on small phones (see `TODOS.md`). Grids of product tickets run two-up on phones.
 
 ## Elevation & Depth
 
-Paper objects on a table. Depth comes from two soft, warm shadows with real offset and blur, tinted with cocoa rather than grey. Tickets rest with a low shadow and lift when pointed at. Nothing glows. The one translucent surface is the sticky header, which frosts over the page once you scroll.
+Paper objects on a table. Depth comes from two soft, warm shadows with real offset and blur, tinted with cocoa rather than grey. Tickets rest with a low shadow and lift when pointed at. Nothing glows. The one translucent surface is the sticky header, which frosts over the page once you scroll; there are no glass cards or panels.
 
 ### Shadow Vocabulary
 - **Ticket** (`box-shadow: 0 1px 1px rgb(63 38 25 / 0.06), 0 6px 18px -6px rgb(63 38 25 / 0.22)`): tickets and secondary buttons at rest.
@@ -222,7 +222,7 @@ Paper objects on a table. Depth comes from two soft, warm shadows with real offs
 - **Scrolled header** (`box-shadow: 0 1px 0` in `line`): the hairline under the sticky header, with a medium backdrop blur over 92% cream.
 
 ### Named Rules
-**The Table Rule.** A surface either rests on the paper or lifts off it. No glow and no coloured halo.
+**The Table Rule.** A surface either rests on the paper or lifts off it, on a warm, offset shadow. Nothing glows.
 
 ## Shapes
 
@@ -266,7 +266,7 @@ Paper goods you could pick up off the workbench: tickets with punched holes, rub
 
 ### Navigation
 - **Header:** sticky; the logo on the left, the main links from 1024px, icon buttons on the right (a deep rose dot on the wishlist once something is saved). It frosts over the page once you scroll.
-- **Mobile menu:** full screen, with links set in the display face.
+- **Mobile menu:** a drawer from the left, up to 420px wide, over a 45% cocoa scrim, with links set in the display face.
 - **Footer:** the one cocoa band, with stencil column headings in kraft, kraft-light links, a butter WhatsApp chip and butter focus rings.
 
 ### Rubber Stamps
@@ -290,7 +290,7 @@ Entrances and UI use a strong ease-out (`cubic-bezier(0.23, 1, 0.32, 1)`), on-sc
 - **Do** keep small text on washes and butter at 4.5:1 or better (Ready to ship is `ok` #466e3d on `ok-wash`, 4.8:1).
 - **Do** set batch, order and work-order numbers in stencil labels with tabular numerals.
 - **Do** put hover effects only on devices that hover, and give every press a 0.97 scale.
-- **Do** give every looping motion a way to stop, and stop it under reduced motion.
+- **Do** give moving text a pause button (the tape has one), and stop every loop under reduced motion.
 - **Do** label sample photos and products as samples until the maker's own arrive.
 
 ### Don't:
