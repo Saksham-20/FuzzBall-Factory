@@ -12,9 +12,24 @@ interface Props extends ComponentPropsWithoutRef<"div"> {
   tone?: "kraft" | "paper";
 }
 
+/**
+ * How a head's two labels share its one line. When both can't fit, text gives way to an element
+ * (a badge stays whole), and between two text labels the right one is cut short. A lone label
+ * truncates. Nothing on the right means null, undefined, false or ""; 0 is a real label.
+ */
+export function headLayout(right: ReactNode) {
+  const hasRight = right != null && right !== false && right !== "";
+  const rightIsText = hasRight && (typeof right === "string" || typeof right === "number");
+  return {
+    hasRight,
+    left: rightIsText ? "shrink-0 whitespace-nowrap" : "min-w-0 truncate",
+    right: rightIsText ? "min-w-0 truncate" : "shrink-0",
+  };
+}
+
 /** Kraft job ticket: the container for products, work orders, quotes and orders. */
 export function Ticket({ head, compactHead, hole = true, tone = "kraft", className, children, ...rest }: Props) {
-  const rightIsText = typeof head?.[1] === "string" || typeof head?.[1] === "number";
+  const layout = headLayout(head?.[1]);
   return (
     <div
       className={cn(
@@ -28,8 +43,6 @@ export function Ticket({ head, compactHead, hole = true, tone = "kraft", classNa
     >
       {head ? (
         // One line, always: the head's height is fixed, so anything positioned below it stays put.
-        // Labels never break inside themselves. When both can't fit, text gives way to an element
-        // (a badge stays whole), and between two text labels the right one is cut short.
         <div
           data-ticket-head
           className={cn(
@@ -37,8 +50,8 @@ export function Ticket({ head, compactHead, hole = true, tone = "kraft", classNa
             compactHead ? "gap-2 text-[11px] sm:gap-3 sm:text-[12px]" : "gap-3 text-[12px]",
           )}
         >
-          <span className={rightIsText ? "shrink-0 whitespace-nowrap" : "min-w-0 truncate"}>{head[0]}</span>
-          {head[1] ? <span className={rightIsText ? "min-w-0 truncate" : "shrink-0"}>{head[1]}</span> : null}
+          <span className={layout.left}>{head[0]}</span>
+          {layout.hasRight ? <span className={layout.right}>{head[1]}</span> : null}
         </div>
       ) : null}
       {children}

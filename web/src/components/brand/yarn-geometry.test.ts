@@ -1,7 +1,18 @@
 import { describe, expect, it } from "vitest";
 import { AXES, WRAPS, band, range, strand, unit } from "./yarn-geometry";
 
-const numbersIn = (d: string) => (d.match(/-?\d+(?:\.\d+)?(?:e-?\d+)?/g) ?? []).map(Number);
+const C = 200;
+const R = 190;
+
+/** End points of the M and A commands in a path (with Z, the only commands these paths use). */
+const endpoints = (d: string) =>
+  [...d.matchAll(/[MA]([^MAZ]+)/g)].map((m) => m[1].trim().split(/[\s,]+/).map(Number).slice(-2) as [number, number]);
+
+/** End points of the arcs that run along the ball's own rim. */
+const rimEnds = (d: string) =>
+  [...d.matchAll(new RegExp(`A${R} ${R} 0 [01] [01] (-?[\\d.]+) (-?[\\d.]+)`, "g"))].map((m) => [Number(m[1]), Number(m[2])] as const);
+
+const fromCentre = ([x, y]: readonly [number, number]) => Math.hypot(x - C, y - C);
 
 describe("range", () => {
   it("spreads count values from one end to the other", () => {
@@ -48,18 +59,25 @@ describe("band", () => {
 
 describe("WRAPS", () => {
   for (const detail of ["full", "low"] as const) {
-    it(`${detail} detail: every path is finite and inside the ball's box`, () => {
+    it(`${detail} detail: every path is finite and stays on the ball`, () => {
       const paths = WRAPS[detail].layers.flatMap((l) => [l.shadow, l.fill, ...l.strands, ...l.highlights]);
       const drawn = paths.filter((d): d is string => Boolean(d));
       expect(drawn.length).toBeGreaterThan(0);
       for (const d of drawn) {
         expect(d).not.toMatch(/NaN|Infinity/);
-        for (const n of numbersIn(d)) expect(Math.abs(n)).toBeLessThanOrEqual(400);
+        // Rounded to 0.1, so allow half a unit past the rim.
+        for (const p of endpoints(d)) expect(fromCentre(p)).toBeLessThanOrEqual(R + 0.5);
       }
     });
 
-    it(`${detail} detail: every band has its shadow`, () => {
-      for (const l of WRAPS[detail].layers) if (l.fill) expect(l.shadow).toBeTruthy();
+    it(`${detail} detail: every band and its shadow close along the rim`, () => {
+      const bands = WRAPS[detail].layers.flatMap((l) => [l.fill, l.shadow]).filter((d): d is string => Boolean(d));
+      expect(bands.length).toBeGreaterThan(0);
+      for (const d of bands) {
+        const ends = rimEnds(d);
+        expect(ends).toHaveLength(2);
+        for (const p of ends) expect(Math.abs(fromCentre(p) - R)).toBeLessThan(0.2);
+      }
     });
   }
 });

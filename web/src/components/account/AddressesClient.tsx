@@ -77,7 +77,9 @@ export function AddressesClient() {
         ) : (
           <ul className="grid gap-5 md:grid-cols-2">
             {data.map((a) => (
-              <li key={a.id}>
+              // min-w-0: a grid item is otherwise as wide as its longest unbroken line, so a long label
+              // would stretch the card past the screen instead of truncating beside the badge.
+              <li key={a.id} className="min-w-0">
                 <Ticket head={[a.label, a.isDefault ? <Badge key="d" tone="ooak">Default</Badge> : undefined]} className="h-full px-4 pb-3">
                   <address className="font-stencil text-[13px] leading-relaxed not-italic">
                     {a.name}

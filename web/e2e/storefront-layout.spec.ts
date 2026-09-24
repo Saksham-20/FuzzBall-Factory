@@ -36,6 +36,37 @@ test.describe("ticket heads", () => {
   }
 });
 
+test.describe("address cards", () => {
+  test("a long name gives way to the Default badge at 320px", async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 800 });
+    // The mock data layer's sample customer.
+    await page.goto("/login");
+    await page.getByLabel("Email or phone").fill("maya@example.com");
+    await page.getByLabel("Password", { exact: true }).fill("fuzzball123");
+    await page.locator('button[type="submit"]').click();
+    await page.waitForURL((url) => !url.pathname.startsWith("/login"));
+
+    await page.goto("/account/addresses");
+    const card = page.locator("li", { has: page.getByText("Default", { exact: true }) });
+    await card.getByRole("button", { name: /^Edit/ }).click();
+    await page.getByLabel("Address name").fill("Grandma and Grandpa at Chennai"); // 30 characters, the form's limit
+    await page.getByRole("button", { name: "Save changes" }).click();
+
+    const head = card.locator("[data-ticket-head]");
+    await expect(head).toContainText("Grandma and Grandpa at Chennai");
+    const fit = await head.evaluate((el) => {
+      const [label, badge] = [...el.children] as HTMLElement[];
+      const ticket = el.parentElement!.getBoundingClientRect();
+      return {
+        labelCutShort: label.scrollWidth > label.clientWidth,
+        badgeWhole: badge.scrollWidth <= badge.clientWidth + 0.5 && badge.getBoundingClientRect().right <= ticket.right + 0.5,
+        sidewaysScroll: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      };
+    });
+    expect(fit).toEqual({ labelCutShort: true, badgeWhole: true, sidewaysScroll: 0 });
+  });
+});
+
 test.describe("hero", () => {
   for (const width of [320, 344, 360, 375, 390, 414]) {
     test(`batch ticket leaves the thread's loose end showing at ${width}px`, async ({ page }) => {
