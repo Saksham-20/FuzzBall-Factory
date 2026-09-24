@@ -71,7 +71,7 @@ export function FlyingBall({ flight, onDone }: { flight: Flight; onDone: () => v
       style={{ left: flight.from.x - SIZE / 2, top: flight.from.y - SIZE / 2 }}
     >
       <div ref={inner} style={{ width: SIZE, height: SIZE, opacity: 0 }}>
-        <YarnBall className="size-full" spin={false} />
+        <YarnBall className="size-full" spin={false} small />
       </div>
     </div>,
     document.body,

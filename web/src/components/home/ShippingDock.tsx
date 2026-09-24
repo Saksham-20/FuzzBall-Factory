@@ -35,8 +35,9 @@ export function ShippingDock() {
         </div>
 
         <Reveal as="div" delay={80} className="self-end">
-          {/* The tracking form as a parcel label: a paper tag with a tear line above the fields. */}
-          <Ticket tone="paper" head={["Shipping Dock", "Tracking"]} className="p-4 sm:p-5">
+          {/* The tracking form as a parcel label: a paper tag with a tear line above the fields. No stencil
+              head: stacked over the heading it read as an eyebrow, and it repeated the station's own name. */}
+          <Ticket tone="paper" className="p-4 pt-8 sm:p-5 sm:pt-9">
             <div className="px-1 pb-1">
               <h3 className="font-display text-[clamp(1.75rem,3vw,2.25rem)]">Already ordered? Track it.</h3>
               <form action="/track" method="get" className="mt-5 space-y-3 border-t-2 border-dashed border-line-strong pt-5">

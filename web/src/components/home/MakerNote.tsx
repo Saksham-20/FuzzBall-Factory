@@ -52,7 +52,7 @@ export function MakerNote() {
                   width={96}
                   height={96}
                   sizes="(min-width: 640px) 96px, 64px"
-                  className="absolute -right-2 -bottom-7 size-16 rotate-[10deg] object-contain drop-shadow-[0_4px_6px_rgb(63_38_25/0.22)] sm:-right-7 sm:-bottom-8 sm:size-24"
+                  className="absolute -right-2 -bottom-7 size-16 rotate-[10deg] object-contain drop-shadow-[0_4px_6px_rgb(63_38_25/0.22)] sm:size-24 md:-right-7 md:-bottom-8"
                 />
               </div>
             </Reveal>
