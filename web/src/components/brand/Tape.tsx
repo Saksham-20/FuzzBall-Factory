@@ -1,4 +1,5 @@
 import { cn } from "@/lib/cn";
+import { TapeToggle } from "@/components/brand/TapeToggle";
 
 /** Small yarn-ball glyph used as a separator. */
 function Glyph() {
@@ -13,10 +14,12 @@ function Glyph() {
 interface Props {
   items: readonly string[];
   className?: string;
+  /** The tape only decorates here: screen readers skip its words, and its pause button stays reachable. */
+  decorative?: boolean;
 }
 
-/** Butter marquee strip. Paused on hover; static under reduced motion. */
-export function Tape({ items, className }: Props) {
+/** Butter marquee strip. Holds still under the pointer, stops with its pause button, static under reduced motion. */
+export function Tape({ items, className, decorative = false }: Props) {
   const row = (hidden: boolean) => (
     <ul className="flex shrink-0 items-center gap-6 pr-6" aria-hidden={hidden || undefined}>
       {items.map((t) => (
@@ -29,9 +32,22 @@ export function Tape({ items, className }: Props) {
   );
   return (
     <div className={cn("overflow-hidden", className)}>
-      <div className="tape -mx-4 -rotate-[1.2deg] bg-butter py-2.5 text-cocoa shadow-[0_2px_0_rgb(63_38_25/0.08)]">
+      <div className="tape relative -mx-4 -rotate-[1.2deg] bg-butter py-2.5 text-cocoa shadow-[0_2px_0_rgb(63_38_25/0.08)]">
+        {/* The pause button rides the tape at the page's content edge, clear of the WhatsApp button on
+            the right, and the words slide under a butter patch around it. Gone where the tape can't move. */}
+        <div className="pointer-events-none absolute inset-y-0 right-4 left-4 z-10 motion-reduce:hidden">
+          <div className="shell flex h-full">
+            <div className="-ml-4 flex">
+              <span className="w-3 bg-linear-to-l from-butter" />
+              <span className="grid place-items-center bg-butter px-1">
+                <TapeToggle />
+              </span>
+              <span className="w-3 bg-linear-to-r from-butter" />
+            </div>
+          </div>
+        </div>
         <div className="tape-track flex w-max">
-          {row(false)}
+          {row(decorative)}
           {row(true)}
         </div>
       </div>

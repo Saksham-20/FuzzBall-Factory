@@ -34,8 +34,10 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
         </footer>
       </div>
 
-      <aside aria-hidden className="kraft relative hidden overflow-hidden lg:flex lg:flex-col lg:justify-between">
-        <div className="relative flex flex-1 items-center justify-center px-12 pt-16">
+      {/* Decoration only: hidden from screen readers piece by piece, not as a whole,
+          because the tape's pause button inside it has to stay reachable. */}
+      <div className="kraft relative hidden overflow-hidden lg:flex lg:flex-col lg:justify-between">
+        <div aria-hidden className="relative flex flex-1 items-center justify-center px-12 pt-16">
           <div className="relative w-[min(72%,26rem)]">
             <YarnBall className="w-full" />
             {/* the loose end of the thread, curling off the ball */}
@@ -44,12 +46,12 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
             </svg>
           </div>
         </div>
-        <div className="relative px-12 pb-10">
+        <div aria-hidden className="relative px-12 pb-10">
           <p className="font-display text-[clamp(2.5rem,4vw,3.75rem)]">Cozy crocheted goods</p>
           <p className="mt-3 max-w-[38ch] text-brown">Every piece is made by hand, so every order and work order has a status you can follow.</p>
         </div>
-        <Tape items={TAPE} className="pb-8" />
-      </aside>
+        <Tape items={TAPE} className="pb-8" decorative />
+      </div>
     </div>
   );
 }

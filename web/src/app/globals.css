@@ -305,7 +305,10 @@
 .tape-track {
   animation: tape 42s linear infinite;
 }
-.tape:hover .tape-track {
+/* Pointing at the words holds them still for reading. The pause button (TapeToggle) sits over
+   the track, not in it, so pointing at the button leaves the tape running and a press shows at once. */
+.tape-track:hover,
+.tape:has([data-tape-toggle][aria-pressed="true"]) .tape-track {
   animation-play-state: paused;
 }
 @keyframes sway {
