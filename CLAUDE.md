@@ -32,6 +32,8 @@ cd web
 npm run dev        # http://localhost:3000
 npm run build
 npm run lint
+npm test           # unit (vitest): src/**/*.test.ts
+npm run test:e2e   # layout regressions in Chromium (Playwright): builds into .next-e2e, serves on :3310
 ```
 
 ## Commands (api)

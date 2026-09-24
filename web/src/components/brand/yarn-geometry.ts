@@ -12,12 +12,12 @@ const R = 190;
 const C = 200;
 const f = (n: number) => Math.round(n * 10) / 10;
 
-const unit = (v: V3): V3 => {
+export const unit = (v: V3): V3 => {
   const l = Math.hypot(v[0], v[1], v[2]);
   return [v[0] / l, v[1] / l, v[2] / l];
 };
 
-const range = (from: number, to: number, count: number) =>
+export const range = (from: number, to: number, count: number) =>
   count === 1 ? [(from + to) / 2] : Array.from({ length: count }, (_, i) => from + ((to - from) * i) / (count - 1));
 
 interface Strand {
@@ -29,7 +29,7 @@ interface Strand {
 }
 
 /** The front-facing part of the circle at height `h` (fraction of R) around axis `n`. */
-function strand(n: V3, h: number, reverse = false): Strand | null {
+export function strand(n: V3, h: number, reverse = false): Strand | null {
   const [nx, ny, nz] = n;
   const L = Math.hypot(nx, ny);
   // An axis pointing straight at the viewer has no in-page direction to build the circle from.
@@ -69,7 +69,7 @@ function strand(n: V3, h: number, reverse = false): Strand | null {
 }
 
 /** The visible band |p·n| ≤ w as a closed shape: two strands joined along the rim. */
-function band(n: V3, w: number) {
+export function band(n: V3, w: number) {
   const top = strand(n, w);
   const bottom = strand(n, -w, true);
   // Both edges must cross the rim for the band to close along it. The axes and widths below all
@@ -101,7 +101,7 @@ export interface Wraps {
   highlight: number;
 }
 
-const AXES = {
+export const AXES = {
   base: unit([1, -1, 0.5]),
   cross: unit([-0.2, 0.9, 0.38]),
   top: unit([1, 1, 0.45]),

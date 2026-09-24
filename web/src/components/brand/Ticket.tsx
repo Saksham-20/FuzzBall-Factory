@@ -31,6 +31,7 @@ export function Ticket({ head, compactHead, hole = true, tone = "kraft", classNa
         // Labels never break inside themselves. When both can't fit, text gives way to an element
         // (a badge stays whole), and between two text labels the right one is cut short.
         <div
+          data-ticket-head
           className={cn(
             "font-stencil tabular mb-2 flex items-center justify-between px-1 pt-3 text-brown",
             compactHead ? "gap-2 text-[11px] sm:gap-3 sm:text-[12px]" : "gap-3 text-[12px]",

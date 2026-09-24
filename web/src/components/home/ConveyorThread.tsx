@@ -264,7 +264,7 @@ export function ConveyorThread() {
         <path ref={ghost} stroke="#a8804f" strokeOpacity="0.5" strokeWidth="2.5" strokeLinecap="round" strokeDasharray="1 11" />
         {/* paper halo keeps the thread legible on kraft and cream alike */}
         <path ref={halo} stroke="#fcf8f2" strokeOpacity="0.9" strokeLinecap="round" strokeLinejoin="round" />
-        <path ref={line} stroke="#c98586" strokeLinecap="round" strokeLinejoin="round" />
+        <path ref={line} data-thread-line stroke="#c98586" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
       <div ref={hook} className="absolute top-0 left-0 opacity-0 will-change-transform">
         <CrochetHook className="size-full drop-shadow-[0_3px_3px_rgb(63_38_25/0.25)]" />
