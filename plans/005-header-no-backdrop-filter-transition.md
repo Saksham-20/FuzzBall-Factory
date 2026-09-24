@@ -1,7 +1,7 @@
 # 005 — Header: stop animating `backdrop-filter`
 
 - **Status**: TODO
-- **Commit**: 7cc98fe
+- **Commit**: 0444be5
 - **Severity**: LOW
 - **Category**: Performance
 - **Estimated scope**: 1 file, 1 line
@@ -41,7 +41,7 @@ The blur applies instantly; the background colour and the 1px shadow still ease 
 ## Boundaries
 
 - Do NOT change `backdrop-blur-md`, the colours, the 8px threshold or the `useSyncExternalStore` logic.
-- If the line has drifted, STOP and report.
+- If the quoted line has drifted (not just its line number), STOP and report.
 
 ## Verification
 

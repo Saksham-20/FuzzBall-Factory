@@ -1,7 +1,7 @@
 # 001 — Stop `.press` from swallowing every hover transition
 
 - **Status**: TODO
-- **Commit**: 7cc98fe
+- **Commit**: 0444be5
 - **Severity**: MEDIUM (site-wide, one-line fix, highest leverage)
 - **Category**: Easing & duration (declared transitions never run)
 - **Estimated scope**: 1 file, 3 lines
@@ -11,7 +11,7 @@
 `.press` is the shared press-feedback utility (scale on `:active`). It is declared with the `transition` **shorthand**, and it sits later in the utilities layer than Tailwind's generated classes, so it wins the cascade and resets `transition-property` to `transform` only:
 
 ```css
-/* web/src/app/globals.css:158 — current */
+/* web/src/app/globals.css:161 — current */
   .press {
     transition: transform 160ms var(--ease-out);
   }
@@ -60,14 +60,14 @@ className="press transition-[transform,box-shadow] duration-150 ease-out ..."
 
 ## Steps
 
-1. In `web/src/app/globals.css`, replace the single line `transition: transform 160ms var(--ease-out);` inside `.press { ... }` (line 159) with the three lines from **Target**. Leave `.press:active` untouched.
+1. In `web/src/app/globals.css`, replace the single line `transition: transform 160ms var(--ease-out);` inside `.press { ... }` (currently line 162) with the three lines from **Target**. Leave `.press:active` untouched.
 
 ## Boundaries
 
 - Do NOT edit any component's `transition-*` classes; they become harmless.
 - Do NOT move `.press` out of `@layer utilities`, and do not convert it to `@utility`.
 - Do NOT add `opacity` or `all` to the property list.
-- If line 159 does not read exactly as quoted, STOP and report.
+- If the `.press` block does not read exactly as quoted in **Problem**, STOP and report. Line numbers are hints; the quoted code is the anchor.
 
 ## Verification
 
