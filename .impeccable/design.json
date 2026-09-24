@@ -1,0 +1,548 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-24T17:12:28Z",
+  "title": "Design System: FuzzBall Factory",
+  "extensions": {
+    "colorMeta": {
+      "cocoa": {
+        "role": "primary",
+        "displayName": "Cocoa Ink",
+        "canonical": "oklch(29.7% 0.044 48.0)",
+        "tonalRamp": [
+          "oklch(15.0% 0.042 48.0)",
+          "oklch(27.0% 0.044 48.0)",
+          "oklch(39.0% 0.044 48.0)",
+          "oklch(51.0% 0.044 48.0)",
+          "oklch(63.0% 0.044 48.0)",
+          "oklch(75.0% 0.044 48.0)",
+          "oklch(86.0% 0.044 48.0)",
+          "oklch(95.0% 0.026 48.0)"
+        ]
+      },
+      "butter": {
+        "role": "secondary",
+        "displayName": "Butter Tape",
+        "canonical": "oklch(86.0% 0.145 91.3)",
+        "tonalRamp": [
+          "oklch(15.0% 0.031 91.3)",
+          "oklch(27.0% 0.055 91.3)",
+          "oklch(39.0% 0.079 91.3)",
+          "oklch(51.0% 0.103 91.3)",
+          "oklch(63.0% 0.129 91.3)",
+          "oklch(75.0% 0.145 91.3)",
+          "oklch(86.0% 0.145 91.3)",
+          "oklch(95.0% 0.067 91.3)"
+        ]
+      },
+      "butter-deep": {
+        "role": "secondary",
+        "displayName": "Deep Butter",
+        "canonical": "oklch(76.2% 0.149 88.1)",
+        "tonalRamp": [
+          "oklch(15.0% 0.031 88.1)",
+          "oklch(27.0% 0.055 88.1)",
+          "oklch(39.0% 0.079 88.1)",
+          "oklch(51.0% 0.103 88.1)",
+          "oklch(63.0% 0.127 88.1)",
+          "oklch(75.0% 0.149 88.1)",
+          "oklch(86.0% 0.149 88.1)",
+          "oklch(95.0% 0.057 88.1)"
+        ]
+      },
+      "rose": {
+        "role": "tertiary",
+        "displayName": "Dusty Rose Thread",
+        "canonical": "oklch(68.6% 0.084 18.5)",
+        "tonalRamp": [
+          "oklch(15.0% 0.060 18.5)",
+          "oklch(27.0% 0.084 18.5)",
+          "oklch(39.0% 0.084 18.5)",
+          "oklch(51.0% 0.084 18.5)",
+          "oklch(63.0% 0.084 18.5)",
+          "oklch(75.0% 0.084 18.5)",
+          "oklch(86.0% 0.074 18.5)",
+          "oklch(95.0% 0.024 18.5)"
+        ]
+      },
+      "rose-deep": {
+        "role": "tertiary",
+        "displayName": "Deep Rose",
+        "canonical": "oklch(52.3% 0.102 16.4)",
+        "tonalRamp": [
+          "oklch(15.0% 0.060 16.4)",
+          "oklch(27.0% 0.102 16.4)",
+          "oklch(39.0% 0.102 16.4)",
+          "oklch(51.0% 0.102 16.4)",
+          "oklch(63.0% 0.102 16.4)",
+          "oklch(75.0% 0.102 16.4)",
+          "oklch(86.0% 0.074 16.4)",
+          "oklch(95.0% 0.024 16.4)"
+        ]
+      },
+      "rose-wash": {
+        "role": "tertiary",
+        "displayName": "Rose Wash",
+        "canonical": "oklch(91.2% 0.026 29.4)",
+        "tonalRamp": [
+          "oklch(15.0% 0.026 29.4)",
+          "oklch(27.0% 0.026 29.4)",
+          "oklch(39.0% 0.026 29.4)",
+          "oklch(51.0% 0.026 29.4)",
+          "oklch(63.0% 0.026 29.4)",
+          "oklch(75.0% 0.026 29.4)",
+          "oklch(86.0% 0.026 29.4)",
+          "oklch(95.0% 0.024 29.4)"
+        ]
+      },
+      "cream": {
+        "role": "neutral",
+        "displayName": "Cream Paper",
+        "canonical": "oklch(95.2% 0.017 76.1)",
+        "tonalRamp": [
+          "oklch(15.0% 0.017 76.1)",
+          "oklch(27.0% 0.017 76.1)",
+          "oklch(39.0% 0.017 76.1)",
+          "oklch(51.0% 0.017 76.1)",
+          "oklch(63.0% 0.017 76.1)",
+          "oklch(75.0% 0.017 76.1)",
+          "oklch(86.0% 0.017 76.1)",
+          "oklch(95.0% 0.017 76.1)"
+        ]
+      },
+      "paper": {
+        "role": "neutral",
+        "displayName": "Paper",
+        "canonical": "oklch(98.1% 0.009 78.3)",
+        "tonalRamp": [
+          "oklch(15.0% 0.009 78.3)",
+          "oklch(27.0% 0.009 78.3)",
+          "oklch(39.0% 0.009 78.3)",
+          "oklch(51.0% 0.009 78.3)",
+          "oklch(63.0% 0.009 78.3)",
+          "oklch(75.0% 0.009 78.3)",
+          "oklch(86.0% 0.009 78.3)",
+          "oklch(95.0% 0.009 78.3)"
+        ]
+      },
+      "kraft-light": {
+        "role": "neutral",
+        "displayName": "Kraft Ticket (light)",
+        "canonical": "oklch(87.6% 0.047 77.6)",
+        "tonalRamp": [
+          "oklch(15.0% 0.031 77.6)",
+          "oklch(27.0% 0.047 77.6)",
+          "oklch(39.0% 0.047 77.6)",
+          "oklch(51.0% 0.047 77.6)",
+          "oklch(63.0% 0.047 77.6)",
+          "oklch(75.0% 0.047 77.6)",
+          "oklch(86.0% 0.047 77.6)",
+          "oklch(95.0% 0.041 77.6)"
+        ]
+      },
+      "kraft": {
+        "role": "neutral",
+        "displayName": "Kraft Ticket",
+        "canonical": "oklch(77.4% 0.075 71.7)",
+        "tonalRamp": [
+          "oklch(15.0% 0.033 71.7)",
+          "oklch(27.0% 0.057 71.7)",
+          "oklch(39.0% 0.075 71.7)",
+          "oklch(51.0% 0.075 71.7)",
+          "oklch(63.0% 0.075 71.7)",
+          "oklch(75.0% 0.075 71.7)",
+          "oklch(86.0% 0.075 71.7)",
+          "oklch(95.0% 0.037 71.7)"
+        ]
+      },
+      "kraft-deep": {
+        "role": "neutral",
+        "displayName": "Kraft Ticket (deep)",
+        "canonical": "oklch(62.8% 0.082 71.0)",
+        "tonalRamp": [
+          "oklch(15.0% 0.032 71.0)",
+          "oklch(27.0% 0.058 71.0)",
+          "oklch(39.0% 0.082 71.0)",
+          "oklch(51.0% 0.082 71.0)",
+          "oklch(63.0% 0.082 71.0)",
+          "oklch(75.0% 0.082 71.0)",
+          "oklch(86.0% 0.082 71.0)",
+          "oklch(95.0% 0.036 71.0)"
+        ]
+      },
+      "brown": {
+        "role": "neutral",
+        "displayName": "Brown",
+        "canonical": "oklch(42.1% 0.069 52.2)",
+        "tonalRamp": [
+          "oklch(15.0% 0.039 52.2)",
+          "oklch(27.0% 0.069 52.2)",
+          "oklch(39.0% 0.069 52.2)",
+          "oklch(51.0% 0.069 52.2)",
+          "oklch(63.0% 0.069 52.2)",
+          "oklch(75.0% 0.069 52.2)",
+          "oklch(86.0% 0.069 52.2)",
+          "oklch(95.0% 0.027 52.2)"
+        ]
+      },
+      "brown-soft": {
+        "role": "neutral",
+        "displayName": "Soft Brown",
+        "canonical": "oklch(53.2% 0.064 52.9)",
+        "tonalRamp": [
+          "oklch(15.0% 0.038 52.9)",
+          "oklch(27.0% 0.064 52.9)",
+          "oklch(39.0% 0.064 52.9)",
+          "oklch(51.0% 0.064 52.9)",
+          "oklch(63.0% 0.064 52.9)",
+          "oklch(75.0% 0.064 52.9)",
+          "oklch(86.0% 0.064 52.9)",
+          "oklch(95.0% 0.028 52.9)"
+        ]
+      },
+      "ok": {
+        "role": "status",
+        "displayName": "Ready Green",
+        "canonical": "oklch(49.5% 0.087 139.9)",
+        "tonalRamp": [
+          "oklch(15.0% 0.049 139.9)",
+          "oklch(27.0% 0.085 139.9)",
+          "oklch(39.0% 0.087 139.9)",
+          "oklch(51.0% 0.087 139.9)",
+          "oklch(63.0% 0.087 139.9)",
+          "oklch(75.0% 0.087 139.9)",
+          "oklch(86.0% 0.087 139.9)",
+          "oklch(95.0% 0.087 139.9)"
+        ]
+      },
+      "ok-wash": {
+        "role": "status",
+        "displayName": "Ready Green Wash",
+        "canonical": "oklch(92.9% 0.032 128.8)",
+        "tonalRamp": [
+          "oklch(15.0% 0.032 128.8)",
+          "oklch(27.0% 0.032 128.8)",
+          "oklch(39.0% 0.032 128.8)",
+          "oklch(51.0% 0.032 128.8)",
+          "oklch(63.0% 0.032 128.8)",
+          "oklch(75.0% 0.032 128.8)",
+          "oklch(86.0% 0.032 128.8)",
+          "oklch(95.0% 0.032 128.8)"
+        ]
+      },
+      "warn": {
+        "role": "status",
+        "displayName": "Workshop Amber",
+        "canonical": "oklch(51.4% 0.106 75.2)",
+        "tonalRamp": [
+          "oklch(15.0% 0.032 75.2)",
+          "oklch(27.0% 0.056 75.2)",
+          "oklch(39.0% 0.082 75.2)",
+          "oklch(51.0% 0.106 75.2)",
+          "oklch(63.0% 0.106 75.2)",
+          "oklch(75.0% 0.106 75.2)",
+          "oklch(86.0% 0.106 75.2)",
+          "oklch(95.0% 0.040 75.2)"
+        ]
+      },
+      "warn-wash": {
+        "role": "status",
+        "displayName": "Workshop Amber Wash",
+        "canonical": "oklch(94.6% 0.046 87.8)",
+        "tonalRamp": [
+          "oklch(15.0% 0.032 87.8)",
+          "oklch(27.0% 0.046 87.8)",
+          "oklch(39.0% 0.046 87.8)",
+          "oklch(51.0% 0.046 87.8)",
+          "oklch(63.0% 0.046 87.8)",
+          "oklch(75.0% 0.046 87.8)",
+          "oklch(86.0% 0.046 87.8)",
+          "oklch(95.0% 0.046 87.8)"
+        ]
+      },
+      "err": {
+        "role": "status",
+        "displayName": "Stamp Red",
+        "canonical": "oklch(49.5% 0.155 26.9)",
+        "tonalRamp": [
+          "oklch(15.0% 0.061 26.9)",
+          "oklch(27.0% 0.109 26.9)",
+          "oklch(39.0% 0.155 26.9)",
+          "oklch(51.0% 0.155 26.9)",
+          "oklch(63.0% 0.155 26.9)",
+          "oklch(75.0% 0.149 26.9)",
+          "oklch(86.0% 0.075 26.9)",
+          "oklch(95.0% 0.023 26.9)"
+        ]
+      },
+      "err-wash": {
+        "role": "status",
+        "displayName": "Stamp Red Wash",
+        "canonical": "oklch(91.6% 0.031 27.8)",
+        "tonalRamp": [
+          "oklch(15.0% 0.031 27.8)",
+          "oklch(27.0% 0.031 27.8)",
+          "oklch(39.0% 0.031 27.8)",
+          "oklch(51.0% 0.031 27.8)",
+          "oklch(63.0% 0.031 27.8)",
+          "oklch(75.0% 0.031 27.8)",
+          "oklch(86.0% 0.031 27.8)",
+          "oklch(95.0% 0.025 27.8)"
+        ]
+      },
+      "line": {
+        "role": "neutral",
+        "displayName": "Line",
+        "canonical": "color-mix(in oklab, #6b4228 18%, transparent)"
+      },
+      "line-strong": {
+        "role": "neutral",
+        "displayName": "Strong Line",
+        "canonical": "color-mix(in oklab, #6b4228 34%, transparent)"
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "The hero line; the shelf's cropped category words go larger."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Section headings, in the display face."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Product names on tickets."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Reading copy at 16px; 15px in dense lists."
+      },
+      "label": {
+        "displayName": "Stencil Label",
+        "purpose": "Signage only: ticket heads, station tags, badges, batch and order numbers."
+      }
+    },
+    "shadows": [
+      {
+        "name": "ticket",
+        "value": "0 1px 1px rgb(63 38 25 / 0.06), 0 6px 18px -6px rgb(63 38 25 / 0.22)",
+        "purpose": "Tickets and secondary buttons at rest."
+      },
+      {
+        "name": "lift",
+        "value": "0 2px 2px rgb(63 38 25 / 0.06), 0 18px 36px -14px rgb(63 38 25 / 0.32)",
+        "purpose": "Pointed-at tickets and buttons, the WhatsApp button, drawers, dialogs, menus, admin action bars."
+      },
+      {
+        "name": "tape-edge",
+        "value": "0 2px 0 rgb(63 38 25 / 0.08)",
+        "purpose": "The thin edge under the tape strip."
+      },
+      {
+        "name": "header-hairline",
+        "value": "0 1px 0 color-mix(in oklab, #6b4228 18%, transparent)",
+        "purpose": "Under the sticky header once the page scrolls, with a medium backdrop blur."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-out",
+        "value": "cubic-bezier(0.23, 1, 0.32, 1)",
+        "purpose": "Entrances, reveals, presses and UI state changes."
+      },
+      {
+        "name": "ease-in-out",
+        "value": "cubic-bezier(0.77, 0, 0.175, 1)",
+        "purpose": "On-screen movement, like the yarn ball's sway."
+      },
+      {
+        "name": "ease-drawer",
+        "value": "cubic-bezier(0.32, 0.72, 0, 1)",
+        "purpose": "Drawers and sheets."
+      },
+      {
+        "name": "press",
+        "value": "transform 160ms ease-out, scale(0.97) on :active",
+        "purpose": "Feedback on everything pressable."
+      },
+      {
+        "name": "reveal",
+        "value": "opacity 600ms, transform 700ms (from translateY(16px))",
+        "purpose": "Blocks entering once on scroll."
+      },
+      {
+        "name": "hero-rise",
+        "value": "700ms, 70ms stagger",
+        "purpose": "Hero lines rising in turn on load."
+      },
+      {
+        "name": "ticket-swing",
+        "value": "1500ms cubic-bezier(0.37, 0, 0.63, 1)",
+        "purpose": "The batch ticket swinging from its hole, then settling."
+      },
+      {
+        "name": "tape",
+        "value": "42s linear infinite",
+        "purpose": "The tape marquee; holds under the pointer, stops with its pause button."
+      },
+      {
+        "name": "sway",
+        "value": "9s ease-in-out infinite",
+        "purpose": "The yarn ball's wraps rocking."
+      },
+      {
+        "name": "thread-march",
+        "value": "1.4s linear infinite",
+        "purpose": "The marching dash of an in-progress timeline step."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "sm",
+        "value": "640px"
+      },
+      {
+        "name": "md",
+        "value": "768px"
+      },
+      {
+        "name": "lg",
+        "value": "1024px"
+      },
+      {
+        "name": "xl",
+        "value": "1280px"
+      },
+      {
+        "name": "lg-tall",
+        "value": "(min-width: 1024px) and (min-height: 736px)"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The main action on a page: Shop the shelf, Place order.",
+      "html": "<button class=\"ds-btn-primary\">Shop the shelf</button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 44px; padding: 0 24px; border: 0; border-radius: 9999px; font: 600 15px/1 var(--font-sans, Figtree, ui-sans-serif, system-ui, sans-serif); white-space: nowrap; cursor: pointer; transition: background-color 150ms cubic-bezier(0.23, 1, 0.32, 1), box-shadow 150ms cubic-bezier(0.23, 1, 0.32, 1), transform 160ms cubic-bezier(0.23, 1, 0.32, 1); background: var(--color-cocoa, #3f2619); color: var(--color-cream, #f6eee3); } @media (hover: hover) and (pointer: fine) { .ds-btn-primary:hover { background: var(--color-brown, #6b4228); } } .ds-btn-primary:active { transform: scale(0.97); } .ds-btn-primary:focus-visible { outline: 2.5px solid var(--color-rose-deep, #9c4f55); outline-offset: 3px; }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "The second action beside a primary one, on a paper chip that lifts.",
+      "html": "<button class=\"ds-btn-secondary\">Start a work order</button>",
+      "css": ".ds-btn-secondary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 44px; padding: 0 24px; border: 0; border-radius: 9999px; font: 600 15px/1 var(--font-sans, Figtree, ui-sans-serif, system-ui, sans-serif); white-space: nowrap; cursor: pointer; transition: background-color 150ms cubic-bezier(0.23, 1, 0.32, 1), box-shadow 150ms cubic-bezier(0.23, 1, 0.32, 1), transform 160ms cubic-bezier(0.23, 1, 0.32, 1); background: var(--color-paper, #fcf8f2); color: var(--color-cocoa, #3f2619); box-shadow: 0 1px 1px rgb(63 38 25 / 0.06), 0 6px 18px -6px rgb(63 38 25 / 0.22); } @media (hover: hover) and (pointer: fine) { .ds-btn-secondary:hover { box-shadow: 0 2px 2px rgb(63 38 25 / 0.06), 0 18px 36px -14px rgb(63 38 25 / 0.32); } } .ds-btn-secondary:active { transform: scale(0.97); } .ds-btn-secondary:focus-visible { outline: 2.5px solid var(--color-rose-deep, #9c4f55); outline-offset: 3px; }"
+    },
+    {
+      "name": "Tape Button",
+      "kind": "button",
+      "refersTo": "button-tape",
+      "description": "Butter action for a loud, small call: the WhatsApp chip, Publish in admin.",
+      "html": "<button class=\"ds-btn-tape\">Chat on WhatsApp</button>",
+      "css": ".ds-btn-tape { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 44px; padding: 0 24px; border: 0; border-radius: 9999px; font: 600 15px/1 var(--font-sans, Figtree, ui-sans-serif, system-ui, sans-serif); white-space: nowrap; cursor: pointer; transition: background-color 150ms cubic-bezier(0.23, 1, 0.32, 1), box-shadow 150ms cubic-bezier(0.23, 1, 0.32, 1), transform 160ms cubic-bezier(0.23, 1, 0.32, 1); background: var(--color-butter, #f4cd52); color: var(--color-cocoa, #3f2619); } @media (hover: hover) and (pointer: fine) { .ds-btn-tape:hover { background: var(--color-butter-deep, #d9ab1f); } } .ds-btn-tape:active { transform: scale(0.97); } .ds-btn-tape:focus-visible { outline: 2.5px solid var(--color-rose-deep, #9c4f55); outline-offset: 3px; }"
+    },
+    {
+      "name": "Text Field",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Labelled paper field; the border turns deep rose on focus.",
+      "html": "<label class=\"ds-field\"><span class=\"ds-field-label\">Order number</span><input class=\"ds-input\" placeholder=\"FB-1023\" /></label>",
+      "css": ".ds-field { display: grid; gap: 6px; font-family: var(--font-sans, Figtree, ui-sans-serif, system-ui, sans-serif); color: var(--color-cocoa, #3f2619); } .ds-field-label { font-size: 14px; font-weight: 600; } .ds-input { height: 48px; padding: 0 16px; border: 1.5px solid color-mix(in oklab, #6b4228 34%, transparent); border-radius: 12px; background: var(--color-paper, #fcf8f2); color: inherit; font: 400 16px/1.5 var(--font-sans, Figtree, ui-sans-serif, system-ui, sans-serif); transition: border-color 150ms cubic-bezier(0.23, 1, 0.32, 1); } .ds-input::placeholder { color: color-mix(in oklab, var(--color-brown-soft, #8a6249) 80%, transparent); } .ds-input:focus-visible { outline: none; border-color: var(--color-rose-deep, #9c4f55); }"
+    },
+    {
+      "name": "Job Ticket",
+      "kind": "card",
+      "refersTo": "ticket",
+      "description": "The kraft ticket every product and order sits on: punched hole, stencil head, soft shadow.",
+      "html": "<article class=\"ds-ticket\"><div class=\"ds-ticket-head\"><span>Batch #014</span><span class=\"ds-badge-ready\">Ready to ship</span></div><p class=\"ds-ticket-title\">Sample plushie</p><p class=\"ds-ticket-meta\">Cotton · 18 cm</p></article>",
+      "css": ".ds-ticket { position: relative; width: 220px; padding: 10px; border-radius: 14px; background-color: var(--color-kraft-light, #e8d3b4); background-image: radial-gradient(120% 80% at 12% 0%, rgb(255 255 255 / 0.35), transparent 60%), radial-gradient(90% 90% at 100% 100%, rgb(168 128 79 / 0.18), transparent 60%); box-shadow: 0 1px 1px rgb(63 38 25 / 0.06), 0 6px 18px -6px rgb(63 38 25 / 0.22); color: var(--color-cocoa, #3f2619); font-family: var(--font-sans, Figtree, ui-sans-serif, system-ui, sans-serif); transition: transform 200ms ease-out, box-shadow 200ms ease-out; } .ds-ticket::before { content: ''; position: absolute; top: 7px; left: 50%; width: 8px; height: 8px; border-radius: 50%; transform: translateX(-50%); background: var(--color-cream, #f6eee3); box-shadow: inset 0 1px 1px rgb(63 38 25 / 0.3); } @media (hover: hover) and (pointer: fine) { .ds-ticket:hover { transform: translateY(-4px) rotate(-0.6deg); box-shadow: 0 2px 2px rgb(63 38 25 / 0.06), 0 18px 36px -14px rgb(63 38 25 / 0.32); } } .ds-ticket-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 4px 0; margin-bottom: 8px; font: 800 12px/1 var(--font-stencil, 'Big Shoulders Stencil', Figtree, ui-sans-serif, sans-serif); letter-spacing: 0.07em; text-transform: uppercase; font-variant-numeric: tabular-nums; color: var(--color-brown, #6b4228); white-space: nowrap; } .ds-ticket-title { margin: 0; padding: 0 4px; font-size: 1.0625rem; font-weight: 700; line-height: 1.375; letter-spacing: -0.01em; } .ds-ticket-meta { margin: 4px 0 0; padding: 0 4px 6px; font-size: 14px; color: var(--color-brown, #6b4228); } .ds-badge-ready { display: inline-flex; align-items: center; padding: 4px 10px; border-radius: 9999px; background: var(--color-ok-wash, #e1ecd6); color: var(--color-ok, #466e3d); font: 800 11px/1 var(--font-stencil, 'Big Shoulders Stencil', Figtree, ui-sans-serif, sans-serif); letter-spacing: 0.07em; }"
+    },
+    {
+      "name": "Ready Badge",
+      "kind": "chip",
+      "refersTo": "badge-ready",
+      "description": "Fulfilment badge on product photos: 11px stencil on a wash, 4.8:1.",
+      "html": "<span class=\"ds-badge ds-badge-ok\">Ready to ship</span> <span class=\"ds-badge ds-badge-warn\">Made to order · 7 days</span> <span class=\"ds-badge ds-badge-butter\">One of one</span>",
+      "css": ".ds-badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 9999px; font: 800 11px/1 var(--font-stencil, 'Big Shoulders Stencil', Figtree, ui-sans-serif, sans-serif); letter-spacing: 0.07em; text-transform: uppercase; font-variant-numeric: tabular-nums; } .ds-badge-ok { background: var(--color-ok-wash, #e1ecd6); color: var(--color-ok, #466e3d); } .ds-badge-warn { background: var(--color-warn-wash, #faeccb); color: var(--color-warn, #8a5d08); } .ds-badge-butter { background: var(--color-butter, #f4cd52); color: var(--color-cocoa, #3f2619); }"
+    },
+    {
+      "name": "Status Stamp",
+      "kind": "custom",
+      "description": "Rubber-stamp status: stencil label, double rule, multiply ink, tilted. Shape varies by status family.",
+      "html": "<span class=\"ds-stamp ds-stamp-ok\" role=\"img\" aria-label=\"Ready to ship\">Ready to ship</span> <span class=\"ds-stamp ds-stamp-err ds-stamp-ticket\" role=\"img\" aria-label=\"Declined\">Declined</span>",
+      "css": ".ds-stamp { display: inline-flex; align-items: center; justify-content: center; padding: 6px 12px; border: 2px solid currentColor; border-radius: 6px; outline: 1.5px solid currentColor; outline-offset: -5px; font: 800 13px/1 var(--font-stencil, 'Big Shoulders Stencil', Figtree, ui-sans-serif, sans-serif); letter-spacing: 0.07em; text-transform: uppercase; mix-blend-mode: multiply; transform: rotate(-4deg); } .ds-stamp-ok { color: var(--color-ok, #466e3d); } .ds-stamp-err { color: var(--color-err, #a8322d); } .ds-stamp-ticket { border-style: dashed; border-radius: 4px; outline: none; }"
+    },
+    {
+      "name": "Tape Pause Button",
+      "kind": "custom",
+      "refersTo": "tape-toggle",
+      "description": "Stops the tape marquee; rides the strip at the left content edge. Hidden under reduced motion.",
+      "html": "<div class=\"ds-tape\"><button class=\"ds-tape-toggle\" aria-pressed=\"false\" aria-label=\"Pause scrolling text\"><svg viewBox=\"0 0 12 12\" width=\"12\" height=\"12\" fill=\"currentColor\" aria-hidden=\"true\"><rect x=\"2.5\" y=\"2\" width=\"2.6\" height=\"8\" rx=\"0.9\"/><rect x=\"6.9\" y=\"2\" width=\"2.6\" height=\"8\" rx=\"0.9\"/></svg></button><span class=\"ds-tape-words\">Ready to ship &amp; made to order</span></div>",
+      "css": ".ds-tape { display: flex; align-items: center; gap: 16px; width: 360px; padding: 10px 16px; background: var(--color-butter, #f4cd52); color: var(--color-cocoa, #3f2619); transform: rotate(-1.2deg); box-shadow: 0 2px 0 rgb(63 38 25 / 0.08); } .ds-tape-words { font: 800 15px/1.5 var(--font-stencil, 'Big Shoulders Stencil', Figtree, ui-sans-serif, sans-serif); letter-spacing: 0.07em; text-transform: uppercase; white-space: nowrap; } .ds-tape-toggle { display: grid; place-items: center; width: 24px; height: 24px; padding: 0; border: 0; border-radius: 9999px; background: var(--color-cocoa, #3f2619); color: var(--color-butter, #f4cd52); cursor: pointer; transition: background-color 150ms cubic-bezier(0.23, 1, 0.32, 1), transform 160ms cubic-bezier(0.23, 1, 0.32, 1); } @media (hover: hover) and (pointer: fine) { .ds-tape-toggle:hover { background: var(--color-brown, #6b4228); } } .ds-tape-toggle:active { transform: scale(0.97); } .ds-tape-toggle:focus-visible { outline: 2.5px solid var(--color-rose-deep, #9c4f55); outline-offset: 3px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Factory Floor",
+    "overview": "The store takes its name literally: a tiny, cozy factory where yarn goes in and fuzzballs come out, and the production line is the order status. Every surface is a material from that floor. Cream paper is the ground, cocoa is the ink, job tickets are kraft with a punched hole, statuses are rubber stamps, and butter tape holds things down. One live thing moves through it all: the dusty rose yarn thread, which leaves the hero's yarn ball and runs down the page through numbered stations.\n\nDensity follows the job. The home page persuades, with big display type, giant cropped category words and room around each station. Shop, checkout, account and admin work in tighter layouts inside the same world, where the brand lives in the details: stencil labels, batch numbers, stamps and tickets rather than decoration. The world is a pastel boutique's opposite: no photo carousel, no row of category circles, no testimonial slider.\n\nEverything is made by one pair of hands, and the system is built to say so honestly. Lead times, sizes and fibres sit on the tickets. Sample content is labelled as sample, and nothing invents reviews, counts or press.",
+    "keyCharacteristics": [
+      "Paper goods on a workbench: kraft tickets, rubber stamps, butter tape, a yarn ball.",
+      "One rose thread, the only live colour, carries the eye down the page.",
+      "A bubbly display voice (Modak), a friendly sans (Figtree) and factory stencil labels (Big Shoulders Stencil).",
+      "Statuses as named stamps, each family with its own shape.",
+      "Motion that shows the making (thread drawing, stamps landing, a swinging ticket) and stops for reduced motion."
+    ],
+    "rules": [
+      {
+        "name": "The One Live Thing Rule",
+        "body": "Rose appears only on the yarn thread and on active state. It never decorates, and it is never a second accent.",
+        "section": "colors"
+      },
+      {
+        "name": "The Loud Butter Rule",
+        "body": "Butter is the only loud colour. Keep it to small areas: tape, a chip, a badge, a selection.",
+        "section": "colors"
+      },
+      {
+        "name": "The Ring Contrast Rule",
+        "body": "A focus ring keeps 3:1 against the surface it sits on: rose-deep on paper and cream, butter on cocoa (every cocoa surface sets `--focus-ring` to butter).",
+        "section": "colors"
+      },
+      {
+        "name": "The Stencil Is Signage Rule",
+        "body": "Stencil type labels things: batch numbers, stations, statuses, badges. It never sets a sentence.",
+        "section": "typography"
+      },
+      {
+        "name": "The No Eyebrow Rule",
+        "body": "No small label sits above a heading. The heading carries its own weight.",
+        "section": "typography"
+      },
+      {
+        "name": "The Table Rule",
+        "body": "A surface either rests on the paper or lifts off it. No glow and no coloured halo.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do keep rose for the yarn thread and active state only.",
+      "Do show every status as a named stamp with its own shape, never by colour alone.",
+      "Do set `--focus-ring: var(--color-butter)` on any cocoa surface.",
+      "Do keep small text on washes and butter at 4.5:1 or better (Ready to ship is `ok` #466e3d on `ok-wash`, 4.8:1).",
+      "Do set batch, order and work-order numbers in stencil labels with tabular numerals.",
+      "Do put hover effects only on devices that hover, and give every press a 0.97 scale.",
+      "Do give every looping motion a way to stop, and stop it under reduced motion.",
+      "Do label sample photos and products as samples until the maker's own arrive."
+    ],
+    "donts": [
+      "Don't put an eyebrow label above a heading.",
+      "Don't use gradient text or emoji as icons.",
+      "Don't invent reviews, order counts or press.",
+      "Don't build the pastel boutique: photo carousel, row of category circles, testimonial slider.",
+      "Don't use rose as a second accent or as decoration.",
+      "Don't set sentences in the stencil face."
+    ]
+  }
+}

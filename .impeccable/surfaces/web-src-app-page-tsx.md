@@ -1,7 +1,7 @@
 ---
 version: 1
 slug: "web-src-app-page-tsx"
-primary_target: "web/src/app/page.tsx"
+primary_target: "web/src/app/(store)/page.tsx"
 related_targets: ["web/src/app"]
 ---
 
