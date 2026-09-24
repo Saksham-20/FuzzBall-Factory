@@ -67,7 +67,7 @@ export function Thread({ request: r, onUpdated }: { request: CustomRequest; onUp
                 <p className="mb-1 text-xs text-brown-soft">
                   <span className="font-semibold">{mine ? "You" : firstName(r.customerName)}</span> · <span className="tabular">{formatDate(m.at, { day: "numeric", month: "short", hour: "numeric", minute: "2-digit" })}</span>
                 </p>
-                <div className={cn("max-w-[min(100%,52ch)] rounded-[14px] px-4 py-2.5 text-[15px] leading-relaxed whitespace-pre-line", mine ? "bg-cocoa text-cream" : "bg-kraft-light")}>
+                <div className={cn("max-w-[min(100%,52ch)] rounded-[14px] px-4 py-2.5 text-[15px] leading-relaxed whitespace-pre-line", mine ? "bg-cocoa text-cream [--focus-ring:var(--color-butter)]" : "bg-kraft-light")}>
                   {m.body}
                   {m.attachments?.length ? (
                     <span className="mt-2 flex flex-wrap gap-2">

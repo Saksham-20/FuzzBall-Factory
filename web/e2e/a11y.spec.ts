@@ -35,6 +35,30 @@ test("the focus ring stands out on the cocoa footer", async ({ page }) => {
   expect(contrast(ring.colour, ring.ground)).toBeGreaterThanOrEqual(3);
 });
 
+test("the focus ring stands out in the maker's cocoa message bubbles", async ({ page }) => {
+  // The mock data layer's admin. WO-021 has a maker message with a photo attached.
+  await page.goto("/login");
+  await page.getByLabel("Email or phone").fill("admin@fuzzball.test");
+  await page.getByLabel("Password", { exact: true }).fill("fuzzball123");
+  await page.getByLabel("Password", { exact: true }).press("Enter");
+  await page.waitForURL((url) => !url.pathname.startsWith("/login"));
+
+  await page.goto("/admin/custom/WO-021");
+  const photo = page.getByText("The first penguin is done!").locator("a").first();
+  await photo.focus();
+  const ring = await photo.evaluate((el) => {
+    let ground = el.parentElement!;
+    while (getComputedStyle(ground).backgroundColor === "rgba(0, 0, 0, 0)") ground = ground.parentElement!;
+    return {
+      shown: el.matches(":focus-visible"),
+      colour: getComputedStyle(el).outlineColor,
+      ground: getComputedStyle(ground).backgroundColor,
+    };
+  });
+  expect(ring.shown).toBe(true);
+  expect(contrast(ring.colour, ring.ground)).toBeGreaterThanOrEqual(3);
+});
+
 test("the 'Ready to ship' badge on shop tickets reads at AA", async ({ page }) => {
   await page.goto("/shop");
   const badges = page.locator(":has(> [data-ticket-head])").getByText("Ready to ship", { exact: true });

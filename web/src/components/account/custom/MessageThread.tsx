@@ -140,7 +140,7 @@ function Bubble({ m }: { m: CustomMessage & { pending?: boolean } }) {
       <p className="mb-1 px-1 text-xs text-brown">
         {mine ? "You" : "FuzzBall Factory"} <span aria-hidden>·</span> <span className="tabular">{m.pending ? "Sending…" : formatDate(m.at, { day: "numeric", month: "short", hour: "numeric", minute: "2-digit" })}</span>
       </p>
-      <div className={cn("max-w-[88%] rounded-[14px] px-3.5 py-2.5 text-[15px] leading-relaxed [overflow-wrap:anywhere]", mine ? "rounded-br-[4px] bg-cocoa text-cream" : "rounded-bl-[4px] bg-kraft-light text-cocoa", m.pending && "opacity-70")}>
+      <div className={cn("max-w-[88%] rounded-[14px] px-3.5 py-2.5 text-[15px] leading-relaxed [overflow-wrap:anywhere]", mine ? "rounded-br-[4px] bg-cocoa text-cream [--focus-ring:var(--color-butter)]" : "rounded-bl-[4px] bg-kraft-light text-cocoa", m.pending && "opacity-70")}>
         {m.body ? <p className="whitespace-pre-line">{m.body}</p> : null}
         {m.attachments?.length ? (
           <ul className={cn("flex flex-wrap gap-2", m.body && "mt-2")}>
