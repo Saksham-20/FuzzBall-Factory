@@ -1,7 +1,7 @@
 # 002 — Scroll reveals: fire earlier, finish faster, and leave headings alone
 
 - **Status**: TODO
-- **Commit**: 0444be5
+- **Commit**: 364770d
 - **Severity**: MEDIUM
 - **Category**: Purpose & frequency / Cohesion
 - **Estimated scope**: 7 files, small edits
@@ -39,9 +39,9 @@ The same fade-and-rise runs on almost every block of the home page, section head
 
 Headings and lone paragraphs wrapped in `Reveal` (all generic `rise`):
 
-- `web/src/components/home/YarnRoom.tsx:41` — `<Reveal as="h2" ...>Every piece starts as a ball of yarn</Reveal>`
-- `web/src/components/home/YarnRoom.tsx:44` — `<Reveal as="p" delay={60} ...>The fiber decides how a piece feels...</Reveal>`
-- `web/src/components/home/YarnRoom.tsx:60` — `<Reveal as="p" delay={100} ...>Colours can look a little different...</Reveal>`
+- `web/src/components/home/YarnRoom.tsx:42` — `<Reveal as="h2" ...>Every piece starts as a ball of yarn</Reveal>`
+- `web/src/components/home/YarnRoom.tsx:45` — `<Reveal as="p" delay={60} ...>The fiber decides how a piece feels...</Reveal>`
+- `web/src/components/home/YarnRoom.tsx:61` — `<Reveal as="p" delay={100} ...>Colours can look a little different...</Reveal>`
 - `web/src/components/home/HookFloor.tsx:76` — `<Reveal as="h2" ...>Made by one pair of hands</Reveal>`
 - `web/src/components/home/Shelf.tsx:30` — `<Reveal as="h2" ...>The shelf</Reveal>`
 - `web/src/components/home/Shelf.tsx:73` — `<Reveal as="h3" ...>Fresh off the line</Reveal>`

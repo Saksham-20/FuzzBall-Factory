@@ -1,6 +1,6 @@
 # Animation plans
 
-Written by the `improve-animations` audit of the storefront home on 2026-09-23 (branch `design/landing-polish`; line references match commit `0444be5`, and each plan anchors its steps on quoted code, so a moved line is not a blocker). Each plan is self-contained: exact files, current code, target values, steps, boundaries and a feel check, so any agent can execute it without this conversation.
+Written by the `improve-animations` audit of the storefront home on 2026-09-23 (branch `design/landing-polish`; line references match commit `364770d`, and each plan anchors its steps on quoted code, so a moved line is not a blocker). Each plan is self-contained: exact files, current code, target values, steps, boundaries and a feel check, so any agent can execute it without this conversation.
 
 These cover the motion that already existed before the landing polish. The motion added in that polish (hand-wound yarn ball, batch ticket swing, stitch glyphs, lead-time bars, work-order stamps, the pegged photo line and its swing) was built to the same rules and is not re-planned here.
 
