@@ -4,6 +4,8 @@ import { cn } from "@/lib/cn";
 interface Props extends ComponentPropsWithoutRef<"div"> {
   /** Stencil header row: left/right text. */
   head?: [ReactNode, ReactNode?];
+  /** Smaller head on phones, for tickets two to a row (product grids), so both labels keep one line. */
+  compactHead?: boolean;
   /** Punched hole at the top edge. */
   hole?: boolean;
   /** kraft (default) or paper, for tickets that sit on a kraft field. */
@@ -11,7 +13,7 @@ interface Props extends ComponentPropsWithoutRef<"div"> {
 }
 
 /** Kraft job ticket: the container for products, work orders, quotes and orders. */
-export function Ticket({ head, hole = true, tone = "kraft", className, children, ...rest }: Props) {
+export function Ticket({ head, compactHead, hole = true, tone = "kraft", className, children, ...rest }: Props) {
   return (
     <div
       className={cn(
@@ -24,9 +26,16 @@ export function Ticket({ head, hole = true, tone = "kraft", className, children,
       {...rest}
     >
       {head ? (
-        <div className="font-stencil tabular mb-2 flex items-center justify-between gap-3 px-1 pt-3 text-[12px] text-brown">
-          <span>{head[0]}</span>
-          {head[1] ? <span>{head[1]}</span> : null}
+        // One line, always: the head's height is fixed, so anything positioned below it stays put.
+        // A label never breaks inside itself; if both can't fit, the right one is cut short.
+        <div
+          className={cn(
+            "font-stencil tabular mb-2 flex items-center justify-between px-1 pt-3 text-brown",
+            compactHead ? "gap-2 text-[11px] sm:gap-3 sm:text-[12px]" : "gap-3 text-[12px]",
+          )}
+        >
+          <span className="shrink-0 whitespace-nowrap">{head[0]}</span>
+          {head[1] ? <span className="min-w-0 truncate">{head[1]}</span> : null}
         </div>
       ) : null}
       {children}

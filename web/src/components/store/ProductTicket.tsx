@@ -37,6 +37,7 @@ export function ProductTicket({
     <Ticket
       data-placeholder={SITE.useMock && p.sample ? "sample-product" : undefined}
       head={[batchLabel(p.batch), p.isOneOfAKind ? "One of one" : undefined]}
+      compactHead
       className={cn(
         "group transition-[transform,box-shadow] duration-200 ease-out",
         `hf:hover:-translate-y-1 hf:hover:-rotate-[0.6deg] hf:hover:shadow-lift`,

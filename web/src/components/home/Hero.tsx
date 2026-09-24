@@ -53,9 +53,11 @@ export function Hero() {
 
           <div className="hero-ball relative order-1 ml-auto w-[min(62vw,290px)] lg:order-2 lg:mx-auto lg:w-full lg:max-w-[500px]">
             <YarnBall tone="rose" tailAnchor title="A ball of rose-coloured yarn" />
+            {/* Below 360px the ball is too small for the ticket to sit at its foot without covering
+                the thread's loose end, so it hangs from the top instead. */}
             <Ticket
               head={["Batch #001", "One of one"]}
-              className="ticket-swing absolute -right-2 -bottom-3 w-[168px] rotate-[5deg] md:-right-4 md:-bottom-5 md:w-[176px]"
+              className="ticket-swing absolute -right-2 -bottom-3 w-[168px] rotate-[5deg] max-[360px]:top-0 max-[360px]:bottom-auto md:-right-4 md:-bottom-5 md:w-[176px]"
             >
               <p className="px-1 pb-1.5 text-[13px] leading-snug font-semibold text-cocoa md:text-[15px]">Wound by hand, ready to unspool.</p>
             </Ticket>
