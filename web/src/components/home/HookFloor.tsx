@@ -85,9 +85,11 @@ export function HookFloor() {
                 delay={i * 90}
                 className="grid gap-x-6 gap-y-2 py-5 sm:grid-cols-[8.5rem_1fr] sm:items-center"
               >
-                <div>
+                {/* On phones the tag sits beside its glyph, as the glyph's caption: stacked above the
+                    step's heading it read as an eyebrow label. */}
+                <div className="flex items-center gap-3 sm:block">
                   <StitchGlyph state={s.state} />
-                  <p className="font-stencil mt-1 text-[12px] text-brown-soft">{s.tag}</p>
+                  <p className="font-stencil text-[12px] text-brown-soft sm:mt-1">{s.tag}</p>
                 </div>
                 <div>
                   <h3 className="text-lg font-bold">{s.t}</h3>

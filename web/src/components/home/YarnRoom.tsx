@@ -9,7 +9,8 @@ import { waRealLight } from "@/lib/whatsapp";
 const FIBERS = [
   { name: "Milk cotton", feel: "Soft, matte and gentle on skin. Our pick for plushies and baby pieces.", hex: "#f1e4d3" },
   { name: "Cotton", feel: "Sturdy and breathable, and it holds its shape. Bags, coasters, tops.", hex: "#d4ae80" },
-  { name: "Acrylic", feel: "Light, bright and easy to wash. Charms, flowers, small things.", hex: "#c98586" },
+  // Butter, not rose: rose is kept for the thread and the active state.
+  { name: "Acrylic", feel: "Light, bright and easy to wash. Charms, flowers, small things.", hex: "#f4cd52" },
   { name: "Chenille", feel: "Velvety and squishy. For the big cuddly ones.", hex: "#8a6249" },
   { name: "Wool blend", feel: "Warm and springy. Beanies and winter pieces.", hex: "#2f3f66" },
 ] as const;
