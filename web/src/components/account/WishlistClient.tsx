@@ -80,16 +80,16 @@ export function WishlistClient() {
                       <ProductTicket product={p} sizes="(min-width:1280px) 22vw, (min-width:520px) 30vw, 90vw" />
                       <div className="mt-3 flex items-center gap-2">
                         {soldOut ? (
-                          <Button size="sm" variant="secondary" className="flex-1" disabled>
+                          <Button size="sm" variant="secondary" className="min-h-11 flex-1" disabled>
                             Sold out
                           </Button>
                         ) : single ? (
-                          <Button size="sm" className="flex-1" onClick={() => addToCart(p)}>
+                          <Button size="sm" className="min-h-11 flex-1" onClick={() => addToCart(p)}>
                             <ShoppingBag strokeWidth={1.8} aria-hidden />
                             Add to cart
                           </Button>
                         ) : (
-                          <Button size="sm" variant="secondary" className="flex-1" asChild>
+                          <Button size="sm" variant="secondary" className="min-h-11 flex-1" asChild>
                             <Link href={`/p/${p.slug}`}>Choose options</Link>
                           </Button>
                         )}

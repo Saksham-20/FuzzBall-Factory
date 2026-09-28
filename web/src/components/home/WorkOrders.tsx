@@ -10,8 +10,7 @@ import { SAMPLE_SETTINGS } from "@/lib/site";
 
 const STEPS = [
   { t: "Describe it", d: "Tell us what you want. Add reference photos, pick colours, set a budget." },
-  { t: "Get a quote", d: "We reply with a price, a timeline and exactly what's included." },
-  { t: `Say yes, pay ${SAMPLE_SETTINGS.depositPct}%`, d: "Accept, counter, or pass. The advance is what starts your piece." },
+  { t: "Get a quote, then say yes", d: `We reply with a price and a timeline. Accept, counter, or pass — pay ${SAMPLE_SETTINGS.depositPct}% to start once you do.` },
   { t: "Watch it get made", d: "See progress photos, approve the final piece, pay the rest, and we ship it." },
 ] as const;
 
@@ -49,6 +48,9 @@ export function WorkOrders() {
             </Link>
           </div>
           <p className="mt-5 max-w-[52ch] text-sm text-brown">
+            Not quite right? Counter the quote or walk away — no obligation until you accept and pay the deposit.
+          </p>
+          <p className="mt-2 max-w-[52ch] text-sm text-brown">
             We can&apos;t make licensed characters (Disney, Sanrio, anime and the like). Original designs only.
           </p>
         </div>

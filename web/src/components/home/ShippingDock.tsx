@@ -24,6 +24,9 @@ export function ShippingDock() {
           <Reveal as="h2" className="font-display text-[clamp(2.5rem,5.6vw,4.5rem)]">
             Packed with care, shipped anywhere
           </Reveal>
+          <a href="#track-order" className="mt-3 inline-block min-h-11 text-sm font-semibold text-cocoa underline lg:hidden">
+            Already ordered? Skip to tracking
+          </a>
           <dl data-placeholder="shipping-rates" className="relative mt-8 divide-y divide-line border-y border-line">
             {FACTS.map((f, i) => (
               <Reveal key={f.term} delay={i * 50} className="grid gap-x-6 gap-y-1 py-4 sm:grid-cols-[9rem_1fr]">

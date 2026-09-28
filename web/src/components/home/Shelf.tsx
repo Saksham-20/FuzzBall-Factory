@@ -38,6 +38,11 @@ export function Shelf() {
               href={`/shop/${c.slug}`}
               className="group relative flex items-center gap-2 overflow-hidden border-t border-line py-1.5 outline-offset-[-4px] sm:gap-3 md:py-1"
             >
+              {/* Mobile has no hover, so the image peek (below, md:block) never plays there. A small
+                  always-visible thumbnail gives touch users the same recognition cue as the peek. */}
+              <span aria-hidden className="relative size-11 shrink-0 overflow-hidden rounded-[10px] shadow-ticket sm:size-12 md:hidden">
+                <Image src={c.image} alt="" fill sizes="48px" className="object-cover" />
+              </span>
               <span className="@container min-w-0 flex-1">
                 {/* The class is the fallback size: a browser without container units drops the inline
                     value at parse time (it holds no var(), which would defer that and lose both). */}

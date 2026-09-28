@@ -181,6 +181,7 @@ export function ShopClient({ category }: { category?: Category }) {
         </aside>
 
         <section aria-label="Products" className="min-w-0">
+          <h2 className="sr-only">Products</h2>
           <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
             <p role="status" aria-live="polite" className="tabular min-h-6 text-[15px] font-medium text-brown">
               {showSkeleton
