@@ -1,5 +1,5 @@
 import { API_URL, compact, http } from "@/lib/api/http";
-import type { Category, Coupon, CustomRequest, Material, Order, OrderStatus, Product, Review, StoreSettings } from "@/lib/types";
+import type { AdminPayment, Category, Coupon, CustomRequest, Material, Order, OrderStatus, Product, Review, StoreSettings } from "@/lib/types";
 import type { CustomerRow, Dashboard, QuoteInput } from "@/lib/api/admin";
 
 const enc = encodeURIComponent;
@@ -84,3 +84,7 @@ export async function updateSettings(s: StoreSettings): Promise<StoreSettings> {
   await fetch(`${API_URL}/settings`, { cache: "reload", credentials: "include" }).catch(() => undefined);
   return saved;
 }
+
+/* payments and refunds */
+export const listPayments = (q: { order?: string; request?: string }) => http<AdminPayment[]>("/admin/payments", { query: q });
+export const refundPayment = (id: string, body: { amount?: number; reason: string }) => post<{ refunded: number; pending: number }>(`/admin/payments/${enc(id)}/refund`, compact(body));

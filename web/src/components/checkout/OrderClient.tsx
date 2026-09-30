@@ -19,14 +19,27 @@ import { COUNTRIES, ORDER_STATUS } from "@/lib/status";
 import { formatDate, formatINR } from "@/lib/format";
 import { waOrder } from "@/lib/whatsapp";
 
-export function OrderClient({ number, isNew }: { number: string; isNew: boolean }) {
+export function OrderClient({ number, isNew, confirming = false }: { number: string; isNew: boolean; confirming?: boolean }) {
   const { user } = useAuth();
   const { data: order, error, loading, reload } = useApi(() => getOrder(number), `order:${number}:${user?.id ?? "guest"}`);
 
-  // The stamp lands once: drop ?new=1 so a refresh doesn't replay it.
+  // The stamp lands once: drop ?new=1 (and ?confirming=1, which we keep in state below) so a refresh doesn't replay it.
   useEffect(() => {
     if (isNew && order) window.history.replaceState(null, "", `/order/${number}`);
   }, [isNew, order, number]);
+
+  // Razorpay reported a payment we couldn't verify at checkout: look again every few seconds for two minutes, so the page
+  // turns to "Payment received" by itself once the webhook lands.
+  const waitingForPayment = confirming && order?.status === "PENDING_PAYMENT";
+  useEffect(() => {
+    if (!waitingForPayment) return;
+    const started = Date.now();
+    const timer = setInterval(() => {
+      if (Date.now() - started > 120_000) clearInterval(timer);
+      else reload();
+    }, 4_000);
+    return () => clearInterval(timer);
+  }, [waitingForPayment, reload]);
 
   if (loading && !order) {
     return (
@@ -110,7 +123,12 @@ export function OrderClient({ number, isNew }: { number: string; isNew: boolean 
         ) : (
           <p className="text-lg">{meta.hint}</p>
         )}
-        {order.status === "PENDING_PAYMENT" ? (
+        {order.status === "PENDING_PAYMENT" && confirming ? (
+          <div role="status" className="rounded-[12px] bg-butter/30 px-4 py-3 text-cocoa">
+            <p className="font-medium">We&apos;re confirming your payment with the bank. This page updates by itself, and we&apos;ll email you as soon as it&apos;s done.</p>
+            <p className="mt-1 text-sm">Please don&apos;t pay again. If it doesn&apos;t confirm, message us on WhatsApp with this order number.</p>
+          </div>
+        ) : order.status === "PENDING_PAYMENT" ? (
           <div role="alert" className="rounded-[12px] bg-warn-wash px-4 py-3 text-warn">
             <p className="font-medium">We haven&apos;t received your payment yet. You haven&apos;t been charged.</p>
             <Link href="/checkout" className="mt-1 inline-flex min-h-11 items-center font-semibold underline">

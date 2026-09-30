@@ -1,4 +1,5 @@
 import { SITE } from "@/lib/site";
+import type { RazorpayWindowOptions } from "@/lib/razorpay";
 import * as real from "@/lib/api/real/orders";
 import { ApiError, db, wait } from "@/lib/mock/db";
 import { quoteCheckout, type CheckoutOptions, type CheckoutQuote } from "@/lib/pricing";
@@ -82,9 +83,18 @@ export async function placeOrder(input: PlaceOrderInput): Promise<Order> {
   return order;
 }
 
-/** Mock of the Razorpay callback. `ok=false` leaves the order PENDING_PAYMENT so the customer can retry. */
-export async function confirmPayment(number: string, ok: boolean): Promise<Order> {
-  if (!SITE.useMock) return real.confirmPayment(number, ok);
+/** Which payment window applies to `number`: the simulated test window, or (real API in live payment mode) Razorpay's own. */
+export async function paymentMode(number: string): Promise<"mock" | "razorpay"> {
+  if (!SITE.useMock) return real.paymentMode(number);
+  return "mock";
+}
+
+/**
+ * Mock of the Razorpay callback. `ok=false` leaves the order PENDING_PAYMENT so the customer can retry.
+ * With the real API in live payment mode this opens Razorpay's window (`opts` fills it in) and verifies the result.
+ */
+export async function confirmPayment(number: string, ok: boolean, opts?: RazorpayWindowOptions): Promise<Order> {
+  if (!SITE.useMock) return real.confirmPayment(number, ok, opts);
   await wait(700);
   const o = db.get().orders.find((x) => x.number === number);
   if (!o) throw new ApiError(404, "Order not found.");

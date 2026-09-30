@@ -16,8 +16,8 @@ interface Props {
 }
 
 /**
- * PLACEHOLDER(razorpay-test): stands in for the Razorpay Checkout window until real keys are
- * wired in (Phase 4). Nothing here moves money. Replace with `new Razorpay(options).open()`.
+ * The simulated payment window, used only when payments are simulated (the browser-only sample data, or an API running
+ * PAYMENTS_MODE=mock). Live payments open Razorpay's own window instead (lib/razorpay.ts). Nothing here moves money.
  */
 export function TestPaymentModal({ open, onOpenChange, amount, onPay }: Props) {
   const [busy, setBusy] = useState<"ok" | "fail" | null>(null);
@@ -47,7 +47,7 @@ export function TestPaymentModal({ open, onOpenChange, amount, onPay }: Props) {
       title="Test payment"
       description="This stands in for the Razorpay window. No real money moves."
     >
-      <div className="relative space-y-4" data-placeholder="razorpay-test">
+      <div className="relative space-y-4">
         <div className="flex items-start gap-2.5 rounded-[12px] bg-butter/40 px-4 py-3 text-sm text-cocoa">
           <ShieldAlert className="mt-0.5 size-4 shrink-0" strokeWidth={1.8} />
           <p>

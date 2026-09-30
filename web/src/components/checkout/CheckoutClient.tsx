@@ -16,11 +16,13 @@ import { TestPaymentModal } from "@/components/checkout/TestPaymentModal";
 import { Totals } from "@/components/checkout/Totals";
 import { useBasket, useCheckoutQuote, useCoupon } from "@/components/checkout/useBasket";
 import { listAddresses } from "@/lib/api/account";
-import { confirmPayment, placeOrder, type PlaceOrderInput } from "@/lib/api/orders";
+import { PaymentDismissedError, PaymentUnconfirmedError } from "@/lib/api/errors";
+import { confirmPayment, paymentMode, placeOrder, type PlaceOrderInput } from "@/lib/api/orders";
 import { checkShipping } from "@/lib/api/shipping";
 import { getSettings } from "@/lib/api/settings";
 import { useApi } from "@/lib/api/useApi";
 import { CHECKOUT_DEFAULTS, GIFT_NOTE_MAX, checkoutSchema, type CheckoutValues } from "@/lib/schemas/checkout";
+import { SITE } from "@/lib/site";
 import { useAuth } from "@/lib/state/AuthContext";
 import { formatDate, formatINR } from "@/lib/format";
 import { COUNTRIES, INDIAN_STATES } from "@/lib/status";
@@ -118,6 +120,8 @@ export function CheckoutClient() {
   const [placing, setPlacing] = useState(false);
   const [redirecting, setRedirecting] = useState(false);
   const [submitError, setSubmitError] = useState<string>();
+  /** Neutral, not an error: the customer closed the payment window and the order is waiting. */
+  const [notice, setNotice] = useState<string>();
   const pending = useRef<{ number: string; total: number } | null>(null);
   const draftValues = useRef<CheckoutValues | null>(null);
 
@@ -135,15 +139,25 @@ export function CheckoutClient() {
     };
   }
 
-  function finish(number: string) {
+  /** `confirming`: Razorpay reported a payment we couldn't verify in time. The order page keeps checking and says so. */
+  function finish(number: string, opts: { confirming?: boolean } = {}) {
     setRedirecting(true);
     cart.clear();
     setCoupon("");
-    router.push(`/order/${number}?new=1`);
+    router.push(`/order/${number}?new=1${opts.confirming ? "&confirming=1" : ""}`);
+  }
+
+  /** The order for this basket: placed once, then reused while the total is unchanged (a retry never creates a second one). */
+  async function ensureOrder(v: CheckoutValues): Promise<string> {
+    if (pending.current && pending.current.total === q?.total) return pending.current.number;
+    const o = await placeOrder(toInput(v));
+    pending.current = { number: o.number, total: o.total };
+    return o.number;
   }
 
   async function place(v: CheckoutValues) {
     setSubmitError(undefined);
+    setNotice(undefined);
     if (!q) return;
     if (v.paymentMethod === "COD") {
       setPlacing(true);
@@ -157,7 +171,36 @@ export function CheckoutClient() {
       return;
     }
     draftValues.current = v;
-    setPayOpen(true);
+    // Sample data (no API): the test window first, exactly as before.
+    if (SITE.useMock) {
+      setPayOpen(true);
+      return;
+    }
+    await payOnline(v);
+  }
+
+  /** Real API: place the order, then open whichever window the API's payment mode calls for. */
+  async function payOnline(v: CheckoutValues) {
+    setPlacing(true);
+    try {
+      const number = await ensureOrder(v);
+      // A staging API runs simulated payments: it gets the test window. Live payments get Razorpay's own.
+      if ((await paymentMode(number)) === "mock") {
+        setPayOpen(true);
+        return;
+      }
+      await confirmPayment(number, true, { description: `Order ${number}`, prefill: { name: v.name, email: v.email, contact: v.phone } });
+      finish(number);
+    } catch (e) {
+      if (e instanceof PaymentUnconfirmedError && pending.current) finish(pending.current.number, { confirming: true });
+      else if (e instanceof PaymentDismissedError) {
+        const n = pending.current?.number;
+        setNotice(`You closed the payment window. ${n ? `Your order ${n} is saved and waiting: ` : ""}press Pay to pick up where you left off.`);
+      }
+      else setSubmitError(e instanceof Error ? e.message : "We couldn't start the payment. Please try again.");
+    } finally {
+      setPlacing(false);
+    }
   }
 
   function onSubmit(e: FormEvent<HTMLFormElement>) {
@@ -167,13 +210,7 @@ export function CheckoutClient() {
   async function pay(ok: boolean) {
     const v = draftValues.current;
     if (!v || !q) return;
-    let number: string;
-    if (pending.current && pending.current.total === q.total) number = pending.current.number;
-    else {
-      const o = await placeOrder(toInput(v));
-      pending.current = { number: o.number, total: o.total };
-      number = o.number;
-    }
+    const number = await ensureOrder(v);
     await confirmPayment(number, ok); // throws on failure, shown inside the modal
     finish(number);
   }
@@ -583,10 +620,13 @@ export function CheckoutClient() {
                 <ErrorNote>{submitError}</ErrorNote>
               </div>
             ) : null}
+            <div aria-live="polite">
+              {notice ? <p className="mt-3 rounded-[12px] bg-kraft-light px-4 py-3 text-sm text-cocoa">{notice}</p> : null}
+            </div>
 
             <Button type="submit" size="lg" className="mt-4 w-full" disabled={!q || busy || basket.missing.length > 0} aria-busy={busy}>
               <Lock strokeWidth={1.8} />
-              {busy ? "Placing your order" : !q ? "Pay" : cod ? `Place order · ${formatINR(q.total)}` : `Pay ${formatINR(q.total)}`}
+              {busy ? (cod ? "Placing your order" : "Opening the payment window") : !q ? "Pay" : cod ? `Place order · ${formatINR(q.total)}` : `Pay ${formatINR(q.total)}`}
             </Button>
             <p className="mt-3 text-center text-xs text-brown">
               {cod ? "You'll pay the courier when it arrives." : "You'll pay in a secure window. Nothing is charged until you confirm."}

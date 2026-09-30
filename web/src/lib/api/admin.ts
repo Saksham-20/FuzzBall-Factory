@@ -2,7 +2,7 @@ import { SITE } from "@/lib/site";
 import * as real from "@/lib/api/real/admin";
 import { ApiError, db, wait } from "@/lib/mock/db";
 import { balanceAmount, ev, patchRequest } from "@/lib/api/custom";
-import type { Category, Coupon, CustomRequest, Material, Order, OrderStatus, Product, Quote, Review, StoreSettings, User } from "@/lib/types";
+import type { AdminPayment, Category, Coupon, CustomRequest, Material, Order, OrderStatus, Product, Quote, Review, StoreSettings, User } from "@/lib/types";
 
 function requireAdmin() {
   const d = db.get();
@@ -523,4 +523,16 @@ export async function updateSettings(s: StoreSettings): Promise<StoreSettings> {
   requireAdmin();
   db.update((x) => ({ ...x, settings: s }));
   return s;
+}
+
+/** Payments of an order or work order with their refund jobs. Sample data has no gateway, so there is nothing to refund there. */
+export async function listPayments(q: { order?: string; request?: string }): Promise<AdminPayment[]> {
+  if (!SITE.useMock) return real.listPayments(q);
+  return [];
+}
+
+/** Refund a captured payment by hand (the whole remainder unless `amount`). Real API only. */
+export async function refundPayment(id: string, body: { amount?: number; reason: string }): Promise<{ refunded: number; pending: number }> {
+  if (!SITE.useMock) return real.refundPayment(id, body);
+  throw new ApiError(400, "Refunds need the real API. Sample data has no payments.");
 }

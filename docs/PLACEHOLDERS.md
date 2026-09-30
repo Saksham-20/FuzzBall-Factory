@@ -8,6 +8,8 @@ Everything below is stand-in content. It is tagged three ways so nothing slips t
 
 Sample products additionally show a dashed **Sample** badge on their card.
 
+_Resolved: `razorpay-test` and `razorpay-checkout` (the fake payment windows). Live payments now open Razorpay's own window (`web/src/lib/razorpay.ts`); the simulated windows stay only for sample data and a staging API in `PAYMENTS_MODE=mock`, and are no longer placeholders._
+
 **Launch gate.** A build with `LAUNCH_BUILD=true` (and `NEXT_PUBLIC_USE_MOCK=false`, real URLs and WhatsApp number) scans `web/src` for `PLACEHOLDER(id)` tags and fails, listing each one, until they are resolved. To ship with a stand-in on purpose, name it: `PLACEHOLDERS_ALLOWED=instagram,size-chart`. Resolving a placeholder means removing its tag from the code along with the stand-in. (`web/src/lib/placeholders-scan.ts`, wired in `web/next.config.ts`.)
 
 | id | Where | What it is | Replace with |
@@ -33,7 +35,6 @@ Sample products additionally show a dashed **Sample** badge on their card.
 | `size-chart` | `web/src/components/shop/SizeGuide.tsx` | Stand-in cm measurements for the beanie and halter | The maker's real size chart per product |
 | `size-chart` | `web/src/components/shop/SizeGuide.tsx` (`CATEGORY_CHARTS`) | Generic category-level fallback charts ("wearables — hat", "wearables — top"), shown when a sized product has no exact-slug chart of its own | The maker's real size chart per product, added by exact slug so the fallback stops applying to it |
 | `pdp-returns-copy` | `web/src/components/shop/ProductDetails.tsx` | Draft "Shipping & returns" wording on the product page (7-day exchange for ready pieces, no returns on made-to-order/custom) | Final wording from the policy pages |
-| `razorpay-checkout` | `web/src/components/account/custom/TestPaymentModal.tsx` | Fake "Test payment" modal (Pay successfully / Simulate failure) for work-order deposit and balance | Razorpay Checkout with a server-created order, confirmed by webhook |
 | `mock-logins` | `web/src/components/account/auth/LoginForm.tsx` | Dev-only "Sample logins" hint under the login form (only when `SITE.useMock`) | Disappears automatically with `NEXT_PUBLIC_USE_MOCK=false` |
 | `invoice-download` | `web/src/components/account/OrderDetailClient.tsx` | Disabled "Download invoice" control, "coming soon" | Real GST invoice PDF endpoint from the API |
 | `dpdp-deletion` | `web/src/components/account/ProfileClient.tsx` | "Delete your account" wording and the mock deletion request (records nothing) | Final wording from the privacy policy + real API request |
@@ -46,7 +47,6 @@ No reviews, ratings, customer counts or press are shown anywhere. Keep it that w
 
 | id | Where | What it is | Replace with |
 |---|---|---|---|
-| `razorpay-test` | `web/src/components/checkout/TestPaymentModal.tsx` (shown in the "Test payment" dialog at checkout) | Fake Razorpay window with "Pay successfully" / "Simulate failure" buttons; no money moves | Real Razorpay Checkout (`new Razorpay(options).open()`) plus server-side order creation and webhook (Phase 4) |
 | `custom-lead-time` | `web/src/components/custom/CustomForm.tsx` (`DEFAULT_CUSTOM_LEAD_DAYS = 10`) | Rough days a from-scratch custom piece takes, used only to warn when "Needed by" looks tight | A real figure from admin Settings (or per category) |
 | `hourly-rate` | `web/src/components/admin/custom/QuoteBuilder.tsx` (`DEFAULT_HOURLY_RATE`) | Sample ₹150/hour prefilled in the quote builder's "hours × rate" calculator | The maker's real hourly rate, ideally stored in admin Settings |
 

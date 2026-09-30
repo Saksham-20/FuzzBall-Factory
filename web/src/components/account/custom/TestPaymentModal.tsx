@@ -21,8 +21,8 @@ interface Props {
 }
 
 /**
- * PLACEHOLDER(razorpay-checkout): stand-in for Razorpay Checkout. The real flow opens Razorpay
- * with a server-created order and confirms via webhook; here two buttons fake the outcome.
+ * The simulated payment window, used only when payments are simulated (the browser-only sample data, or an API running
+ * PAYMENTS_MODE=mock). Live payments open Razorpay's own window instead (lib/razorpay.ts). Nothing here moves money.
  */
 export function TestPaymentModal({ open, onOpenChange, purpose, amount, woNumber, pay, onPaid }: Props) {
   const [busy, setBusy] = useState(false);
@@ -71,7 +71,7 @@ export function TestPaymentModal({ open, onOpenChange, purpose, amount, woNumber
         </>
       }
     >
-      <div data-placeholder="razorpay-checkout" className="relative space-y-3">
+      <div className="relative space-y-3">
         <p className="font-stencil w-fit rounded-[6px] border-2 border-dashed border-warn px-2.5 py-1 text-[12px] text-warn">Test mode: no real money moves</p>
         <p className="tabular text-3xl font-bold">{formatINR(amount)}</p>
         <p className="text-[15px] text-brown">

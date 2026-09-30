@@ -137,7 +137,7 @@ function toInput(v: FormValues, p?: Product) {
     care: v.care.split("\n").map((l) => l.trim()).filter(Boolean),
     images: v.images.map((i) => ({ src: i.src, alt: i.alt.trim() || v.name.trim() })),
     swatches: v.swatches.map((s) => ({ name: s.name.trim(), hex: s.hex })),
-    variants: v.variants.map((x) => ({ id: x.vid, colour: x.colour.trim(), size: x.size.trim() || undefined, priceDelta: Number(x.priceDelta), stock: Number(x.stock) })),
+    variants: v.variants.map((x) => ({ id: x.vid, colour: x.colour.trim(), size: x.size.trim() || undefined, priceDelta: Number(x.priceDelta), stock: Number(x.stock), stockSeen: p?.variants.find((pv) => pv.id === x.vid)?.stock })),
     isOneOfAKind: v.isOneOfAKind,
     customizable: v.customizable,
     giftable: v.giftable,

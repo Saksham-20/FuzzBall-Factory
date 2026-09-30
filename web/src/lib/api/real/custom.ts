@@ -1,4 +1,6 @@
+import { ApiError, PaymentUnconfirmedError } from "@/lib/api/errors";
 import { http, newIdempotencyKey, settlePayment, type CheckoutPayment } from "@/lib/api/http";
+import { waitUntil } from "@/lib/wait-until";
 import type { CustomRequest } from "@/lib/types";
 import type { CreateCustomInput } from "@/lib/api/custom";
 
@@ -18,8 +20,19 @@ export const requestChange = (number: string, note: string) => post<CustomReques
 
 /** The API answers with a CheckoutPayment; settle it (mock mode) and re-read the work order. */
 async function pay(number: string, step: "pay-deposit" | "pay-balance"): Promise<CustomRequest> {
+  // The API hands back the same open Razorpay order on a repeat call, so tapping pay again resumes instead of stacking.
   const payment = await post<CheckoutPayment>(`${wo(number)}/${step}`, {}, newIdempotencyKey());
-  await settlePayment(payment, true);
+  // Live: Razorpay's window (PaymentDismissedError if closed). Simulated payment mode (staging): confirms straight away.
+  try {
+    await settlePayment(payment, true, { description: `${step === "pay-deposit" ? "Deposit" : "Balance"} for ${number}` });
+  } catch (e) {
+    // The verify call went unanswered (network, 5xx): the payment may still have landed (the webhook confirms it too), so
+    // watch the work order move on for a while instead of telling the customer it failed.
+    if (!(e instanceof ApiError && (e.status === 0 || e.status >= 500))) throw e;
+    const waiting = step === "pay-deposit" ? "DEPOSIT_PENDING" : "BALANCE_PENDING";
+    const moved = await waitUntil(async () => (await getMine(number)).status !== waiting, { timeoutMs: 30_000, everyMs: 2_500 });
+    if (!moved) throw new PaymentUnconfirmedError();
+  }
   return getMine(number);
 }
 export const payDeposit = (number: string) => pay(number, "pay-deposit");

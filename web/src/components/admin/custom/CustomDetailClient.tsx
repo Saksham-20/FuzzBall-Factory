@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { Check, ChevronLeft, Clock, Minus, MessageCircle, TriangleAlert } from "lucide-react";
 import { AdminPage, Panel } from "@/components/admin/ui";
+import { RefundPanel } from "@/components/admin/RefundPanel";
 import { Button } from "@/components/ui/Button";
 import { EmptyState, ErrorNote, Skeleton } from "@/components/ui/misc";
 import { CustomStamp } from "@/components/ui/StatusStamp";
@@ -108,6 +109,7 @@ export function CustomDetailClient({ number }: { number: string }) {
 
           <div className="space-y-6 lg:col-start-2 lg:row-start-2">
             <PaymentsPanel r={r} />
+            <RefundPanel request={r.number} />
             <CustomerPanel r={r} />
           </div>
         </div>

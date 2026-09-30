@@ -17,6 +17,7 @@ import { formatDate, formatINR } from "@/lib/format";
 import { ApiError } from "@/lib/mock/db";
 import { ORDER_FLOW } from "@/lib/status";
 import type { Order } from "@/lib/types";
+import { RefundPanel } from "@/components/admin/RefundPanel";
 import { OrderActions } from "./OrderActions";
 import { PackingSlip } from "./PackingSlip";
 import { ENDED_STATUSES, PAYMENT_STATUS_LABEL, addressText, countryName, hasMadeToOrder, isGift, orderWhatsApp, paymentMethodLabel } from "./helpers";
@@ -81,6 +82,7 @@ export function OrderDetailClient({ number }: { number: string }) {
             <OrderActions order={order} onUpdated={setData} />
             <CustomerPanel order={order} wa={wa} />
             <PaymentPanel order={order} />
+            <RefundPanel order={order.number} />
           </div>
 
           <div className="space-y-6 lg:col-start-1 lg:row-start-1">

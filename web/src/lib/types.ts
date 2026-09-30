@@ -22,6 +22,11 @@ export interface ProductVariant {
   size?: string;
   priceDelta: number;
   stock: number;
+  /**
+   * Admin form only (never stored): the stock the form was opened with. The real API then applies `stock` as a change on
+   * the current shelf, so pieces sold while the form was open aren't given back.
+   */
+  stockSeen?: number;
 }
 
 export interface Product {
@@ -237,7 +242,26 @@ export interface Coupon {
   minCart: number;
   active: boolean;
   uses: number;
+  /** Real API only: total redemptions allowed (absent = unlimited). Send null to clear. */
+  maxUses?: number | null;
+  /** Real API only: redemptions allowed per customer (an account, or the same email). Absent = unlimited. Send null to clear. */
+  perUserLimit?: number | null;
   expiresAt?: string;
+}
+
+/** A payment with its refund jobs, as the admin sees it (real API only). Rupees. */
+export interface AdminPayment {
+  id: string;
+  purpose: "ORDER" | "DEPOSIT" | "BALANCE";
+  method: "RAZORPAY" | "COD";
+  status: "PENDING" | "PAID" | "FAILED" | "REFUNDED" | "COD_DUE";
+  amount: number;
+  refundedAmount: number;
+  /** Still refundable right now (not already refunded or queued). */
+  refundable: number;
+  paidAt?: string;
+  failureReason?: string;
+  refunds: { id: string; amount: number; status: "PENDING" | "PROCESSING" | "DONE" | "FAILED"; reason: string; attempts: number; lastError?: string; createdAt: string }[];
 }
 
 export interface Material {

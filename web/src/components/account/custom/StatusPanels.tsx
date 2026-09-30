@@ -10,6 +10,8 @@ import { Drawer } from "@/components/ui/Dialog";
 import { Field, Textarea } from "@/components/ui/Field";
 import { ErrorNote } from "@/components/ui/misc";
 import { approveFinal, balanceAmount, depositAmount, payBalance, payDeposit, requestChange } from "@/lib/api/custom";
+import { PaymentDismissedError, PaymentUnconfirmedError } from "@/lib/api/errors";
+import { SITE } from "@/lib/site";
 import { formatDate, formatINR } from "@/lib/format";
 import { CUSTOM_STATUS } from "@/lib/status";
 import { waCustom } from "@/lib/whatsapp";
@@ -114,8 +116,36 @@ export function AcceptedPanel({ r }: { r: CustomRequest }) {
   );
 }
 
-export function DepositPanel({ r, quote, onChange, focusOnMount }: { r: CustomRequest; quote: Quote; onChange: OnChange; focusOnMount?: boolean }) {
+/**
+ * Starts a payment. Sample data (no API): the test window. Real API: pays straight away (Razorpay's own window opens for live
+ * payments, a staging API's simulated payment confirms at once). Closing Razorpay's window is not an error; a payment
+ * we couldn't confirm in time is never reported as failed.
+ */
+function usePay(purposeLabel: string, pay: () => Promise<CustomRequest>, onPaid: OnChange) {
   const [open, setOpen] = useState(false);
+  const [busy, setBusy] = useState(false);
+  async function start() {
+    if (SITE.useMock) {
+      setOpen(true);
+      return;
+    }
+    setBusy(true);
+    try {
+      const next = await pay();
+      toast.success(`${purposeLabel} received. Thank you!`);
+      onPaid(next);
+    } catch (e) {
+      if (e instanceof PaymentDismissedError || e instanceof PaymentUnconfirmedError) toast.message(e.message);
+      else toast.error(errorMessage(e, "The payment didn't go through. You haven't been charged."));
+    } finally {
+      setBusy(false);
+    }
+  }
+  return { open, setOpen, busy, start };
+}
+
+export function DepositPanel({ r, quote, onChange, focusOnMount }: { r: CustomRequest; quote: Quote; onChange: OnChange; focusOnMount?: boolean }) {
+  const { open, setOpen, busy, start } = usePay("Deposit", () => payDeposit(r.number), onChange);
   const amount = depositAmount(quote);
   return (
     <Panel id="panel-deposit" title="Pay the deposit to start" focusOnMount={focusOnMount}>
@@ -126,8 +156,8 @@ export function DepositPanel({ r, quote, onChange, focusOnMount }: { r: CustomRe
       <Body>
         The deposit is what starts your piece, and it isn&apos;t refundable once work begins. The remaining {formatINR(balanceAmount(quote))} is due after you approve the finished piece.
       </Body>
-      <Button size="lg" className="w-full" onClick={() => setOpen(true)}>
-        Pay {formatINR(amount)} deposit
+      <Button size="lg" className="w-full" onClick={start} disabled={busy} aria-busy={busy}>
+        {busy ? "Opening the payment window" : `Pay ${formatINR(amount)} deposit`}
       </Button>
       <TestPaymentModal open={open} onOpenChange={setOpen} purpose="deposit" amount={amount} woNumber={r.number} pay={() => payDeposit(r.number)} onPaid={(n) => onChange(n)} />
     </Panel>
@@ -135,7 +165,7 @@ export function DepositPanel({ r, quote, onChange, focusOnMount }: { r: CustomRe
 }
 
 export function BalancePanel({ r, quote, onChange }: { r: CustomRequest; quote: Quote; onChange: OnChange }) {
-  const [open, setOpen] = useState(false);
+  const { open, setOpen, busy, start } = usePay("Balance", () => payBalance(r.number), onChange);
   const amount = balanceAmount(quote);
   return (
     <Panel id="panel-balance" title="Pay the balance and we ship">
@@ -144,8 +174,8 @@ export function BalancePanel({ r, quote, onChange }: { r: CustomRequest; quote: 
         <p className="tabular text-[2.5rem] leading-tight font-extrabold">{formatINR(amount)}</p>
       </div>
       <Body>You approved the final piece. Once the balance is paid, it goes into the box.</Body>
-      <Button size="lg" className="w-full" onClick={() => setOpen(true)}>
-        Pay {formatINR(amount)} balance
+      <Button size="lg" className="w-full" onClick={start} disabled={busy} aria-busy={busy}>
+        {busy ? "Opening the payment window" : `Pay ${formatINR(amount)} balance`}
       </Button>
       <TestPaymentModal open={open} onOpenChange={setOpen} purpose="balance" amount={amount} woNumber={r.number} pay={() => payBalance(r.number)} onPaid={(n) => onChange(n)} />
     </Panel>

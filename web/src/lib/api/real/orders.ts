@@ -1,8 +1,10 @@
-import { ApiError } from "@/lib/api/errors";
+import { ApiError, PaymentUnconfirmedError } from "@/lib/api/errors";
 import { http, newIdempotencyKey, settlePayment, type CheckoutPayment } from "@/lib/api/http";
 import type { CheckoutOptions, CheckoutQuote } from "@/lib/pricing";
 import type { CartLine, Order } from "@/lib/types";
 import type { PlaceOrderInput } from "@/lib/api/orders";
+import type { RazorpayWindowOptions } from "@/lib/razorpay";
+import { waitUntil } from "@/lib/wait-until";
 
 const cleanLines = (lines: CartLine[]) => lines.map((l) => ({ productId: l.productId, variantId: l.variantId, qty: l.qty, ...(l.personalization ? { personalization: l.personalization } : {}) }));
 
@@ -48,19 +50,38 @@ export async function placeOrder(input: PlaceOrderInput): Promise<Order> {
   }
 }
 
+/** The payment open on `number` (created by placeOrder, or resumed: the API hands back the same Razorpay order on a retry). */
+async function paymentFor(number: string): Promise<CheckoutPayment> {
+  return payments.get(number) ?? (await http<CheckoutPayment>(`/orders/${encodeURIComponent(number)}/pay`, { method: "POST" }));
+}
+
+/** Which payment window applies: the API's simulated "test payment" (staging) or the real Razorpay window. */
+export async function paymentMode(number: string): Promise<"mock" | "razorpay"> {
+  const payment = await paymentFor(number);
+  payments.set(number, payment);
+  return payment.mock ? "mock" : "razorpay";
+}
+
 /**
  * Settles the payment created for `number` and returns the refreshed order.
- * Dev/mock payment mode: POST /payments/mock/:id/confirm { ok }. Live mode: see `settlePayment` (Razorpay TODO seam).
+ * Mock payment mode: POST /payments/mock/:id/confirm { ok }. Live: Razorpay window, then /payments/razorpay/verify.
+ * If the customer closes the window, `PaymentDismissedError` propagates and the order stays payable. If the verify call
+ * can't be answered, the payment may still have landed (Razorpay's webhook confirms it too), so we watch the order for
+ * a short while before giving up with `PaymentUnconfirmedError` (never "failed": the money may have moved).
  */
-export async function confirmPayment(number: string, ok: boolean): Promise<Order> {
-  let payment = payments.get(number);
-  // Reloaded page, or a previous attempt failed: ask for a fresh attempt on the same unpaid order.
-  payment ??= await http<CheckoutPayment>(`/orders/${encodeURIComponent(number)}/pay`, { method: "POST" });
+export async function confirmPayment(number: string, ok: boolean, opts?: RazorpayWindowOptions): Promise<Order> {
+  const payment = await paymentFor(number);
   try {
-    await settlePayment(payment, ok);
+    await settlePayment(payment, ok, opts);
   } catch (e) {
-    payments.delete(number); // a failed attempt can't be confirmed again: the retry opens a new one
-    throw e;
+    const unanswered = e instanceof ApiError && (e.status === 0 || e.status >= 500);
+    if (!unanswered) {
+      // Dismissed, declined, bad signature: this attempt is over; the retry resumes the same Razorpay order.
+      if (!(e instanceof ApiError) || e.status < 500) payments.delete(number);
+      throw e;
+    }
+    const paid = await waitUntil(async () => (await getOrder(number)).paymentStatus === "PAID", { timeoutMs: 30_000, everyMs: 2_500 });
+    if (!paid) throw new PaymentUnconfirmedError();
   }
   payments.delete(number);
   return getOrder(number);

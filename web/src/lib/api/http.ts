@@ -1,4 +1,5 @@
 import { ApiError } from "@/lib/api/errors";
+import { openRazorpayCheckout, type RazorpayWindowOptions } from "@/lib/razorpay";
 
 /**
  * Fetch wrapper for the real NestJS API (used when NEXT_PUBLIC_USE_MOCK=false).
@@ -131,13 +132,15 @@ export interface PaymentResult {
 /**
  * Settles a payment created by the API.
  *
- * - mock mode (API has no Razorpay keys, non-production): POST /payments/mock/:id/confirm { ok }.
+ * - mock payment mode (the API runs PAYMENTS_MODE=mock): POST /payments/mock/:id/confirm { ok }.
  *   `ok:false` answers 402 and is thrown as ApiError so the modal can show it.
- * - live mode: TODO(razorpay-checkout). Open Razorpay Checkout with `payment.keyId` + `payment.razorpayOrderId`
- *   (amount `payment.amountPaise`), then POST its handler result {razorpay_order_id, razorpay_payment_id,
- *   razorpay_signature} to /payments/razorpay/verify. Until that lands, fail loudly instead of pretending.
+ * - live mode: opens Razorpay Checkout, then POSTs the handler result to /payments/razorpay/verify (HMAC-checked by the API).
+ *   Throws `PaymentDismissedError` if the customer closes the window. If the verify call itself can't be answered (network,
+ *   5xx) the payment may still have gone through, so that surfaces as `PaymentUnconfirmedError` after the caller has had
+ *   a chance to look the order up: see `confirmPayment` in real/orders.ts. A 4xx (bad signature) stays an ApiError.
  */
-export async function settlePayment(payment: CheckoutPayment, ok: boolean): Promise<PaymentResult> {
+export async function settlePayment(payment: CheckoutPayment, ok: boolean, opts?: RazorpayWindowOptions): Promise<PaymentResult> {
   if (payment.mock) return http<PaymentResult>(`/payments/mock/${encodeURIComponent(payment.paymentId)}/confirm`, { method: "POST", body: { ok } });
-  throw new ApiError(501, "Online payment isn't switched on in this build yet. Please choose cash on delivery or message us on WhatsApp.", undefined, "RAZORPAY_NOT_WIRED");
+  const paid = await openRazorpayCheckout(payment, opts ?? { description: "FuzzBall Factory" });
+  return http<PaymentResult>("/payments/razorpay/verify", { method: "POST", body: paid, idempotencyKey: `verify-${paid.razorpay_payment_id}` });
 }

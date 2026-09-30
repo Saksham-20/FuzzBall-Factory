@@ -24,6 +24,8 @@ const schema = z
     kind: z.enum(["PERCENT", "FLAT"]),
     value: z.string().trim().refine((v) => v !== "" && Number.isFinite(Number(v)) && Number(v) > 0, "Enter an amount above 0."),
     minCart: z.string().trim().refine((v) => v === "" || (Number.isFinite(Number(v)) && Number(v) >= 0), "Enter an amount, or leave empty for no minimum."),
+    maxUses: z.string().trim().refine((v) => v === "" || (/^\d+$/.test(v) && Number(v) >= 1), "Enter a whole number, or leave empty for no limit."),
+    perUserLimit: z.string().trim().refine((v) => v === "" || (/^\d+$/.test(v) && Number(v) >= 1), "Enter a whole number, or leave empty for no limit."),
     expiresAt: z.string(),
     active: z.boolean(),
   })
@@ -44,7 +46,7 @@ const todayStr = () => localDate(new Date().toISOString());
 function CouponForm({ formId, initial, takenCodes, onSaved, onBusy }: { formId: string; initial?: Coupon; takenCodes: string[]; onSaved: () => void; onBusy: (b: boolean) => void }) {
   const { register, handleSubmit, control, setError, formState: { errors, isDirty } } = useForm<Values>({
     resolver: zodResolver(schema),
-    defaultValues: { code: initial?.code ?? "", kind: initial?.kind ?? "PERCENT", value: initial ? String(initial.value) : "", minCart: initial?.minCart ? String(initial.minCart) : "", expiresAt: localDate(initial?.expiresAt), active: initial?.active ?? true },
+    defaultValues: { code: initial?.code ?? "", kind: initial?.kind ?? "PERCENT", value: initial ? String(initial.value) : "", minCart: initial?.minCart ? String(initial.minCart) : "", maxUses: initial?.maxUses ? String(initial.maxUses) : "", perUserLimit: initial?.perUserLimit ? String(initial.perUserLimit) : "", expiresAt: localDate(initial?.expiresAt), active: initial?.active ?? true },
     mode: "onTouched",
   });
   useUnsavedGuard(isDirty);
@@ -65,6 +67,9 @@ function CouponForm({ formId, initial, takenCodes, onSaved, onBusy }: { formId: 
       await saveCoupon({
         code, kind: v.kind, value: Number(v.value), minCart: v.minCart ? Number(v.minCart) : 0, active: v.active,
         uses: initial?.uses ?? 0,
+        // Empty means "no limit": null clears a stored limit on the real API.
+        maxUses: v.maxUses ? Number(v.maxUses) : null,
+        perUserLimit: v.perUserLimit ? Number(v.perUserLimit) : null,
         expiresAt: v.expiresAt ? (v.expiresAt === localDate(initial?.expiresAt) && initial?.expiresAt ? initial.expiresAt : new Date(`${v.expiresAt}T23:59:59`).toISOString()) : undefined,
       });
       toast.success(`${code} saved.`);
@@ -94,6 +99,12 @@ function CouponForm({ formId, initial, takenCodes, onSaved, onBusy }: { formId: 
       </Field>
       <Field label="Minimum cart (₹)" optional error={errors.minCart?.message} hint="The coupon only works when the items add up to at least this much.">
         {(p) => <Input {...p} inputMode="numeric" className="tabular" {...register("minCart")} />}
+      </Field>
+      <Field label="Total uses allowed" optional error={errors.maxUses?.message} hint="Stops working after this many orders use it, across all customers. Leave empty for no limit.">
+        {(p) => <Input {...p} inputMode="numeric" className="tabular" {...register("maxUses")} />}
+      </Field>
+      <Field label="Uses per customer" optional error={errors.perUserLimit?.message} hint="How many times one customer can use it (an account, or the same email at checkout). Put 1 for a welcome code.">
+        {(p) => <Input {...p} inputMode="numeric" className="tabular" {...register("perUserLimit")} />}
       </Field>
       <Field label="Last day it works" optional error={errors.expiresAt?.message} hint="Leave empty for a coupon that doesn't expire.">
         {(p) => <Input {...p} type="date" {...register("expiresAt")} />}
