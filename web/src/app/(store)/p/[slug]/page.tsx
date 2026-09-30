@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ProductView } from "@/components/shop/ProductView";
-import { serverProduct, serverProducts } from "@/lib/catalog-server";
+import { serverCategory, serverProduct, serverProducts } from "@/lib/catalog-server";
+import { JsonLd, absoluteUrl, breadcrumbLd } from "@/lib/json-ld";
 import { SITE } from "@/lib/site";
 import type { Product } from "@/lib/types";
 
@@ -12,7 +13,7 @@ export async function generateStaticParams() {
   return (await serverProducts()).map((p) => ({ slug: p.slug }));
 }
 
-const abs = (path: string) => new URL(path, SITE.url).toString();
+const abs = absoluteUrl;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
@@ -60,13 +61,18 @@ export default async function ProductPage({ params }: Props) {
   // Real data: an unknown or unpublished slug is a real 404. Mock data lives in the browser (a piece the maker just
   // added there is not on the server), so the client resolves it and shows "This batch doesn't exist" itself.
   if (!product && !SITE.useMock) notFound();
+  const category = product ? await serverCategory(product.category).catch(() => null) : null;
   return (
     <>
+      {product ? <JsonLd data={jsonLd(product)} /> : null}
       {product ? (
-        <script
-          type="application/ld+json"
-          // Escape "<" so product copy can never close the script tag.
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd(product)).replace(/</g, "\\u003c") }}
+        <JsonLd
+          data={breadcrumbLd([
+            { name: "Home", path: "/" },
+            { name: "Shop", path: "/shop" },
+            ...(category ? [{ name: category.name, path: `/shop/${category.slug}` }] : []),
+            { name: product.name, path: `/p/${product.slug}` },
+          ])}
         />
       ) : null}
       <ProductView key={slug} slug={slug} initial={product ?? undefined} />

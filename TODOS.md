@@ -54,6 +54,18 @@
 
 ## Storefront (web)
 
+### Product structured data has no return policy or shipping details
+
+**What:** The Product JSON-LD (`web/src/app/(store)/p/[slug]/page.tsx`) carries name, price, availability and images, but not `hasMerchantReturnPolicy`, `shippingDetails` or `priceValidUntil`. Google's Merchant listings report shows them as optional gaps.
+
+**Why:** The refund and shipping policy pages are still drafts with placeholder numbers (return window, courier charges). Publishing figures in structured data before the maker confirms them would be an invented claim.
+
+**Context:** Once `docs/PLACEHOLDERS.md` shows the refund and shipping policies as final, derive both blocks from the same constants the policy pages use. Set the same shipping and return rules in Google Merchant Center for the `/feed/google.xml` feed (they are account-level there).
+
+**Effort:** S
+**Priority:** P2
+**Depends on:** Maker confirms return window and shipping rates
+
 ### Content-Security-Policy still allows inline scripts
 
 **What:** `web/src/lib/security-headers.ts` sends `script-src 'self' 'unsafe-inline' https://checkout.razorpay.com`. Inline scripts are allowed because Next's bootstrap scripts need it without a per-request nonce.

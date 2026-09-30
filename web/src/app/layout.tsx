@@ -12,6 +12,7 @@ export const metadata: Metadata = {
   description:
     "Handmade crochet plushies, bouquets, bags and gifts. Ready to ship or made to order. Custom work orders welcome. Handmade with love in India.",
   openGraph: { siteName: SITE.name, type: "website", locale: "en_IN" },
+  twitter: { card: "summary_large_image" },
 };
 
 export const viewport: Viewport = { themeColor: "#f6eee3" };

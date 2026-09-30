@@ -3,6 +3,7 @@ import { Accordion, AccordionItem } from "@/components/ui/Tabs";
 import { Prose } from "@/components/content/Prose";
 import { ReadLayout } from "@/components/content/ReadLayout";
 import { FAQ_GROUPS, faqJsonLd } from "@/components/content/faq";
+import { JsonLd } from "@/lib/json-ld";
 
 export const metadata: Metadata = {
   title: "FAQ",
@@ -12,11 +13,9 @@ export const metadata: Metadata = {
 };
 
 export default function FaqPage() {
-  // Escape "<" so the JSON can never close the script tag.
-  const json = JSON.stringify(faqJsonLd()).replace(/</g, "\\u003c");
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: json }} />
+      <JsonLd data={faqJsonLd()} />
       <ReadLayout
         title="Questions, answered"
         intro="Lead times, custom orders, payments, shipping, returns and care. Can't find yours? Ask on WhatsApp."

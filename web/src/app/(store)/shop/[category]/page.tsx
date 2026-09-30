@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { ShopClient, ShopFallback } from "@/components/shop/ShopClient";
 import { serverCategories, serverCategory, serverProducts } from "@/lib/catalog-server";
 import { paletteOf } from "@/lib/palette";
+import { JsonLd, breadcrumbLd } from "@/lib/json-ld";
 
 type Props = { params: Promise<{ category: string }> };
 
@@ -31,8 +32,17 @@ export default async function CategoryPage({ params }: Props) {
   if (!c) notFound();
   const palette = paletteOf(await serverProducts({ category: c.slug }));
   return (
-    <Suspense fallback={<ShopFallback category={c} />}>
-      <ShopClient category={c} palette={palette} />
-    </Suspense>
+    <>
+      <JsonLd
+        data={breadcrumbLd([
+          { name: "Home", path: "/" },
+          { name: "Shop", path: "/shop" },
+          { name: c.name, path: `/shop/${c.slug}` },
+        ])}
+      />
+      <Suspense fallback={<ShopFallback category={c} />}>
+        <ShopClient category={c} palette={palette} />
+      </Suspense>
+    </>
   );
 }

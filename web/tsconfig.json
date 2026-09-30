@@ -48,7 +48,9 @@
     ".next-dev/types/**/*.ts",
     ".next-dev/dev/types/**/*.ts",
     ".next-csp/types/**/*.ts",
-    ".next-csp/dev/types/**/*.ts"
+    ".next-csp/dev/types/**/*.ts",
+    ".next-seo/types/**/*.ts",
+    ".next-seo/dev/types/**/*.ts"
   ],
   "exclude": [
     "node_modules"

@@ -3,6 +3,7 @@ import { CustomClient } from "@/components/custom/CustomClient";
 
 export const metadata: Metadata = {
   title: "Put in a work order",
+  alternates: { canonical: "/custom" },
   description: "Request a custom crochet piece or customize something from the shelf. Get a quote you can accept, counter or pass on.",
 };
 
