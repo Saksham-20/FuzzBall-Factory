@@ -1,0 +1,98 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  api:
+    name: api (lint, types, unit, e2e)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: fuzzball
+          POSTGRES_PASSWORD: fuzzball
+          POSTGRES_DB: fuzzball_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U fuzzball -d fuzzball_test"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    defaults:
+      run:
+        working-directory: api
+    env:
+      NODE_ENV: test
+      DATABASE_URL: postgresql://fuzzball:fuzzball@localhost:5432/fuzzball_test
+      TEST_DATABASE_URL: postgresql://fuzzball:fuzzball@localhost:5432/fuzzball_test
+      JWT_ACCESS_SECRET: ci-access-secret-not-used-anywhere-else
+      JWT_REFRESH_SECRET: ci-refresh-secret-not-used-anywhere-else
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: api/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+      - run: npm run test:e2e
+
+  web:
+    name: web (lint, unit, build)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test
+      - run: npm run build
+        env:
+          # Mock-mode build: the storefront's production build must state its mode explicitly.
+          NEXT_PUBLIC_USE_MOCK: 'true'
+
+  security:
+    name: security (audit, secret scan)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+      - name: npm audit (production dependencies)
+        run: |
+          status=0
+          for dir in api web; do
+            echo "::group::npm audit $dir"
+            (cd "$dir" && npm audit --omit=dev --audit-level=critical) || status=1
+            echo "::endgroup::"
+          done
+          exit $status
+      - uses: gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e # v3.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
