@@ -74,18 +74,27 @@ export class CatalogService {
     return toProductDto(p);
   }
 
-  /** Same category first, then the rest; newest first inside each group. Excludes the piece itself. */
+  /** Same category first, then the rest; newest first inside each group. Excludes the piece itself. Two small queries, never the whole catalogue. */
   async related(slug: string, limit: number): Promise<ProductDto[]> {
     const current = await this.prisma.product.findFirst({ where: { slug, status: 'PUBLISHED' }, select: { categoryId: true } });
     if (!current) throw notFound("We couldn't find that piece.");
-    const all = await this.prisma.product.findMany({
-      where: { status: 'PUBLISHED', slug: { not: slug } },
+    const newestFirst = [{ createdAt: 'desc' as const }, { batch: 'desc' as const }];
+    const same = await this.prisma.product.findMany({
+      where: { status: 'PUBLISHED', slug: { not: slug }, categoryId: current.categoryId },
       include: PRODUCT_INCLUDE,
-      orderBy: [{ createdAt: 'desc' }, { batch: 'desc' }],
+      orderBy: newestFirst,
+      take: limit,
     });
-    const same = all.filter((p) => p.categoryId === current.categoryId);
-    const rest = all.filter((p) => p.categoryId !== current.categoryId);
-    return [...same, ...rest].slice(0, limit).map(toProductDto);
+    const rest =
+      same.length >= limit
+        ? []
+        : await this.prisma.product.findMany({
+            where: { status: 'PUBLISHED', slug: { not: slug }, categoryId: { not: current.categoryId } },
+            include: PRODUCT_INCLUDE,
+            orderBy: newestFirst,
+            take: limit - same.length,
+          });
+    return [...same, ...rest].map(toProductDto);
   }
 
   /**

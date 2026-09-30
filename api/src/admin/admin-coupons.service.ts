@@ -1,3 +1,4 @@
+import { LIST_CAP } from '../common/list-cap.js';
 import { Injectable } from '@nestjs/common';
 import { conflict, notFound, validationFailed } from '../common/errors.js';
 import type { Coupon } from '../generated/prisma/client.js';
@@ -49,7 +50,7 @@ export class AdminCouponsService {
   ) {}
 
   async list(): Promise<CouponDto[]> {
-    return (await this.prisma.coupon.findMany({ orderBy: { createdAt: 'asc' } })).map(toCouponDto);
+    return (await this.prisma.coupon.findMany({ orderBy: { createdAt: 'asc' }, take: LIST_CAP })).map(toCouponDto);
   }
 
   async create(ctx: AdminCtx, dto: CouponInputDto): Promise<CouponDto> {

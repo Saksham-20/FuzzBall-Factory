@@ -1,3 +1,4 @@
+import { LIST_CAP } from '../common/list-cap.js';
 import { Injectable } from '@nestjs/common';
 import { notFound } from '../common/errors.js';
 import type { Material } from '../generated/prisma/client.js';
@@ -42,7 +43,7 @@ export class AdminMaterialsService {
 
   /** Non-archived only: the admin list and the price calculator's picker both want only what's still stocked. */
   async list(): Promise<MaterialDto[]> {
-    return (await this.prisma.material.findMany({ where: { archived: false }, orderBy: { createdAt: 'asc' } })).map(toMaterialDto);
+    return (await this.prisma.material.findMany({ where: { archived: false }, orderBy: { createdAt: 'asc' }, take: LIST_CAP })).map(toMaterialDto);
   }
 
   async create(ctx: AdminCtx, dto: MaterialInputDto): Promise<MaterialDto> {

@@ -1,3 +1,4 @@
+import { LIST_CAP } from '../common/list-cap.js';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { Env } from '../config/env.js';
@@ -197,7 +198,7 @@ export class OrdersService {
   // ───────────── read ─────────────
 
   async listMine(userId: string): Promise<OrderDto[]> {
-    const rows = await this.prisma.order.findMany({ where: { userId }, include: ORDER_INCLUDE, orderBy: { createdAt: 'desc' } });
+    const rows = await this.prisma.order.findMany({ where: { userId }, include: ORDER_INCLUDE, orderBy: [{ createdAt: 'desc' }, { id: 'desc' }], take: LIST_CAP });
     return rows.map(toOrderDto);
   }
 

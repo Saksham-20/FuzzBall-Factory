@@ -1,3 +1,4 @@
+import { LIST_CAP } from '../common/list-cap.js';
 import { UploadsService } from '../uploads/uploads.service.js';
 import { Inject, Injectable, Logger, type OnModuleInit } from '@nestjs/common';
 import { AppException, badRequest, notFound, validationFailed } from '../common/errors.js';
@@ -62,7 +63,7 @@ export class CustomService implements OnModuleInit {
   /* ───────────── reads ───────────── */
 
   async list(user: RequestUser): Promise<CustomRequestDto[]> {
-    const rows = await this.prisma.customRequest.findMany({ where: { userId: user.userId }, include: customInclude, orderBy: [{ createdAt: 'desc' }, { id: 'desc' }] });
+    const rows = await this.prisma.customRequest.findMany({ where: { userId: user.userId }, include: customInclude, orderBy: [{ createdAt: 'desc' }, { id: 'desc' }], take: LIST_CAP });
     return rows.map(toCustomRequestDto);
   }
 

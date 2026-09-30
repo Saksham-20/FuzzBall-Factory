@@ -1,3 +1,4 @@
+import { LIST_CAP } from '../common/list-cap.js';
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 import type { Prisma } from '../generated/prisma/client.js';
@@ -13,7 +14,7 @@ export class ReviewsService {
 
   /** Only PUBLISHED reviews, newest first. Empty on purpose when there are none: never fabricate reviews. */
   async listPublished(productId: string): Promise<ReviewDto[]> {
-    const rows = await this.prisma.review.findMany({ where: { productId, status: 'PUBLISHED' }, orderBy: { createdAt: 'desc' } });
+    const rows = await this.prisma.review.findMany({ where: { productId, status: 'PUBLISHED' }, orderBy: [{ createdAt: 'desc' }, { id: 'desc' }], take: LIST_CAP });
     return rows.map(toReviewDto);
   }
 

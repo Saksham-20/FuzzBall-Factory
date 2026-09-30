@@ -1,3 +1,4 @@
+import { LIST_CAP } from '../common/list-cap.js';
 import { Injectable } from '@nestjs/common';
 import { notFound } from '../common/errors.js';
 import { customInclude, toCustomRequestDto, type CustomRequestDto } from '../custom/custom.mapper.js';
@@ -46,8 +47,8 @@ export class AdminCustomersService {
     const user = await this.prisma.user.findFirst({ where: { id, role: 'customer' } });
     if (!user) throw notFound('Customer not found.');
     const [orders, custom] = await Promise.all([
-      this.prisma.order.findMany({ where: { userId: id }, include: ORDER_INCLUDE, orderBy: [{ createdAt: 'desc' }, { id: 'desc' }] }),
-      this.prisma.customRequest.findMany({ where: { userId: id }, include: customInclude, orderBy: [{ createdAt: 'desc' }, { id: 'desc' }] }),
+      this.prisma.order.findMany({ where: { userId: id }, include: ORDER_INCLUDE, orderBy: [{ createdAt: 'desc' }, { id: 'desc' }], take: LIST_CAP }),
+      this.prisma.customRequest.findMany({ where: { userId: id }, include: customInclude, orderBy: [{ createdAt: 'desc' }, { id: 'desc' }], take: LIST_CAP }),
     ]);
     return { user: toUserDto(user), orders: orders.map(toOrderDto), custom: custom.map(toCustomRequestDto) };
   }
