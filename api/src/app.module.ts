@@ -17,6 +17,7 @@ import { OrdersModule } from './orders/orders.module.js';
 import { AccountModule } from './account/account.module.js';
 import { ReviewsModule } from './reviews/reviews.module.js';
 import { UploadsModule } from './uploads/uploads.module.js';
+import { JobsModule } from './jobs/jobs.module.js';
 import { HealthController } from './health/health.controller.js';
 
 /**
@@ -43,6 +44,7 @@ import { HealthController } from './health/health.controller.js';
     AccountModule,
     ReviewsModule,
     UploadsModule,
+    JobsModule,
   ],
   controllers: [HealthController],
 })

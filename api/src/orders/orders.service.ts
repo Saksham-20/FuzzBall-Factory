@@ -1,4 +1,4 @@
-import { Inject, Injectable, Logger, type OnModuleDestroy, type OnModuleInit } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { Env } from '../config/env.js';
 import { PrismaService } from '../prisma/prisma.service.js';
@@ -28,12 +28,10 @@ export interface OrderViewer {
 
 const NOT_FOUND = "We couldn't find that order.";
 const digits = (s: string) => s.replace(/\D/g, '');
-const SWEEP_EVERY_MS = 10 * 60_000;
 
 @Injectable()
-export class OrdersService implements OnModuleInit, OnModuleDestroy {
+export class OrdersService {
   private readonly logger = new Logger(OrdersService.name);
-  private sweeper?: NodeJS.Timeout;
 
   constructor(
     private readonly prisma: PrismaService,
@@ -45,17 +43,6 @@ export class OrdersService implements OnModuleInit, OnModuleDestroy {
     private readonly notifier: OrderNotifier,
     @Inject(PAYMENTS_PORT) private readonly payments: PaymentsPort,
   ) {}
-
-  onModuleInit() {
-    // Release stock held by unpaid online orders. unref(): never keeps the process (or a test run) alive.
-    if (this.config.get('NODE_ENV', { infer: true }) === 'test') return;
-    this.sweeper = setInterval(() => void this.expireUnpaidOrders().catch((e: Error) => this.logger.error(`Sweep failed: ${e.message}`)), SWEEP_EVERY_MS);
-    this.sweeper.unref();
-  }
-
-  onModuleDestroy() {
-    if (this.sweeper) clearInterval(this.sweeper);
-  }
 
   // ───────────── place ─────────────
 
