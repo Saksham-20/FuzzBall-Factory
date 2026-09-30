@@ -596,10 +596,18 @@ export function CheckoutClient() {
                     I&apos;ve read the{" "}
                     <Link href="/policies/refund" target="_blank" className="font-semibold underline">
                       refund policy
-                    </Link>{" "}
-                    and{" "}
+                    </Link>
+                    ,{" "}
                     <Link href="/policies/shipping" target="_blank" className="font-semibold underline">
                       shipping policy
+                    </Link>
+                    ,{" "}
+                    <Link href="/policies/terms" target="_blank" className="font-semibold underline">
+                      terms
+                    </Link>{" "}
+                    and{" "}
+                    <Link href="/policies/privacy" target="_blank" className="font-semibold underline">
+                      privacy notice
                     </Link>
                     .
                   </>

@@ -88,6 +88,8 @@ export interface User {
   phone?: string;
   /** False until the signup link is used. Absent in the mock data layer (treated as confirmed). */
   emailVerified?: boolean;
+  /** Set while an account-deletion request waits out its 30 days; the customer can withdraw it. */
+  deletionRequestedAt?: string;
   role: Role;
   createdAt: string;
 }

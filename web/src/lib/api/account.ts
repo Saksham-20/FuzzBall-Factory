@@ -73,5 +73,31 @@ export async function deleteAddress(addressId: string): Promise<void> {
 export async function requestAccountDeletion(): Promise<void> {
   if (!SITE.useMock) return real.requestAccountDeletion();
   await wait(400);
-  uid();
+  const id = uid();
+  db.update((d) => ({ ...d, users: d.users.map((u) => (u.id === id && !u.deletionRequestedAt ? { ...u, deletionRequestedAt: new Date().toISOString() } : u)) }));
+}
+
+/** Withdraws a pending deletion request. */
+export async function cancelAccountDeletion(): Promise<void> {
+  if (!SITE.useMock) return real.cancelAccountDeletion();
+  await wait(300);
+  const id = uid();
+  db.update((d) => ({ ...d, users: d.users.map((u) => (u.id === id ? { ...u, deletionRequestedAt: undefined } : u)) }));
+}
+
+/** DPDP right of access: everything held about the signed-in account, as a plain object (the caller offers it as a file). */
+export async function exportData(): Promise<Record<string, unknown>> {
+  if (!SITE.useMock) return real.exportData();
+  await wait(300);
+  const id = uid();
+  const d = db.get();
+  const { password, ...profile } = d.users.find((u) => u.id === id)!;
+  void password;
+  return {
+    generatedAt: new Date().toISOString(),
+    about: "Everything held about this account (sample data in this preview).",
+    profile,
+    addresses: d.addresses.filter((a) => d.addressOwner[a.id] === id),
+    orders: d.orders.filter((o) => o.userId === id),
+  };
 }

@@ -156,15 +156,21 @@ export const privacyPolicy: PolicyDoc = {
           <p>We keep data only as long as we need it for the purpose it was collected, or as the law requires:</p>
           <ul>
             <li>
-              <strong>Account data:</strong> until you delete your account or ask us to.
+              <strong>Account data</strong> (details, saved addresses, wishlist, reviews): until you delete your account. Thirty days after you
+              ask, we erase it.
+            </li>
+            <li>
+              <strong>Sign-in records</strong> (which device signed in, and from which network address): the network address and browser details are
+              dropped after 30 days, and the record itself when the session expires.
             </li>
             <li>
               <strong>Order and payment records, invoices:</strong> for <Ph>[retention period, e.g. 8 years, confirm with the accountant]</Ph>,
               because tax and accounting law requires us to keep them.
             </li>
             <li>
-              <strong>Custom work order messages and reference images:</strong> for <Ph>[retention period, e.g. 2 years]</Ph> after the work order
-              closes, in case of questions or claims about the piece.
+              <strong>Custom work order messages and reference images:</strong> until you delete your account, in case of questions or claims
+              about the piece. <Ph>[decide: also delete automatically some years after the work order closes?]</Ph> Photos you upload and never
+              use are deleted after a week.
             </li>
             <li>
               <strong>Contact form messages and emails:</strong> for <Ph>[retention period, e.g. 2 years]</Ph>.
@@ -173,7 +179,11 @@ export const privacyPolicy: PolicyDoc = {
               <strong>Server logs:</strong> for a short period, then deleted.
             </li>
           </ul>
-          <p>After that, we delete the data or make it anonymous.</p>
+          <p>
+            When you delete your account we keep the bare record of past orders and payments (amounts and dates, without your name, address or
+            contact details) for the period above, because tax and consumer rules require it. Everything else about you is deleted, and
+            we will not delete while an order or refund is still in progress; we do it as soon as it is finished.
+          </p>
         </>
       ),
     },
@@ -194,8 +204,9 @@ export const privacyPolicy: PolicyDoc = {
           <p>
             To use any of these, email <a href={`mailto:${SITE.email}`}>{SITE.email}</a> or write to our{" "}
             <Link href="/policies/grievance">grievance officer</Link>. Tell us what you want and the email or phone number on your account so we
-            can confirm it is you. We acknowledge within 48 hours and respond within one month. You can delete your account details from your
-            account page where that option is shown.
+            can confirm it is you. We acknowledge within 48 hours and respond within one month. From your account page you can
+            also download everything we hold about you, ask us to delete your account (it happens after 30 days, and you can change your mind
+            before then), and correct your details.
           </p>
           <p>
             If you are not satisfied with our response, you can complain to the Data Protection Board of India once you have used our grievance
@@ -218,6 +229,7 @@ export const privacyPolicy: PolicyDoc = {
             head={["What", "Why", "How long"]}
             rows={[
               ["Sign-in session", "Keeps you signed in (essential)", "Until you sign out or the session expires"],
+              ["Order access", "Lets you open the order you placed as a guest, on this browser only (essential)", "7 days"],
               ["Cart and wishlist", "Remembers what you added, on this device (essential)", "Until you clear it or the browser data"],
               ["Display choices", "Small interface settings, such as whether a notice was shown", "Until you clear browser data"],
             ]}

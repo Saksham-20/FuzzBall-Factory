@@ -19,3 +19,5 @@ export function saveAddress(a: Omit<Address, "id"> & { id?: string }): Promise<A
 
 export const deleteAddress = (id: string) => http(`/account/addresses/${encodeURIComponent(id)}`, { method: "DELETE" });
 export const requestAccountDeletion = () => http("/account/delete-request", { method: "POST" });
+export const cancelAccountDeletion = () => http("/account/delete-request/cancel", { method: "POST" });
+export const exportData = () => http<Record<string, unknown>>("/account/export");

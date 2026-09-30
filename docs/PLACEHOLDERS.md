@@ -26,7 +26,7 @@ _Resolved: `razorpay-test` and `razorpay-checkout` (the fake payment windows). L
 | `instagram` | `MakerNote.tsx`, `SITE.instagram` | Tiles use sample photos and link to instagram.com | Real handle and feed |
 | `whatsapp-number` | `web/src/lib/site.ts` (`NEXT_PUBLIC_WHATSAPP`) | `910000000000` | The real WhatsApp Business number (digits, with country code) |
 | `contact-email` | `web/src/lib/site.ts` | `hello@fuzzballfactory.example` | Real email |
-| `legal-details` | `web/src/components/content/policies/*.tsx`, `SellerDetails.tsx`, `contact/page.tsx`, `terms.tsx` (GST wording, court city), `privacy.tsx` (retention periods) | Bracketed stand-ins for the seller's legal name, registered address, GSTIN, business phone, grievance officer name/designation/phone/hours, jurisdiction city and retention periods, rendered by `Ph` in `Placeholder.tsx` | The real legal details (Consumer Protection (E-Commerce) Rules 2020 and Razorpay require them). Search the repo for `PLACEHOLDER(legal-details)` |
+| `legal-details` | `web/src/components/content/policies/*.tsx`, `SellerDetails.tsx`, `contact/page.tsx`, `terms.tsx` (GST wording, court city), `privacy.tsx` (retention periods, including the order-record period and whether work-order conversations should also expire on a schedule) | Bracketed stand-ins for the seller's legal name, registered address, GSTIN, business phone, grievance officer name/designation/phone/hours, jurisdiction city and retention periods, rendered by `Ph` in `Placeholder.tsx` | The real legal details (Consumer Protection (E-Commerce) Rules 2020 and Razorpay require them). Search the repo for `PLACEHOLDER(legal-details)` |
 | `policy-draft` | `web/src/components/content/policies/*.tsx`, `DraftNote.tsx` | The full text of shipping, refund, terms, privacy and grievance pages is a working draft (windows, fees, dispatch promises, provider list, DPDP wording) | Lawyer-reviewed final text. The "Draft: have this reviewed" banner disappears once `NEXT_PUBLIC_USE_MOCK=false` |
 | `maker-note` (About page) | `web/src/app/(store)/about/page.tsx` | Maker name, photo and story slots on the About page | The maker's name, photo and own words |
 | `contact-hours` | `web/src/app/(store)/contact/page.tsx` | Hours the maker replies | Real days and hours |
@@ -37,7 +37,6 @@ _Resolved: `razorpay-test` and `razorpay-checkout` (the fake payment windows). L
 | `pdp-returns-copy` | `web/src/components/shop/ProductDetails.tsx` | Draft "Shipping & returns" wording on the product page (7-day exchange for ready pieces, no returns on made-to-order/custom) | Final wording from the policy pages |
 | `mock-logins` | `web/src/components/account/auth/LoginForm.tsx` | Dev-only "Sample logins" hint under the login form (only when `SITE.useMock`) | Disappears automatically with `NEXT_PUBLIC_USE_MOCK=false` |
 | `invoice-download` | `web/src/components/account/OrderDetailClient.tsx` | Disabled "Download invoice" control, "coming soon" | Real GST invoice PDF endpoint from the API |
-| `dpdp-deletion` | `web/src/components/account/ProfileClient.tsx` | "Delete your account" wording and the mock deletion request (records nothing) | Final wording from the privacy policy + real API request |
 
 ## Invented-claims rule
 

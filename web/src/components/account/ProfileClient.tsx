@@ -13,6 +13,8 @@ import { Field, Input } from "@/components/ui/Field";
 import { ErrorNote } from "@/components/ui/misc";
 import * as account from "@/lib/api/account";
 import { resendVerification } from "@/lib/api/auth";
+import { downloadJson } from "@/lib/download";
+import { formatDate } from "@/lib/format";
 import { useAuth } from "@/lib/state/AuthContext";
 import { ApiError } from "@/lib/mock/db";
 import type { User } from "@/lib/types";
@@ -36,11 +38,17 @@ export function ProfileClient() {
           </h2>
           <PasswordForm />
         </section>
+        <section aria-labelledby="data-h" className="py-10">
+          <h2 id="data-h" className="font-display text-[2rem]">
+            Your data
+          </h2>
+          <DownloadData />
+        </section>
         <section aria-labelledby="del-h" className="pt-10">
           <h2 id="del-h" className="font-display text-[2rem]">
             Delete your account
           </h2>
-          <DeleteAccount />
+          <DeleteAccount user={user} />
         </section>
       </div>
     </div>
@@ -285,18 +293,48 @@ function PasswordForm() {
   );
 }
 
-function DeleteAccount() {
+function DownloadData() {
+  const [busy, setBusy] = useState(false);
+
+  async function download() {
+    setBusy(true);
+    try {
+      downloadJson(`fuzzball-data-${new Date().toISOString().slice(0, 10)}.json`, await account.exportData());
+    } catch (e) {
+      toast.error(e instanceof ApiError ? e.message : "We couldn't prepare your data just now. Please try again.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div>
+      <p className="mt-3 max-w-[56ch] text-brown">
+        Everything we hold about you in one file: your details, addresses, orders, work orders and messages, reviews and wishlist.
+      </p>
+      <Button variant="secondary" className="mt-5" onClick={download} disabled={busy} aria-busy={busy}>
+        {busy ? "Preparing…" : "Download my data"}
+      </Button>
+    </div>
+  );
+}
+
+const DELETE_GRACE_DAYS = 30;
+
+function DeleteAccount({ user }: { user: User }) {
+  const { refresh } = useAuth();
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const [requested, setRequested] = useState(false);
+  const requestedAt = user.deletionRequestedAt ? new Date(user.deletionRequestedAt) : null;
+  const deletionDate = requestedAt ? new Date(requestedAt.getTime() + DELETE_GRACE_DAYS * 86_400_000) : null;
 
   async function confirm() {
     setBusy(true);
     setError("");
     try {
       await account.requestAccountDeletion();
-      setRequested(true);
+      await refresh();
       setOpen(false);
       toast.success("Deletion requested.");
     } catch (e) {
@@ -306,16 +344,35 @@ function DeleteAccount() {
     }
   }
 
+  async function cancel() {
+    setBusy(true);
+    try {
+      await account.cancelAccountDeletion();
+      await refresh();
+      toast.success("Deletion cancelled. Your account stays.");
+    } catch (e) {
+      toast.error(e instanceof ApiError ? e.message : "We couldn't cancel that just now. Please try again.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   return (
-    // PLACEHOLDER(dpdp-deletion): wording is a stand-in until the privacy policy is written; the API call is a mock that records nothing.
-    <div data-placeholder="dpdp-deletion" className="relative">
+    <div>
       <p className="mt-3 max-w-[56ch] text-brown">
-        Under India&apos;s Digital Personal Data Protection Act you can ask us to delete your data. Once you ask, we&apos;ll delete it within 30 days.
+        Under India&apos;s Digital Personal Data Protection Act you can ask us to delete your data. We wait {DELETE_GRACE_DAYS} days in case you change your mind, then erase it.
+        We keep only the bare record of past orders and payments (amounts and dates, no name or address), because tax rules require it.
       </p>
-      {requested ? (
-        <p role="status" className="mt-5 rounded-[12px] bg-warn-wash px-4 py-3 font-medium text-warn">
-          Deletion requested. We&apos;ll delete your data within 30 days. Changed your mind? Message us before then.
-        </p>
+      {requestedAt && deletionDate ? (
+        <div role="status" className="mt-5 rounded-[12px] bg-warn-wash px-4 py-3 text-warn">
+          <p className="font-medium">
+            Deletion requested on {formatDate(requestedAt.toISOString())}. We&apos;ll erase your account on or after {formatDate(deletionDate.toISOString())}.
+          </p>
+          <p className="mt-1 text-[15px]">If an order or refund is still in progress we wait until it is finished.</p>
+          <Button variant="secondary" size="sm" className="mt-3" onClick={cancel} disabled={busy} aria-busy={busy}>
+            {busy ? "Cancelling…" : "Keep my account"}
+          </Button>
+        </div>
       ) : (
         <Button variant="secondary" className="mt-5" onClick={() => setOpen(true)}>
           Request account deletion
@@ -330,7 +387,7 @@ function DeleteAccount() {
           }
         }}
         title="Delete your account?"
-        description="We'll delete your account and personal data within 30 days. You'll lose access to your order history and saved addresses."
+        description={`In ${DELETE_GRACE_DAYS} days we'll erase your account and personal data. You'll lose access to your order history, work orders and saved addresses. You can change your mind before then.`}
         footer={
           <>
             <Button variant="ghost" onClick={() => setOpen(false)} disabled={busy}>
