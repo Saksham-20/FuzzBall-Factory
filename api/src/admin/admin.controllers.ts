@@ -11,6 +11,7 @@ import { AdminCategoriesService } from './admin-categories.service.js';
 import { AdminCouponsService, type CouponDto } from './admin-coupons.service.js';
 import { AdminCustomService, type AdminCtx } from './admin-custom.service.js';
 import { AdminCustomersService, type CustomerDetail, type CustomerRow } from './admin-customers.service.js';
+import { AdminAuditService, type AuditPage } from './admin-audit.service.js';
 import { AdminEmailService } from './admin-email.service.js';
 import { AdminDashboardService, type DashboardDto } from './admin-dashboard.service.js';
 import { AdminMaterialsService, type MaterialDto } from './admin-materials.service.js';
@@ -22,6 +23,7 @@ import { AdminSettingsService } from './admin-settings.service.js';
 import { ClientIp } from './audit.service.js';
 import { AdminMessageDto, ApprovalRequestDto, DeclineCustomDto, ProgressDto, ShipCustomDto } from './dto/admin-custom.dto.js';
 import { CategoryInputDto } from './dto/category.dto.js';
+import { AuditListQuery } from './dto/audit.dto.js';
 import { CouponInputDto } from './dto/coupon.dto.js';
 import { EmailListQuery } from './dto/email.dto.js';
 import { MaterialInputDto, MaterialStockAdjustDto } from './dto/material.dto.js';
@@ -343,6 +345,18 @@ export class AdminPaymentsController {
 }
 
 @Roles('admin')
+@Controller('admin/audit')
+export class AdminAuditController {
+  constructor(private readonly audit: AdminAuditService) {}
+
+  /** Who changed what, newest first. Filter by `action`, `entity`, `entityId`, `actorId`; page with `before=<nextCursor>`. */
+  @Get()
+  list(@Query() q: AuditListQuery): Promise<AuditPage> {
+    return this.audit.list(q);
+  }
+}
+
+@Roles('admin')
 @Controller('admin/email')
 export class AdminEmailController {
   constructor(private readonly email: AdminEmailService) {}
@@ -389,5 +403,6 @@ export const ADMIN_CONTROLLERS = [
   AdminMaterialsController,
   AdminPaymentsController,
   AdminEmailController,
+  AdminAuditController,
   AdminSettingsController,
 ];

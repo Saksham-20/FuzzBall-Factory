@@ -11,6 +11,9 @@ const WEBHOOK_KEEP_DAYS = 90;
 const EMAIL_SENT_KEEP_DAYS = 30;
 const EMAIL_FAILED_KEEP_DAYS = 90;
 
+/** After this long an audit row keeps what was done and by whom, but not the IP address it came from. */
+const AUDIT_IP_KEEP_DAYS = 90;
+
 /** Deletes rows that only exist to be looked at briefly. Each method returns how many rows it removed. */
 @Injectable()
 export class RetentionService {
@@ -38,5 +41,11 @@ export class RetentionService {
       this.prisma.emailOutbox.deleteMany({ where: { status: 'FAILED', createdAt: { lt: new Date(now.getTime() - EMAIL_FAILED_KEEP_DAYS * DAY_MS) } } }),
     ]);
     return sent.count + failed.count;
+  }
+
+  /** Forgets the IP on old audit rows (personal data with a short useful life). Returns how many rows changed. */
+  async scrubAuditIps(now: Date = new Date()): Promise<number> {
+    const { count } = await this.prisma.auditLog.updateMany({ where: { ip: { not: null }, createdAt: { lt: new Date(now.getTime() - AUDIT_IP_KEEP_DAYS * DAY_MS) } }, data: { ip: null } });
+    return count;
   }
 }

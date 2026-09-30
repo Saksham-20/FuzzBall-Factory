@@ -229,6 +229,7 @@ Counters, messages, change requests, new requests and payments are throttled to 
 | `refundPayment(id, { amount?, reason })` | `POST /admin/payments/:id/refund` (200) | Manual refund of a captured payment (order, deposit or balance), whole remainder unless `amount`. `reason` 3-200 chars (audited as `payment.refund`). → `{ refunded, pending }` rupees. 400 over the refundable amount, 409 not captured |
 | _(outbox)_ | `GET /admin/email?status=&limit=` | Email outbox, newest first: `{ id, event, to, status (PENDING/SENDING/SENT/FAILED), attempts, lastError, createdAt, sentAt, resendable }`. `status=FAILED` lists emails that gave up |
 | _(outbox)_ | `POST /admin/email/:id/retry` (200) | Resend a `FAILED` email (audited as `email.retry`). 400 if it is not failed or its content was cleared (password-reset emails forget their link), 404 unknown |
+| _(audit)_ | `GET /admin/audit?action=&entity=&entityId=&actorId=&before=&limit=` | Admin audit trail, newest first: `{ items: [{ id, at, actor: {id,name,email}\|null, action, entity, entityId, meta, ip }], nextCursor? }`. Page with `before=<nextCursor>`; `limit` 1-100 (default 50). IPs are dropped from rows older than 90 days |
 | `deleteCoupon(code)` | `DELETE /admin/coupons/:code` (204) | |
 | `listMaterials()` | `GET /admin/materials` | → `Material[]` (non-archived only) |
 | `saveMaterial(input)` create | `POST /admin/materials` (201) | `MaterialInput` → `Material` |

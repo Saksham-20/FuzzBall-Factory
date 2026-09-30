@@ -3,6 +3,7 @@ import { CustomModule } from '../custom/custom.module.js';
 import { OrdersModule } from '../orders/orders.module.js';
 import { PaymentsModule } from '../payments/payments.module.js';
 import { SettingsModule } from '../settings/settings.module.js';
+import { AdminAuditService } from './admin-audit.service.js';
 import { AdminCategoriesService } from './admin-categories.service.js';
 import { AdminCouponsService } from './admin-coupons.service.js';
 import { AdminCustomService } from './admin-custom.service.js';
@@ -35,6 +36,7 @@ import { AuditService } from './audit.service.js';
     AdminMaterialsService,
     AdminPaymentsService,
     AdminEmailService,
+    AdminAuditService,
     AdminSettingsService,
   ],
 })

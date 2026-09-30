@@ -824,6 +824,8 @@ model AuditLog {
 
   @@index([entity, entityId])
   @@index([actorId, createdAt])
+  @@index([createdAt])
+  @@index([action, createdAt])
 }
 
 /// Atomic counters for human-readable numbers (orders, work orders).

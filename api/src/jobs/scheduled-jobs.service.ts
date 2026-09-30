@@ -68,4 +68,10 @@ export class ScheduledJobs {
   purgeEmailOutbox() {
     return this.runner.run('email.purge', () => this.retention.purgeEmailOutbox());
   }
+
+  /** Drops the IP address from audit rows older than the retention window. */
+  @Cron('55 3 * * *')
+  scrubAuditIps() {
+    return this.runner.run('audit.scrub-ips', () => this.retention.scrubAuditIps());
+  }
 }
