@@ -9,7 +9,8 @@
 #   DEPLOY_USER            default: deploy (never root)
 #   DEPLOY_SSH_KEY         path to the private key file
 #   DEPLOY_KNOWN_HOSTS     path to a known_hosts file holding the server's host key (host keys are never trusted on first use)
-#   MIGRATE_DATABASE_URL   postgresql://<user>:<password>@127.0.0.1:<TUNNEL_PORT>/<db>  (goes through the SSH tunnel)
+#   MIGRATE_DATABASE_URL   a postgresql connection URL for the tunnel's local end: host 127.0.0.1, port TUNNEL_PORT, the app database
+#                          (user and password as set in ops/postgres/setup.sql)
 #   TUNNEL_PORT            default 55432
 #   DEPLOY_ROOT            default /var/www/fuzzball
 #

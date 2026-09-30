@@ -44,7 +44,7 @@ Create an environment named **production** with **required reviewers** (the appr
 | Variable | `LAUNCH_BUILD` | `true` once placeholders are resolved |
 | Secret | `DEPLOY_SSH_KEY` | private half of a key made only for deploys (`ssh-keygen -t ed25519`); install the public half with `install.sh --deploy-key` |
 | Secret | `DEPLOY_KNOWN_HOSTS` | output of `ssh-keyscan -t ed25519 <host>`, verified against the host key fingerprint in your provider's console |
-| Secret | `MIGRATE_DATABASE_URL` | `postgresql://fuzzball:<password>@127.0.0.1:55432/fuzzball` (the local end of the SSH tunnel) |
+| Secret | `MIGRATE_DATABASE_URL` | The Prisma connection URL for role `fuzzball` through the tunnel: scheme `postgresql`, user `fuzzball`, the password set in `ops/postgres/setup.sql`, host `127.0.0.1`, port `55432` (the tunnel's local end), database `fuzzball` |
 
 Branch protection on `main`: require the CI checks and a pull request. The deploy workflow also refuses a commit whose `api`, `web` and `security` checks are not green.
 
@@ -64,9 +64,10 @@ After the first deploy the database holds only migrations. Create the admin and 
 seed needs the Prisma CLI, which releases do not carry, so run it from your machine (or the CI runner) through the tunnel:
 
 ```bash
+# MIGRATE_DATABASE_URL: the same URL as the GitHub secret (see the table above), exported in this shell
 ssh -N -L 55432:127.0.0.1:5432 deploy@<host> &
 cd api && NODE_ENV=production ADMIN_EMAIL=you@example.com ADMIN_PASSWORD='<long, unique>' \
-  DATABASE_URL="postgresql://fuzzball:<password>@127.0.0.1:55432/fuzzball" npx prisma db seed
+  DATABASE_URL="$MIGRATE_DATABASE_URL" npx prisma db seed
 ```
 
 `NODE_ENV=production` makes the seed skip the sample users, sample catalogue and sample coupons (`api/prisma/seed.ts`);
