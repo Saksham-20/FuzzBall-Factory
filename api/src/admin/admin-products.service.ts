@@ -122,7 +122,18 @@ export class AdminProductsService {
       for (const v of dto.variants) {
         if (v.id && known.has(v.id) && !keep.has(v.id)) {
           keep.add(v.id);
-          await tx.productVariant.update({ where: { id: v.id }, data: { colour: v.colour, size: v.size ?? null, priceDelta: v.priceDelta, stock: v.stock } });
+          if (v.stockSeen == null) {
+            await tx.productVariant.update({ where: { id: v.id }, data: { colour: v.colour, size: v.size ?? null, priceDelta: v.priceDelta, stock: v.stock } });
+            continue;
+          }
+          // Apply the admin's change (what they typed minus what they saw) to the CURRENT stock, never below zero:
+          // orders placed while the form was open keep their pieces. The conditional update is the race guard.
+          const delta = v.stock - v.stockSeen;
+          const res = await tx.productVariant.updateMany({
+            where: { id: v.id, ...(delta < 0 ? { stock: { gte: -delta } } : {}) },
+            data: { colour: v.colour, size: v.size ?? null, priceDelta: v.priceDelta, stock: { increment: delta } },
+          });
+          if (res.count !== 1) throw conflict(`Stock for ${v.colour}${v.size ? ` (${v.size})` : ''} changed while you were editing (orders came in). Reload the product and try again.`);
         } else {
           const created = await tx.productVariant.create({ data: { productId: id, sku: skuFor(existing.slug, sku++), colour: v.colour, size: v.size, priceDelta: v.priceDelta, stock: v.stock } });
           keep.add(created.id);

@@ -724,6 +724,7 @@ model CouponRedemption {
   order  Order? @relation(fields: [orderId], references: [id], onDelete: SetNull)
   user   User?  @relation(fields: [userId], references: [id], onDelete: SetNull)
 
+  @@unique([couponId, orderId])
   @@index([couponId])
   @@index([userId, couponId])
 }

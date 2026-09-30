@@ -115,6 +115,16 @@ export class OrdersService {
     if (coupon) {
       const bumped = await tx.coupon.updateMany({ where: { id: coupon.id, ...(coupon.maxUses != null ? { uses: { lt: coupon.maxUses } } : {}) }, data: { uses: { increment: 1 } } });
       if (bumped.count !== 1) throw badRequest('This code has been fully redeemed.', { coupon: 'Fully redeemed' }, 'COUPON_INVALID');
+      // The bump above holds this coupon's row lock until the transaction ends, so two orders using the same code at once
+      // are checked one after the other and the per-customer count below can't be raced. A customer is a logged-in
+      // account or, for guests, the same email address.
+      if (coupon.perUserLimit != null) {
+        const email = dto.contact.email.trim().toLowerCase();
+        const used = await tx.couponRedemption.count({
+          where: { couponId: coupon.id, OR: [...(user ? [{ userId: user.userId }] : []), { order: { contactEmail: { equals: email, mode: 'insensitive' as const } } }] },
+        });
+        if (used >= coupon.perUserLimit) throw badRequest("You've already used this code the number of times it allows.", { coupon: 'Already used' }, 'COUPON_INVALID');
+      }
     }
 
     const cod = dto.paymentMethod === 'COD';

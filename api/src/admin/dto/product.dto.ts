@@ -76,6 +76,16 @@ export class VariantDto {
   @Min(0, { message: 'Stock cannot be negative' })
   @Max(100_000)
   stock!: number;
+
+  /**
+   * The stock this form was loaded with. When sent, `stock` is applied as a CHANGE (stock - stockSeen) on top of what is
+   * on the shelf now, so pieces sold while the form was open are not given back. Omit it for the old absolute write.
+   */
+  @IsOptional()
+  @IsInt({ message: 'Use a whole number' })
+  @Min(0)
+  @Max(100_000)
+  stockSeen?: number;
 }
 
 /**

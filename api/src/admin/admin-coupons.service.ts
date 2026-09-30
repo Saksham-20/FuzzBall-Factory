@@ -14,6 +14,10 @@ export interface CouponDto {
   minCart: number;
   active: boolean;
   uses: number;
+  /** Total redemptions allowed; absent = unlimited. */
+  maxUses?: number;
+  /** Redemptions allowed per customer; absent = unlimited. */
+  perUserLimit?: number;
   expiresAt?: string;
 }
 
@@ -24,6 +28,8 @@ export const toCouponDto = (c: Coupon): CouponDto => ({
   minCart: c.minCart,
   active: c.active,
   uses: c.uses,
+  ...(c.maxUses != null ? { maxUses: c.maxUses } : {}),
+  ...(c.perUserLimit != null ? { perUserLimit: c.perUserLimit } : {}),
   ...(c.expiresAt ? { expiresAt: c.expiresAt.toISOString() } : {}),
 });
 
@@ -51,7 +57,7 @@ export class AdminCouponsService {
     if (Object.keys(fields).length > 0) throw validationFailed(fields);
     return this.prisma.$transaction(async (tx) => {
       if (await tx.coupon.findUnique({ where: { code: dto.code }, select: { id: true } })) throw conflict('That coupon code already exists.', { code: 'Already used' });
-      const row = await tx.coupon.create({ data: this.data(dto) });
+      const row = await tx.coupon.create({ data: { ...this.data(dto), maxUses: dto.maxUses ?? null, perUserLimit: dto.perUserLimit ?? null } });
       await this.audit.log({ actorId: ctx.actorId, action: 'coupon.create', entity: 'Coupon', entityId: row.id, meta: { code: row.code }, ip: ctx.ip }, tx);
       return toCouponDto(row);
     });
@@ -63,7 +69,7 @@ export class AdminCouponsService {
     const fields = checkCoupon(dto);
     if (Object.keys(fields).length > 0) throw validationFailed(fields);
     return this.prisma.$transaction(async (tx) => {
-      const row = await tx.coupon.upsert({ where: { code: dto.code }, update: this.data(dto), create: this.data(dto) });
+      const row = await tx.coupon.upsert({ where: { code: dto.code }, update: this.data(dto), create: { ...this.data(dto), maxUses: dto.maxUses ?? null, perUserLimit: dto.perUserLimit ?? null } });
       await this.audit.log({ actorId: ctx.actorId, action: 'coupon.save', entity: 'Coupon', entityId: row.id, meta: { code: row.code, active: row.active }, ip: ctx.ip }, tx);
       return toCouponDto(row);
     });
@@ -80,6 +86,16 @@ export class AdminCouponsService {
   }
 
   private data(dto: CouponInputDto) {
-    return { code: dto.code, kind: dto.kind, value: dto.value, minCart: dto.minCart, active: dto.active, expiresAt: dto.expiresAt ? new Date(dto.expiresAt) : null };
+    // maxUses / perUserLimit: undefined leaves the stored value alone on update (an older client that doesn't send them), null clears it.
+    return {
+      code: dto.code,
+      kind: dto.kind,
+      value: dto.value,
+      minCart: dto.minCart,
+      active: dto.active,
+      expiresAt: dto.expiresAt ? new Date(dto.expiresAt) : null,
+      ...(dto.maxUses !== undefined ? { maxUses: dto.maxUses } : {}),
+      ...(dto.perUserLimit !== undefined ? { perUserLimit: dto.perUserLimit } : {}),
+    };
   }
 }

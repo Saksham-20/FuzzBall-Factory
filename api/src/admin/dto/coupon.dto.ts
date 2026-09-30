@@ -30,6 +30,20 @@ export class CouponInputDto {
   @Allow()
   uses?: unknown;
 
+  /** Total redemptions allowed across everyone. Omit to leave unchanged, null for "unlimited". */
+  @IsOptional()
+  @IsInt({ message: 'Use a whole number' })
+  @Min(1)
+  @Max(1_000_000)
+  maxUses?: number | null;
+
+  /** Redemptions allowed per customer (a logged-in account or the same email). Omit to leave unchanged, null for "unlimited". */
+  @IsOptional()
+  @IsInt({ message: 'Use a whole number' })
+  @Min(1)
+  @Max(1000)
+  perUserLimit?: number | null;
+
   /** ISO date/time. Omit or null for "never expires". */
   @IsOptional()
   @Matches(/^\d{4}-\d{2}-\d{2}(T[\d:.]+(Z|[+-]\d{2}:\d{2})?)?$/, { message: 'Use an ISO date like 2026-12-31' })

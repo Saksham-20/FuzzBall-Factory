@@ -212,6 +212,28 @@ describe('admin API (e2e)', () => {
       expect((await admin.agent.get(`/admin/products/${p.id}`).expect(200)).body).toEqual(updated);
     });
 
+    it('stock edits apply as a change on the current stock: pieces sold while the form was open are not given back', async () => {
+      const p = (await admin.agent.post('/admin/products').send(productBody({ name: `E2E Stock ${stamp}`, variants: [{ colour: 'Cherry', priceDelta: 0, stock: 5 }] })).expect(201)).body;
+      productIds.push(p.id);
+      const v = p.variants[0] as { id: string };
+      const edit = (stock: number, stockSeen?: number) =>
+        admin.agent.put(`/admin/products/${p.id}`).send(productBody({ name: `E2E Stock ${stamp}`, id: p.id, batch: p.batch, createdAt: p.createdAt, variants: [{ id: v.id, colour: 'Cherry', priceDelta: 0, stock, ...(stockSeen == null ? {} : { stockSeen }) }] }));
+
+      // The admin opens the form (sees 5); two pieces sell meanwhile; the admin adds 3 pieces (types 8).
+      await t.prisma.productVariant.update({ where: { id: v.id }, data: { stock: { decrement: 2 } } });
+      const res = await edit(8, 5).expect(200);
+      expect(res.body.variants[0].stock).toBe(6); // 3 on the shelf + 3 added, not 8
+
+      // Removing more than is left refuses instead of going negative, and changes nothing.
+      await t.prisma.productVariant.update({ where: { id: v.id }, data: { stock: 1 } });
+      const conflict = await edit(0, 5).expect(409);
+      expect(conflict.body.message).toContain('changed while you were editing');
+      expect((await t.prisma.productVariant.findUniqueOrThrow({ where: { id: v.id } })).stock).toBe(1);
+
+      // Without stockSeen the old absolute write still works (older clients).
+      expect((await edit(4).expect(200)).body.variants[0].stock).toBe(4);
+    });
+
     it('bulk status: publish needs photos and colours; archive via DELETE; list filters', async () => {
       const empty = (await admin.agent.post('/admin/products').send(productBody({ name: `E2E Empty ${stamp}`, images: [], variants: [] })).expect(201)).body;
       const full = (await admin.agent.post('/admin/products').send(productBody({ name: `E2E Full ${stamp}` })).expect(201)).body;
