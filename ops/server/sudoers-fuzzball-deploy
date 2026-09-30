@@ -1,0 +1,4 @@
+# /etc/sudoers.d/fuzzball-deploy (mode 0440, validate with visudo -cf). The deploy user can do exactly two things as
+# root: restart the two services, and take a database dump. Nothing else.
+deploy ALL=(root) NOPASSWD: /usr/bin/systemctl restart fuzzball-api fuzzball-web
+deploy ALL=(root) NOPASSWD: /usr/local/sbin/fuzzball-dump pre-migrate-*

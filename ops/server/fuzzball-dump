@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+# Installed to /usr/local/sbin/fuzzball-dump (root). Takes a consistent pg_dump of the fuzzball database into
+# /var/backups/fuzzball, readable by root only. The deploy user may run it through sudo (see sudoers.d/fuzzball-deploy),
+# so the label is validated and nothing else is taken from the caller.
+#
+#   fuzzball-dump pre-migrate-<release>     before every deploy's migration (last 10 kept)
+#   fuzzball-dump nightly                   used by the backup timer
+set -euo pipefail
+
+label="${1:-manual}"
+[[ "$label" =~ ^[A-Za-z0-9._-]{1,64}$ ]] || { echo "bad label" >&2; exit 2; }
+
+dir=/var/backups/fuzzball
+db="${FUZZBALL_DB:-fuzzball}"
+install -d -m 0700 -o root -g root "$dir"
+
+stamp="$(date -u +%Y%m%dT%H%M%SZ)"
+out="$dir/$stamp-$label.dump"
+tmp="$out.partial"
+umask 077
+sudo -u postgres pg_dump --format=custom --compress=6 --no-owner --dbname="$db" --file="$tmp"
+mv "$tmp" "$out"
+echo "$out"
+
+# Local retention: pre-migration dumps are the rollback of last resort, keep the newest 10; nightly ones 3 days
+# (the offsite copies are the real history, see ops/backup/backup.sh).
+prune() { local pattern="$1" keep="$2"; ls -1t "$dir"/$pattern 2>/dev/null | tail -n +"$((keep + 1))" | xargs -r rm -f --; }
+prune '*-pre-migrate-*.dump' 10
+prune '*-nightly.dump' 3

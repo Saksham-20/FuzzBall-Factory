@@ -1,0 +1,48 @@
+[Unit]
+Description=FuzzBall Factory API (NestJS)
+After=network-online.target postgresql.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=fuzzball
+Group=fuzzball
+WorkingDirectory=/var/www/fuzzball/current/api
+# Secrets live outside the release, root:fuzzball 0640. RELEASE.env (SENTRY_RELEASE=<sha>) ships inside the release.
+EnvironmentFile=/etc/fuzzball/api.env
+EnvironmentFile=-/var/www/fuzzball/current/RELEASE.env
+Environment=PORT=4100
+ExecStart=/usr/bin/node dist/main
+Restart=always
+RestartSec=2
+# Nest drains in-flight requests on SIGTERM (/health/ready turns 503 first); give it time, then stop hard.
+KillSignal=SIGTERM
+TimeoutStopSec=30
+
+# The V8 heap limit sits under the hard cap so a leak ends in a clean Node OOM and a restart, not a kernel kill.
+Environment=NODE_OPTIONS=--max-old-space-size=300
+MemoryHigh=360M
+MemoryMax=400M
+
+# Hardening. Uploads (the local disk driver) are the only place the API writes.
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+ProtectClock=true
+RestrictSUIDSGID=true
+RestrictNamespaces=true
+RestrictRealtime=true
+LockPersonality=true
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+SystemCallFilter=@system-service
+SystemCallArchitectures=native
+CapabilityBoundingSet=
+ReadWritePaths=/var/www/fuzzball/shared/uploads
+
+[Install]
+WantedBy=multi-user.target

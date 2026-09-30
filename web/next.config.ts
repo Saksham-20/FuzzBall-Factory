@@ -16,6 +16,9 @@ const realApiBuild = process.env.NEXT_PUBLIC_USE_MOCK === "false";
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  // Trace files from this folder, never a lockfile further up: the standalone server then sits at .next/standalone/server.js
+  // on every machine (ops/build.sh relies on it).
+  outputFileTracingRoot: process.cwd(),
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders({ apiOrigin: api?.origin, production: process.env.NODE_ENV === "production" }) }];
   },

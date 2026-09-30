@@ -1,0 +1,46 @@
+[Unit]
+Description=FuzzBall Factory storefront (Next.js standalone)
+After=network-online.target fuzzball-api.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=fuzzball
+Group=fuzzball
+WorkingDirectory=/var/www/fuzzball/current/web
+EnvironmentFile=-/etc/fuzzball/web.env
+Environment=NODE_ENV=production
+Environment=PORT=3100
+Environment=HOSTNAME=127.0.0.1
+ExecStart=/usr/bin/node server.js
+Restart=always
+RestartSec=2
+KillSignal=SIGTERM
+TimeoutStopSec=20
+
+Environment=NODE_OPTIONS=--max-old-space-size=340
+MemoryHigh=400M
+MemoryMax=450M
+
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+ProtectClock=true
+RestrictSUIDSGID=true
+RestrictNamespaces=true
+RestrictRealtime=true
+LockPersonality=true
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+SystemCallFilter=@system-service
+SystemCallArchitectures=native
+CapabilityBoundingSet=
+# Next's image and page cache (web/.next/cache is a symlink to here, set by the deploy).
+ReadWritePaths=/var/www/fuzzball/shared/next-cache
+
+[Install]
+WantedBy=multi-user.target
