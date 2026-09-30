@@ -98,6 +98,18 @@ export const templates: Registry = {
       ],
     }),
 
+  'auth.account_erased': (p, ctx) =>
+    renderEmail({
+      ...base(ctx),
+      subject: `Your ${ctx.brandName} account has been deleted`,
+      preheader: 'Your personal data has been erased.',
+      heading: 'Your account is deleted',
+      paragraphs: [
+        `Hi ${first(p.name)}, as you asked, we have deleted your account and the personal data attached to it: your details, saved addresses, wishlist, reviews, photos and messages.`,
+        'We keep the bare record of past orders and payments (amounts and dates, without your name, address or contact details) because tax and consumer rules require it. This is the last email we will send to this address.',
+      ],
+    }),
+
   'order.placed': orderEmail('We got your order {n}', 'Order received', (p) => [
     `Thank you! Order ${p.orderNumber} is in.${p.total != null ? ` Total: ${formatRupees(p.total)}${p.paymentMethod === 'COD' ? ' (cash on delivery)' : ''}.` : ''}`,
     ...itemLines(p),

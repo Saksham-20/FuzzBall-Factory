@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { ErasureService } from '../account/erasure.service.js';
 import { QuoteExpiryService } from '../custom/quote-expiry.service.js';
 import { EmailOutboxService } from '../notifications/email-outbox.service.js';
 import { IdempotencyService } from '../common/idempotency/idempotency.service.js';
@@ -21,6 +22,7 @@ export class ScheduledJobs {
     private readonly retention: RetentionService,
     private readonly emails: EmailOutboxService,
     private readonly uploads: UploadsService,
+    private readonly erasure: ErasureService,
   ) {}
 
   /** Releases stock held by online orders nobody paid within the payment window. */
@@ -93,5 +95,17 @@ export class ScheduledJobs {
   @Cron('20 4 * * *')
   purgeOrphanUploads() {
     return this.runner.run('uploads.purge-orphans', () => this.uploads.purgeOrphans());
+  }
+
+  /** Anonymises accounts whose 30-day deletion grace period is over (defers any with an order or refund still open). */
+  @Cron('10 4 * * *')
+  eraseDueAccounts() {
+    return this.runner.run('account.erase-due', () => this.erasure.processDue());
+  }
+
+  /** Drops the IP address and browser string from old refresh-token rows. */
+  @Cron('58 3 * * *')
+  scrubTokenMeta() {
+    return this.runner.run('auth.scrub-token-meta', () => this.retention.scrubTokenMeta());
   }
 }

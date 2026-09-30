@@ -8,6 +8,7 @@ import type { Env } from '../config/env.js';
 import { CurrentUser } from '../common/decorators/current-user.decorator.js';
 import type { RequestUser } from '../common/types/auth.types.js';
 import type { UserDto } from '../users/user.mapper.js';
+import { AccountExportService } from './account-export.service.js';
 import { AccountService } from './account.service.js';
 import type { AddressDto } from './address.mapper.js';
 import { ChangeEmailDto, ChangePasswordDto, SaveAddressDto, UpdateProfileDto } from './dto/account.dto.js';
@@ -17,6 +18,7 @@ import { ChangeEmailDto, ChangePasswordDto, SaveAddressDto, UpdateProfileDto } f
 export class AccountController {
   constructor(
     private readonly account: AccountService,
+    private readonly exporter: AccountExportService,
     private readonly tokens: TokenService,
     private readonly config: ConfigService<Env, true>,
   ) {}
@@ -80,5 +82,22 @@ export class AccountController {
   @Post('delete-request')
   deleteRequest(@CurrentUser() user: RequestUser, @Req() req: Request): Promise<void> {
     return this.account.requestDeletion(user.userId, req.ip);
+  }
+
+  /** Withdraws a pending deletion request (there are 30 days to change your mind). */
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
+  @HttpCode(204)
+  @Post('delete-request/cancel')
+  cancelDeletion(@CurrentUser() user: RequestUser, @Req() req: Request): Promise<void> {
+    return this.account.cancelDeletion(user.userId, req.ip);
+  }
+
+  /** DPDP right of access: one JSON download with everything held about this account. */
+  @Throttle({ default: { limit: 3, ttl: 60_000 } })
+  @Get('export')
+  async export(@CurrentUser() user: RequestUser, @Res({ passthrough: true }) res: Response): Promise<Record<string, unknown>> {
+    res.setHeader('Content-Disposition', `attachment; filename="fuzzball-data-${new Date().toISOString().slice(0, 10)}.json"`);
+    res.setHeader('Cache-Control', 'no-store');
+    return this.exporter.export(user.userId);
   }
 }

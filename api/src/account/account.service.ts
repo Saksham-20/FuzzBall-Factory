@@ -161,15 +161,26 @@ export class AccountService {
   // ───────────── DPDP deletion request ─────────────
 
   /**
-   * DPDP Act: records the request (timestamp on the user + an AuditLog row) so it can be fulfilled within 30 days.
-   * The account is not deleted here: orders must be retained for tax and dispute purposes, so the maker handles it.
+   * DPDP Act: records the request (timestamp on the user + an AuditLog row). Thirty days later the erasure job
+   * anonymises the account (see `ErasureService`); until then the customer can change their mind (`cancelDeletion`).
    */
   async requestDeletion(userId: string, ip?: string): Promise<void> {
     await this.prisma.$transaction(async (tx) => {
-      const user = await tx.user.findUnique({ where: { id: userId }, select: { deletionRequestedAt: true } });
-      if (!user) throw notFound('Account not found.');
+      const user = await tx.user.findUnique({ where: { id: userId }, select: { deletionRequestedAt: true, erasedAt: true } });
+      if (!user || user.erasedAt) throw notFound('Account not found.');
       if (!user.deletionRequestedAt) await tx.user.update({ where: { id: userId }, data: { deletionRequestedAt: new Date() } });
       await tx.auditLog.create({ data: { actorId: userId, action: 'account.delete_request', entity: 'User', entityId: userId, ip, meta: { repeated: !!user.deletionRequestedAt } } });
+    });
+  }
+
+  /** Withdraws a pending deletion request. A no-op when there is none. */
+  async cancelDeletion(userId: string, ip?: string): Promise<void> {
+    await this.prisma.$transaction(async (tx) => {
+      const user = await tx.user.findUnique({ where: { id: userId }, select: { deletionRequestedAt: true, erasedAt: true } });
+      if (!user || user.erasedAt) throw notFound('Account not found.');
+      if (!user.deletionRequestedAt) return;
+      await tx.user.update({ where: { id: userId }, data: { deletionRequestedAt: null } });
+      await tx.auditLog.create({ data: { actorId: userId, action: 'account.delete_cancel', entity: 'User', entityId: userId, ip } });
     });
   }
 }

@@ -142,6 +142,8 @@ model User {
   phoneVerified       Boolean   @default(false)
   /// DPDP Act deletion request timestamp (fulfilled within 30 days).
   deletionRequestedAt DateTime?
+  /// Set once the account has been anonymised (see ErasureService). The row stays so orders and payments keep a valid owner id.
+  erasedAt            DateTime?
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
 

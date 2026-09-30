@@ -291,7 +291,9 @@ fields are omitted rather than `null`. Errors use the shape above. "Guest ok" = 
 | `account.saveAddress(a)` (no id) | `POST /account/addresses` | `Omit<Address,"id">` (do not send `id`: unknown keys are a 400) | 201 `Address` |
 | `account.saveAddress(a)` (with id) | `PUT /account/addresses/:id` | `Omit<Address,"id">` | `Address`. Setting `isDefault` clears the others |
 | `account.deleteAddress(id)` | `DELETE /account/addresses/:id` | | 204 (idempotent; other people's ids are a silent no-op) |
-| `account.requestAccountDeletion()` | `POST /account/delete-request` | | 204. Sets `User.deletionRequestedAt` and writes an `AuditLog` row `account.delete_request` |
+| `account.requestAccountDeletion()` | `POST /account/delete-request` | | 204. Sets `User.deletionRequestedAt` and writes an audit row. Thirty days later the scheduler anonymises the account (see `docs/DATA_RETENTION.md`); `User.deletionRequestedAt` is on the user DTO meanwhile |
+| `account.cancelAccountDeletion()` | `POST /account/delete-request/cancel` | | 204. Withdraws a pending request; a no-op when there is none |
+| `account.exportData()` | `GET /account/export` | | One JSON attachment with everything held about the caller: `profile`, `addresses`, `orders`, `workOrders`, `payments`, `reviews`, `wishlist`, `uploads`. 3/min. 401 for an erased account |
 | (upload) | `POST /uploads` | `multipart/form-data`, field `file` (JPG/PNG/WebP/GIF/AVIF, max 8 MB). Login required, 20/min | `{ url }` (WebP, max 2000px, EXIF stripped). 400 `INVALID_IMAGE`, 413 `PAYLOAD_TOO_LARGE` |
 | (local files) | `GET /uploads/:folder/:file` | | The image (local driver only). `Cross-Origin-Resource-Policy: cross-origin`, immutable cache |
 | (Razorpay) | `POST /payments/razorpay/verify`, `POST /payments/razorpay/webhook` | see "Payments" | |

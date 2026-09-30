@@ -48,6 +48,8 @@ export interface NotificationEventMap {
   'auth.confirm_email_change': Recipient & { confirmUrl: string; expiresInMinutes: number };
   /** Sent to the OLD address so a hijacked session cannot quietly move the account. */
   'auth.email_change_notice': Recipient & { newEmail: string };
+  /** Last message to the old address once an account has been erased. */
+  'auth.account_erased': Recipient;
 
   // Orders
   'order.placed': OrderPayload;

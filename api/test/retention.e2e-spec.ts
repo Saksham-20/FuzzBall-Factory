@@ -48,4 +48,19 @@ describe('retention purges (e2e)', () => {
     for (const kept of [oldFailed, oldPending, recent]) expect(await t.prisma.webhookEvent.findUnique({ where: { id: kept.id } })).not.toBeNull();
     await t.prisma.webhookEvent.deleteMany({ where: { eventId: { startsWith: tag } } });
   });
+
+  it('forgets IP and browser on old refresh tokens but keeps the row', async () => {
+    const user = await makeUser(t, 'customer', 'retention-meta');
+    try {
+      const mk = (name: string, ageDays: number) =>
+        t.prisma.refreshToken.create({ data: { userId: user.id, familyId: `fam-${name}`, tokenHash: `meta-${name}-${Date.now()}`, expiresAt: new Date(Date.now() + 10 * day), ip: '203.0.113.5', userAgent: 'Mozilla/5.0', createdAt: new Date(Date.now() - ageDays * day) } });
+      const old = await mk('old', 45);
+      const recent = await mk('recent', 3);
+      await t.app.get(RetentionService).scrubTokenMeta();
+      expect(await t.prisma.refreshToken.findUniqueOrThrow({ where: { id: old.id } })).toMatchObject({ ip: null, userAgent: null });
+      expect(await t.prisma.refreshToken.findUniqueOrThrow({ where: { id: recent.id } })).toMatchObject({ ip: '203.0.113.5', userAgent: 'Mozilla/5.0' });
+    } finally {
+      await t.prisma.user.deleteMany({ where: { id: user.id } });
+    }
+  });
 });

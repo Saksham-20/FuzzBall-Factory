@@ -121,4 +121,20 @@ export class UploadsService {
     }
     return removed;
   }
+
+  /** Deletes every file a user uploaded (storage and record). For account erasure; a file that cannot be deleted stays recorded (`failed` > 0) so the caller can try again later. */
+  async deleteAllFor(userId: string): Promise<{ removed: number; failed: number }> {
+    const rows = await this.prisma.upload.findMany({ where: { userId }, select: { id: true, key: true } });
+    let removed = 0;
+    for (const r of rows) {
+      try {
+        await this.storage.remove(r.key);
+        await this.prisma.upload.delete({ where: { id: r.id } });
+        removed += 1;
+      } catch (err) {
+        this.logger.warn(`Could not delete upload ${r.id} during erasure: ${(err as Error).message}`);
+      }
+    }
+    return { removed, failed: rows.length - removed };
+  }
 }

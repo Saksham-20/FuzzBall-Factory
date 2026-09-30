@@ -14,6 +14,9 @@ const EMAIL_FAILED_KEEP_DAYS = 90;
 /** After this long an audit row keeps what was done and by whom, but not the IP address it came from. */
 const AUDIT_IP_KEEP_DAYS = 90;
 
+/** Refresh-token rows keep the IP address and browser string for this long (to spot a stolen session), then only the fact of a login. */
+const TOKEN_META_KEEP_DAYS = 30;
+
 /** Deletes rows that only exist to be looked at briefly. Each method returns how many rows it removed. */
 @Injectable()
 export class RetentionService {
@@ -53,6 +56,15 @@ export class RetentionService {
   /** Guess counters older than a day no longer matter (their windows and locks are minutes long). */
   async purgeAuthThrottle(now: Date = new Date()): Promise<number> {
     const { count } = await this.prisma.authThrottle.deleteMany({ where: { updatedAt: { lt: new Date(now.getTime() - DAY_MS) } } });
+    return count;
+  }
+
+  /** Forgets the IP and user agent on refresh tokens older than the window. Returns how many rows changed. */
+  async scrubTokenMeta(now: Date = new Date()): Promise<number> {
+    const { count } = await this.prisma.refreshToken.updateMany({
+      where: { createdAt: { lt: new Date(now.getTime() - TOKEN_META_KEEP_DAYS * DAY_MS) }, OR: [{ ip: { not: null } }, { userAgent: { not: null } }] },
+      data: { ip: null, userAgent: null },
+    });
     return count;
   }
 }
