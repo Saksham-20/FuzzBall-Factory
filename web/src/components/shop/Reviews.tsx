@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/Button";
 import { Field, Textarea } from "@/components/ui/Field";
 import { ErrorNote } from "@/components/ui/misc";
-import { ApiError } from "@/lib/mock/db";
+import { ApiError } from "@/lib/api/errors";
 import { canReview, createReview, listReviews } from "@/lib/api/reviews";
 import { useApi } from "@/lib/api/useApi";
 import { useAuth } from "@/lib/state/AuthContext";

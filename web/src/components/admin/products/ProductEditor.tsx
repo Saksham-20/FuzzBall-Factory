@@ -20,7 +20,7 @@ import { EmptyState, ErrorNote, Skeleton } from "@/components/ui/misc";
 import { useApi } from "@/lib/api/useApi";
 import { getAdminProduct, saveProduct } from "@/lib/api/admin";
 import { listCategories } from "@/lib/api/catalog";
-import { ApiError } from "@/lib/mock/db";
+import { ApiError } from "@/lib/api/errors";
 import { OCCASIONS } from "@/lib/status";
 import { formatINR } from "@/lib/format";
 import { cn } from "@/lib/cn";

@@ -19,7 +19,7 @@ import { OrderStamp } from "@/components/ui/StatusStamp";
 import { EventLog, Timeline } from "@/components/ui/Timeline";
 import * as orders from "@/lib/api/orders";
 import { useApi } from "@/lib/api/useApi";
-import { ApiError } from "@/lib/mock/db";
+import { ApiError } from "@/lib/api/errors";
 import { formatDate, formatINR } from "@/lib/format";
 import { COUNTRIES, ORDER_STATUS } from "@/lib/status";
 import { waOrder } from "@/lib/whatsapp";

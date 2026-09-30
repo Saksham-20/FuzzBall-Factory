@@ -1,6 +1,7 @@
 import { SITE } from "@/lib/site";
 import * as real from "@/lib/api/real/reviews";
-import { ApiError, db, wait } from "@/lib/mock/db";
+import { ApiError } from "@/lib/api/errors";
+import { db, wait } from "@/lib/mock/db";
 import type { Review } from "@/lib/types";
 
 /** Only PUBLISHED reviews. Empty on purpose: never fabricate reviews. */

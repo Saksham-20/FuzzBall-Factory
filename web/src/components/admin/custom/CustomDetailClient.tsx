@@ -13,7 +13,7 @@ import { getAdminCustom } from "@/lib/api/admin";
 import { balanceAmount, depositAmount } from "@/lib/api/custom";
 import { useApi } from "@/lib/api/useApi";
 import { formatDate, formatINR } from "@/lib/format";
-import { ApiError } from "@/lib/mock/db";
+import { ApiError } from "@/lib/api/errors";
 import { CUSTOM_FLOW, COUNTRIES, customFlowIndex } from "@/lib/status";
 import { cn } from "@/lib/cn";
 import type { CustomRequest } from "@/lib/types";

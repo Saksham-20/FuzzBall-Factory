@@ -14,7 +14,7 @@ import { ErrorNote } from "@/components/ui/misc";
 import { acceptQuote, balanceAmount, counterQuote, countersUsed, declineQuote, depositAmount, MAX_COUNTERS, quoteExpired } from "@/lib/api/custom";
 import { formatDate, formatINR } from "@/lib/format";
 import { waCustom } from "@/lib/whatsapp";
-import { ApiError } from "@/lib/mock/db";
+import { ApiError } from "@/lib/api/errors";
 import type { CustomRequest, Quote } from "@/lib/types";
 import { daysLeftLabel, daysUntil, errorMessage, longDate } from "./helpers";
 

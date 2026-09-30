@@ -11,7 +11,7 @@ import { ErrorNote } from "@/components/ui/misc";
 import { acceptCounter, addProgress, declineCustom, markCustomDelivered, markCustomShipped, markUnderReview, requestApproval } from "@/lib/api/admin";
 import { MAX_COUNTERS, balanceAmount, countersUsed, depositAmount, liveQuote } from "@/lib/api/custom";
 import { formatDate, formatINR } from "@/lib/format";
-import { ApiError } from "@/lib/mock/db";
+import { ApiError } from "@/lib/api/errors";
 import { CUSTOM_STATUS } from "@/lib/status";
 import type { CustomRequest } from "@/lib/types";
 import { ReasonModal } from "../orders/ReasonModal";

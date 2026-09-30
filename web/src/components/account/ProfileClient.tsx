@@ -16,7 +16,7 @@ import { resendVerification } from "@/lib/api/auth";
 import { downloadJson } from "@/lib/download";
 import { formatDate } from "@/lib/format";
 import { useAuth } from "@/lib/state/AuthContext";
-import { ApiError } from "@/lib/mock/db";
+import { ApiError } from "@/lib/api/errors";
 import type { User } from "@/lib/types";
 
 export function ProfileClient() {

@@ -1,7 +1,8 @@
 import { SITE } from "@/lib/site";
 import type { RazorpayWindowOptions } from "@/lib/razorpay";
 import * as real from "@/lib/api/real/orders";
-import { ApiError, db, wait } from "@/lib/mock/db";
+import { ApiError } from "@/lib/api/errors";
+import { db, wait } from "@/lib/mock/db";
 import { quoteCheckout, type CheckoutOptions, type CheckoutQuote } from "@/lib/pricing";
 import type { Address, CartLine, Order, OrderItem, PaymentMethod } from "@/lib/types";
 

@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/Button";
 import { Field, Input } from "@/components/ui/Field";
 import { FormError } from "@/components/account/auth/authUtils";
 import { forgotPassword } from "@/lib/api/auth";
-import { ApiError } from "@/lib/mock/db";
+import { ApiError } from "@/lib/api/errors";
 
 const schema = z.object({ email: z.email("That email doesn't look right. Check for typos.") });
 type Values = z.infer<typeof schema>;

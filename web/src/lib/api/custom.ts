@@ -1,6 +1,7 @@
 import { SITE } from "@/lib/site";
 import * as real from "@/lib/api/real/custom";
-import { ApiError, db, wait } from "@/lib/mock/db";
+import { ApiError } from "@/lib/api/errors";
+import { db, wait } from "@/lib/mock/db";
 import type { CustomRequest, CustomStatus, Quote, TimelineEvent } from "@/lib/types";
 
 export const MAX_COUNTERS = 2;

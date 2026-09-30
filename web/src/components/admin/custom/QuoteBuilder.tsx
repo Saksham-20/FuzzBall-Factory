@@ -15,7 +15,7 @@ import { balanceAmount, depositAmount } from "@/lib/api/custom";
 import { getSettings } from "@/lib/api/settings";
 import { useApi } from "@/lib/api/useApi";
 import { formatDate, formatINR } from "@/lib/format";
-import { ApiError } from "@/lib/mock/db";
+import { ApiError } from "@/lib/api/errors";
 import type { CustomRequest, StoreSettings } from "@/lib/types";
 import { Spinner } from "../orders/Spinner";
 import { firstName } from "../orders/wa";

@@ -13,7 +13,7 @@ import { OrderTimeline } from "@/components/checkout/OrderTimeline";
 import { Totals } from "@/components/checkout/Totals";
 import { getOrder } from "@/lib/api/orders";
 import { useApi } from "@/lib/api/useApi";
-import { ApiError } from "@/lib/mock/db";
+import { ApiError } from "@/lib/api/errors";
 import { useAuth } from "@/lib/state/AuthContext";
 import { COUNTRIES, ORDER_STATUS } from "@/lib/status";
 import { formatDate, formatINR } from "@/lib/format";

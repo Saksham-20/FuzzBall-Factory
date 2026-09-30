@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/Button";
 import { ErrorNote, Skeleton } from "@/components/ui/misc";
 import { getProduct, listCategories, relatedProducts } from "@/lib/api/catalog";
 import { useApi } from "@/lib/api/useApi";
-import { ApiError } from "@/lib/mock/db";
+import { ApiError } from "@/lib/api/errors";
 import type { Product } from "@/lib/types";
 
 function ProductSkeleton() {

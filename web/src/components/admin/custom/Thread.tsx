@@ -10,7 +10,7 @@ import { ImageUploader } from "@/components/ui/ImageUploader";
 import { ErrorNote } from "@/components/ui/misc";
 import { adminMessage } from "@/lib/api/admin";
 import { formatDate } from "@/lib/format";
-import { ApiError } from "@/lib/mock/db";
+import { ApiError } from "@/lib/api/errors";
 import { cn } from "@/lib/cn";
 import type { CustomRequest } from "@/lib/types";
 import { firstName } from "../orders/wa";

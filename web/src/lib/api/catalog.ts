@@ -1,6 +1,7 @@
 import { SITE } from "@/lib/site";
 import * as real from "@/lib/api/real/catalog";
-import { db, wait, ApiError } from "@/lib/mock/db";
+import { ApiError } from "@/lib/api/errors";
+import { db, wait } from "@/lib/mock/db";
 import type { Category, Product } from "@/lib/types";
 
 export interface ProductQuery {

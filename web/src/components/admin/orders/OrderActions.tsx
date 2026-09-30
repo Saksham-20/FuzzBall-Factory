@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { Checkbox } from "@/components/ui/Field";
 import { ErrorNote } from "@/components/ui/misc";
 import { allowedNextStatuses, updateOrderStatus } from "@/lib/api/admin";
-import { ApiError } from "@/lib/mock/db";
+import { ApiError } from "@/lib/api/errors";
 import { ORDER_STATUS } from "@/lib/status";
 import type { Order, OrderStatus } from "@/lib/types";
 import { CANCEL_REASONS, hasMadeToOrder, isCodToConfirm, ORDER_ACTION_COPY, orderWhatsApp } from "./helpers";

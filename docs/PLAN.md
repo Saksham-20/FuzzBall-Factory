@@ -20,13 +20,13 @@ Status: **draft, awaiting approval** (2026-09-21). Inputs: `PRODUCT.md`, `docs/r
 
 - **Frontend:** Next.js 16 (App Router) + TypeScript. Server rendering matters here: WhatsApp/Instagram link previews (OG images) and SEO for product pages. CRA is deprecated, so neither CRA project is a base.
 - **Styling:** Tailwind v4 with CSS-variable design tokens (`@theme`), plus `cn()` + Radix primitives + react-hook-form + zod (the CityFreshKart kit, ported to TS).
-- **Motion:** Motion (framer-motion) for UI springs; GSAP + ScrollTrigger for scroll-scrubbed yarn/hook scenes; Lenis for smooth scroll; SVG path drawing for the thread. Everything honours `prefers-reduced-motion`.
+- **Motion:** Motion (framer-motion) for UI springs; Lenis for smooth scroll; SVG path drawing for the thread. Everything honours `prefers-reduced-motion`. (GSAP was planned and never used; removed.)
 - **Backend:** NestJS + Prisma + PostgreSQL, a small single-seller API built from HomeKrafted modules (auth, guards, payments, uploads, notifications, whatsapp). Drop vendors, wallet, meals, riders.
 - **Auth:** email/phone + password (argon2), JWT access + rotating refresh in httpOnly cookies (CityFreshKart cookie pattern + HomeKrafted refresh rotation), optional Google sign-in later. Roles: `customer`, `admin`.
 - **Payments:** Razorpay Orders + Checkout for cart; Razorpay Payment Links for custom-order deposit/balance; verified webhook; COD for ready-to-ship only under a price cap with a COD fee.
 - **Images:** Cloudinary (easiest for a solo maker: auto WebP/AVIF, resizing) behind HomeKrafted's storage-driver interface so local disk works in dev.
 - **Email:** Resend. **WhatsApp:** Phase 1 wa.me prefilled links everywhere; Phase 2 Cloud API utility templates (HomeKrafted `whatsapp.service.ts`).
-- **Deploy:** Vercel (web) + a VPS or Render/Railway (API + Postgres), or one VPS with pm2 + nginx as in HomeKrafted.
+- **Deploy (decided):** one VPS, **systemd + nginx** (no pm2, no Vercel), one origin with the API under `/api`. Releases are built in CI and swapped with a symlink; migrations run from CI through an SSH tunnel after a database dump; rollback is a symlink swap. Background work (expiry sweeps, purges, refund retries, email outbox) runs on Postgres advisory-locked crons inside the API: **no Redis** until more than one API instance is needed. Everything is in `ops/`; see `docs/DEPLOY_PROD.md` and the two runbooks.
 
 ### Files to port
 

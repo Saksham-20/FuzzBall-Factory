@@ -15,7 +15,7 @@ import { Checkbox, Field, Input, Select } from "@/components/ui/Field";
 import { EmptyState, ErrorNote, Skeleton } from "@/components/ui/misc";
 import * as account from "@/lib/api/account";
 import { useApi } from "@/lib/api/useApi";
-import { ApiError } from "@/lib/mock/db";
+import { ApiError } from "@/lib/api/errors";
 import { COUNTRIES, INDIAN_STATES } from "@/lib/status";
 import type { Address } from "@/lib/types";
 

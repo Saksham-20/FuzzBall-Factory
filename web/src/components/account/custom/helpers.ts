@@ -1,4 +1,4 @@
-import { ApiError } from "@/lib/mock/db";
+import { ApiError } from "@/lib/api/errors";
 import { balanceAmount, depositAmount, liveQuote } from "@/lib/api/custom";
 import { formatDate, formatINR } from "@/lib/format";
 import type { Category, CustomRequest, CustomStatus, Quote } from "@/lib/types";

@@ -17,7 +17,7 @@ import { mergePalette } from "@/components/custom/palette";
 import { createRequest } from "@/lib/api/custom";
 import { getSettings } from "@/lib/api/settings";
 import { useApi } from "@/lib/api/useApi";
-import { ApiError } from "@/lib/mock/db";
+import { ApiError } from "@/lib/api/errors";
 import {
   BUDGET_PRESETS,
   CUSTOM_DEFAULTS,

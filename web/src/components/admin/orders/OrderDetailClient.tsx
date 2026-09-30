@@ -14,7 +14,7 @@ import { EventLog, Timeline, type TimelineStep } from "@/components/ui/Timeline"
 import { getAdminOrder } from "@/lib/api/admin";
 import { useApi } from "@/lib/api/useApi";
 import { formatDate, formatINR } from "@/lib/format";
-import { ApiError } from "@/lib/mock/db";
+import { ApiError } from "@/lib/api/errors";
 import { ORDER_FLOW } from "@/lib/status";
 import type { Order } from "@/lib/types";
 import { RefundPanel } from "@/components/admin/RefundPanel";

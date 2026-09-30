@@ -4,7 +4,7 @@ import { useEffect, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { HookSpinner } from "@/components/ui/misc";
 import { useAuth } from "@/lib/state/AuthContext";
-import { ApiError } from "@/lib/mock/db";
+import { ApiError } from "@/lib/api/errors";
 import type { User } from "@/lib/types";
 import { safeNext } from "@/lib/safe-next";
 import type { FieldValues, Path, UseFormSetError } from "react-hook-form";

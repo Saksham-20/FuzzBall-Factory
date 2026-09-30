@@ -1,6 +1,7 @@
 import { SITE } from "@/lib/site";
 import * as real from "@/lib/api/real/account";
-import { ApiError, db, wait } from "@/lib/mock/db";
+import { ApiError } from "@/lib/api/errors";
+import { db, wait } from "@/lib/mock/db";
 import type { Address, User } from "@/lib/types";
 
 function uid() {

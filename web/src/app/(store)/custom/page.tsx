@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { CustomClient } from "@/components/custom/CustomClient";
+import { first } from "@/lib/search-params";
 
 export const metadata: Metadata = {
   title: "Put in a work order",
@@ -9,6 +10,5 @@ export const metadata: Metadata = {
 
 export default async function CustomPage(props: { searchParams: Promise<{ from?: string | string[]; resume?: string | string[] }> }) {
   const sp = await props.searchParams;
-  const first = (v?: string | string[]) => (Array.isArray(v) ? v[0] : v);
   return <CustomClient from={first(sp.from) || undefined} resume={first(sp.resume) === "1"} />;
 }

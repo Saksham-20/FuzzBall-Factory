@@ -1,6 +1,7 @@
 import { SITE } from "@/lib/site";
 import * as real from "@/lib/api/real/auth";
-import { ApiError, db, wait } from "@/lib/mock/db";
+import { ApiError } from "@/lib/api/errors";
+import { db, wait } from "@/lib/mock/db";
 import type { User } from "@/lib/types";
 
 const strip = (u: User & { password?: string }): User => {

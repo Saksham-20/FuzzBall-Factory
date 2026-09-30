@@ -1,17 +1,18 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Gift, Lock, Truck } from "lucide-react";
 import { Ticket } from "@/components/brand/Ticket";
-import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Checkbox, Field, Input, Radio, Select, Textarea } from "@/components/ui/Field";
 import { EmptyState, ErrorNote, HookSpinner, Skeleton } from "@/components/ui/misc";
+import { CheckoutSection } from "@/components/checkout/CheckoutSection";
+import { OrderLines } from "@/components/checkout/OrderLines";
+import { PolicyCheckbox } from "@/components/checkout/PolicyCheckbox";
 import { TestPaymentModal } from "@/components/checkout/TestPaymentModal";
 import { Totals } from "@/components/checkout/Totals";
 import { useBasket, useCheckoutQuote, useCoupon } from "@/components/checkout/useBasket";
@@ -26,27 +27,9 @@ import { SITE } from "@/lib/site";
 import { useAuth } from "@/lib/state/AuthContext";
 import { formatDate, formatINR } from "@/lib/format";
 import { COUNTRIES, INDIAN_STATES } from "@/lib/status";
-import { cn } from "@/lib/cn";
 import type { Address } from "@/lib/types";
 
 const pinOk = (country: string, postal: string) => country !== "IN" || /^[1-9][0-9]{5}$/.test(postal);
-
-function Section({ n, title, children, className }: { n: number; title: string; children: ReactNode; className?: string }) {
-  const id = `co-${n}`;
-  return (
-    <section aria-labelledby={id} className={cn("rounded-ticket bg-paper p-5 shadow-ticket md:p-7", className)}>
-      <div className="mb-5 flex items-center gap-3">
-        <span aria-hidden className="font-stencil tabular grid size-8 shrink-0 place-items-center rounded-full bg-cocoa text-[13px] text-cream">
-          {n}
-        </span>
-        <h2 id={id} className="font-display text-[1.75rem] sm:text-[2rem]">
-          {title}
-        </h2>
-      </div>
-      {children}
-    </section>
-  );
-}
 
 export function CheckoutClient() {
   const router = useRouter();
@@ -301,7 +284,7 @@ export function CheckoutClient() {
 
       <form onSubmit={onSubmit} noValidate className="mt-8 grid items-start gap-8 lg:grid-cols-[1fr_420px] lg:gap-12">
         <div className="space-y-5">
-          <Section n={1} title="Contact">
+          <CheckoutSection n={1} title="Contact">
             <div className="grid gap-4 sm:grid-cols-2">
               <Field label="Full name" error={err("name")} className="sm:col-span-2">
                 {(p) => (
@@ -323,9 +306,9 @@ export function CheckoutClient() {
                 {(p) => <Input {...p} type="tel" inputMode="tel" autoComplete="tel" {...register("phone")} />}
               </Field>
             </div>
-          </Section>
+          </CheckoutSection>
 
-          <Section n={2} title="Address">
+          <CheckoutSection n={2} title="Address">
             {saved && saved.length > 0 ? (
               <fieldset className="mb-5 space-y-2.5">
                 <legend className="mb-1.5 text-sm font-semibold">Deliver to</legend>
@@ -428,9 +411,9 @@ export function CheckoutClient() {
             {user ? (
               <Checkbox className="mt-3" label="Save this address to my account" {...register("saveAddress")} />
             ) : null}
-          </Section>
+          </CheckoutSection>
 
-          <Section n={3} title="Delivery">
+          <CheckoutSection n={3} title="Delivery">
             {!q ? (
               <Skeleton className="h-24" />
             ) : (
@@ -462,9 +445,9 @@ export function CheckoutClient() {
               </div>
             ) : null}
             {!isIndia ? <p className="mt-3 text-sm text-brown">Prices are in INR. Your card may add currency conversion or import duties at delivery.</p> : null}
-          </Section>
+          </CheckoutSection>
 
-          <Section n={4} title="Gift">
+          <CheckoutSection n={4} title="Gift">
             <div className="flex items-start gap-3">
               <Gift className="mt-3 size-5 shrink-0 text-brown" strokeWidth={1.8} />
               <div className="min-w-0 flex-1">
@@ -495,9 +478,9 @@ export function CheckoutClient() {
                 ) : null}
               </div>
             </div>
-          </Section>
+          </CheckoutSection>
 
-          <Section n={5} title="Payment">
+          <CheckoutSection n={5} title="Payment">
             <fieldset className="space-y-2.5">
               <legend className="sr-only">Payment method</legend>
               <Radio value="RAZORPAY" label="UPI, cards, netbanking, wallets" description="Pay securely with Razorpay." {...register("paymentMethod")} />
@@ -528,7 +511,7 @@ export function CheckoutClient() {
                 ) : null}
               </div>
             ) : null}
-          </Section>
+          </CheckoutSection>
         </div>
 
         <aside aria-labelledby="co-6" className="lg:sticky lg:top-28">
@@ -536,28 +519,7 @@ export function CheckoutClient() {
             <h2 id="co-6" className="sr-only">
               Review your order
             </h2>
-            <ul className="divide-y divide-cocoa/15">
-              {basket.items.map(({ line, product: p, variant: v, unitPrice }) => (
-                <li key={line.variantId} className="flex gap-3 py-3">
-                  <div className="relative size-16 shrink-0 overflow-hidden rounded-[10px] bg-paper">
-                    <Image src={p.images[0].src} alt="" fill sizes="64px" className="object-cover" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="font-semibold leading-snug">{p.name}</p>
-                    <p className="text-sm text-brown">{[v.colour, v.size].filter(Boolean).join(" · ")}</p>
-                    <div className="mt-1 flex flex-wrap gap-1.5">
-                      {p.fulfilment === "READY" ? <Badge tone="ready">Ready to ship</Badge> : <Badge tone="mto">Made to order · {p.leadTimeDays} days</Badge>}
-                    </div>
-                  </div>
-                  <p className="tabular shrink-0 text-right text-sm">
-                    <span className="block font-bold">{formatINR(unitPrice * line.qty)}</span>
-                    {line.qty > 1 ? <span className="text-brown-soft">
-                      {line.qty} × {formatINR(unitPrice)}
-                    </span> : null}
-                  </p>
-                </li>
-              ))}
-            </ul>
+            <OrderLines items={basket.items} />
 
             <div className="mt-2 border-t border-cocoa/20 pt-4">
               {q ? (
@@ -590,37 +552,7 @@ export function CheckoutClient() {
             ) : null}
 
             <div className="mt-4">
-              <Checkbox
-                label={
-                  <>
-                    I&apos;ve read the{" "}
-                    <Link href="/policies/refund" target="_blank" className="font-semibold underline">
-                      refund policy
-                    </Link>
-                    ,{" "}
-                    <Link href="/policies/shipping" target="_blank" className="font-semibold underline">
-                      shipping policy
-                    </Link>
-                    ,{" "}
-                    <Link href="/policies/terms" target="_blank" className="font-semibold underline">
-                      terms
-                    </Link>{" "}
-                    and{" "}
-                    <Link href="/policies/privacy" target="_blank" className="font-semibold underline">
-                      privacy notice
-                    </Link>
-                    .
-                  </>
-                }
-                aria-invalid={errors.policy ? true : undefined}
-                aria-describedby={errors.policy ? "policy-err" : undefined}
-                {...register("policy")}
-              />
-              {errors.policy ? (
-                <p id="policy-err" role="alert" className="text-sm font-medium text-err">
-                  {err("policy")}
-                </p>
-              ) : null}
+              <PolicyCheckbox error={errors.policy ? err("policy") : undefined} {...register("policy")} />
             </div>
 
             {submitError ? (
