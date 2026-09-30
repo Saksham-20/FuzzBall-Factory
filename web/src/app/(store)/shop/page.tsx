@@ -1,6 +1,8 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import { ShopClient, ShopFallback } from "@/components/shop/ShopClient";
+import { serverProducts } from "@/lib/catalog-server";
+import { paletteOf } from "@/lib/palette";
 
 export const metadata: Metadata = {
   title: "The shelf",
@@ -9,10 +11,11 @@ export const metadata: Metadata = {
   alternates: { canonical: "/shop" },
 };
 
-export default function ShopPage() {
+export default async function ShopPage() {
+  const palette = paletteOf(await serverProducts());
   return (
     <Suspense fallback={<ShopFallback />}>
-      <ShopClient />
+      <ShopClient palette={palette} />
     </Suspense>
   );
 }

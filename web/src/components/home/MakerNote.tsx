@@ -3,21 +3,24 @@ import { CrochetHook } from "@/components/brand/CrochetHook";
 import { YarnBall } from "@/components/brand/YarnBall";
 import { Button } from "@/components/ui/Button";
 import { Reveal } from "@/components/ui/Reveal";
-import { products } from "@/lib/mock/catalog";
+import { serverProducts } from "@/lib/catalog-server";
 import { SITE } from "@/lib/site";
 import { waGeneral } from "@/lib/whatsapp";
 
-const tiles = [products[0], products[2], products[1], products[3], products[5], products[6]];
+/** Mock shelf: the order the design was drawn with. Real shelf: the six newest pieces. */
+const MOCK_ORDER = [0, 2, 1, 3, 5, 6];
 
 /** How far the line sags under each peg: the same curve as the drawn line (a parabola, 22px deep). */
-const sag = (i: number) => {
-  const t = (i + 0.5) / tiles.length;
+const sag = (i: number, count: number) => {
+  const t = (i + 0.5) / count;
   return 4 + 72 * t * (1 - t);
 };
 const TILT = [-3, 2, -1.5, 3, -2, 1.5];
 
 /** PLACEHOLDER(maker-note): the maker's name, photo and own words replace this copy. */
-export function MakerNote() {
+export async function MakerNote() {
+  const list = await serverProducts({ max: 12 });
+  const tiles = SITE.useMock ? MOCK_ORDER.map((i) => list[i]).filter((p): p is (typeof list)[number] => !!p) : list.slice(0, 6);
   return (
     <>
       <section className="overflow-x-clip py-[clamp(4rem,9vw,7rem)]">
@@ -84,7 +87,7 @@ export function MakerNote() {
                   <li
                     key={p.id}
                     className="hang relative w-[42vw] max-w-[190px] shrink-0 snap-start md:w-[15%] md:max-w-none"
-                    style={{ marginTop: `${sag(i) - 4}px`, ["--i" as string]: i }}
+                    style={{ marginTop: `${sag(i, tiles.length) - 4}px`, ["--i" as string]: i }}
                   >
                     <a
                       href={SITE.instagram}

@@ -8,7 +8,7 @@ import { ChevronDown, Heart, Menu as MenuIcon, ShoppingBag, User, X } from "luci
 import { LogoMark } from "@/components/brand/LogoMark";
 import { useAuth } from "@/lib/state/AuthContext";
 import { useCart } from "@/lib/state/CartContext";
-import { categories } from "@/lib/mock/catalog";
+import type { Category } from "@/lib/types";
 import { NAV } from "@/lib/site";
 import { cn } from "@/lib/cn";
 
@@ -24,7 +24,7 @@ const scrolled = {
 const iconBtn =
   "press relative grid size-11 place-items-center rounded-full text-cocoa transition-colors duration-150 [@media(hover:hover)_and_(pointer:fine)]:hover:bg-cocoa/8";
 
-export function Header() {
+export function Header({ categories }: { categories: Category[] }) {
   const isScrolled = useSyncExternalStore(scrolled.subscribe, scrolled.get, scrolled.server);
   const { count, setOpen, wishlist } = useCart();
   const { user } = useAuth();

@@ -2,20 +2,20 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ShopClient, ShopFallback } from "@/components/shop/ShopClient";
-import { categories, getCategory, productsIn } from "@/lib/mock/catalog";
+import { serverCategories, serverCategory, serverProducts } from "@/lib/catalog-server";
+import { paletteOf } from "@/lib/palette";
 
 type Props = { params: Promise<{ category: string }> };
 
-// The mock database lives in the browser, so the server uses the seed catalogue for routing and metadata.
-export function generateStaticParams() {
-  return categories.map((c) => ({ category: c.slug }));
+export async function generateStaticParams() {
+  return (await serverCategories()).map((c) => ({ category: c.slug }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { category } = await params;
-  const c = getCategory(category);
+  const c = await serverCategory(category);
   if (!c) return { title: "Shelf not found" };
-  const n = productsIn(c.slug).length;
+  const n = (await serverProducts({ category: c.slug })).length;
   return {
     title: c.name,
     description: `${c.name} from FuzzBall Factory: ${c.blurb.toLowerCase()}. ${n} handmade ${n === 1 ? "piece" : "pieces"}, ready to ship or made to order.`,
@@ -26,11 +26,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function CategoryPage({ params }: Props) {
   const { category } = await params;
-  const c = getCategory(category);
+  const c = await serverCategory(category);
+  // An unknown shelf is a real 404 (status code and all), so search engines drop the URL.
   if (!c) notFound();
+  const palette = paletteOf(await serverProducts({ category: c.slug }));
   return (
     <Suspense fallback={<ShopFallback category={c} />}>
-      <ShopClient category={c} />
+      <ShopClient category={c} palette={palette} />
     </Suspense>
   );
 }

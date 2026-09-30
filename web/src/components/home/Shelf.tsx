@@ -4,8 +4,9 @@ import { ArrowRight } from "lucide-react";
 import { ProductTicket } from "@/components/store/ProductTicket";
 import { Reveal } from "@/components/ui/Reveal";
 import { StationSection } from "@/components/home/StationSection";
-import { categories, lowestPrice, products, productsIn } from "@/lib/mock/catalog";
+import { serverCategories, serverProducts } from "@/lib/catalog-server";
 import { formatINR } from "@/lib/format";
+import type { Product } from "@/lib/types";
 
 /**
  * Modak's average advance per letter, in em: door words are sized from their length alone.
@@ -14,12 +15,15 @@ import { formatINR } from "@/lib/format";
  */
 const MODAK_EM_PER_LETTER = 0.56;
 
-export function Shelf() {
+const lowestPrice = (list: Product[]) => Math.min(...list.map((p) => p.price));
+
+export async function Shelf() {
+  const [categories, products] = await Promise.all([serverCategories(), serverProducts()]);
   const doors = categories
-    .map((c) => ({ c, list: productsIn(c.slug) }))
+    .map((c) => ({ c, list: products.filter((p) => p.category === c.slug) }))
     .filter((d) => d.list.length > 0);
   // Every door word shares one size: the widest word fills its row.
-  const doorEm = (Math.max(...doors.map((d) => d.c.word.length)) * MODAK_EM_PER_LETTER).toFixed(2);
+  const doorEm = (Math.max(1, ...doors.map((d) => d.c.word.length)) * MODAK_EM_PER_LETTER).toFixed(2);
   const fresh = [...products]
     .filter((p) => p.variants.some((v) => v.stock > 0))
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt))

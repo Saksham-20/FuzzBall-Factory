@@ -172,11 +172,14 @@ function Loaded({ product: p }: { product: Product }) {
 }
 
 /** Product page body. Loads through the API layer so it works the same on mock and real data. */
-export function ProductView({ slug }: { slug: string }) {
-  const { data, error, reload } = useApi(() => getProduct(slug), `product:${slug}`);
+export function ProductView({ slug, initial }: { slug: string; initial?: Product }) {
+  const { data: fetched, error, reload } = useApi(() => getProduct(slug), `product:${slug}`);
+  // `initial` is what the server rendered (real data): it is in the first HTML, and the fetch refreshes stock behind it.
+  const data = fetched ?? initial;
 
   if (error) {
     if (error instanceof ApiError && error.status === 404) return <MissingBatch />;
+    if (initial) return <Loaded key={initial.id} product={fetched ?? initial} />; // stale beats broken
     return (
       <div className="shell py-16">
         <ErrorNote onRetry={reload}>{error.message || "This piece didn't load."} Check your connection and try again.</ErrorNote>

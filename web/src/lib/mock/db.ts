@@ -1,9 +1,12 @@
 import { createPersistedStore } from "@/lib/store";
 import { ApiError } from "@/lib/api/errors";
-import { products as seedProducts, categories as seedCategories } from "@/lib/mock/catalog";
+import { products as seedProducts, categories as seedCategories, productById } from "@/lib/mock/catalog";
+import { registerSeedLookup } from "@/lib/state/productCache";
 import type {
   Address, Category, Coupon, CustomRequest, Material, Order, Product, Review, StoreSettings, User,
 } from "@/lib/types";
+
+registerSeedLookup(productById);
 
 /*
  * PLACEHOLDER(catalogue): all users, orders, work orders and coupons below are SAMPLE data.

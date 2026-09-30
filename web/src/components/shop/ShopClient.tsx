@@ -23,7 +23,6 @@ import { Select } from "@/components/ui/Field";
 import { EmptyState, ErrorNote, Skeleton } from "@/components/ui/misc";
 import { listCategories, listProducts } from "@/lib/api/catalog";
 import { useApi } from "@/lib/api/useApi";
-import { products as seedProducts } from "@/lib/mock/catalog";
 import { cn } from "@/lib/cn";
 import { SITE } from "@/lib/site";
 import type { Category, Swatch } from "@/lib/types";
@@ -31,16 +30,6 @@ import type { Category, Swatch } from "@/lib/types";
 const PAGE_SIZE = 12;
 const GRID = "grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 xl:grid-cols-4";
 const TICKET_SIZES = "(min-width:1280px) 22vw, (min-width:768px) 30vw, 46vw";
-
-/** Colour swatches offered in the filter. Derived from the catalogue palette. */
-function coloursFor(category?: string): Swatch[] {
-  const seen = new Map<string, Swatch>();
-  for (const p of seedProducts) {
-    if (category && p.category !== category) continue;
-    for (const s of p.swatches) if (!seen.has(s.name)) seen.set(s.name, s);
-  }
-  return [...seen.values()];
-}
 
 export function SkeletonGrid({ count = 8 }: { count?: number }) {
   return (
@@ -95,7 +84,7 @@ function ShopHeader({ category }: { category?: Category }) {
   );
 }
 
-export function ShopClient({ category }: { category?: Category }) {
+export function ShopClient({ category, palette = [] }: { category?: Category; palette?: Swatch[] }) {
   const router = useRouter();
   const pathname = usePathname();
   const sp = useSearchParams();
@@ -115,7 +104,7 @@ export function ShopClient({ category }: { category?: Category }) {
     `${filterKey}:${pages}`,
   );
   const cats = useApi(listCategories, "categories");
-  const colours = useMemo(() => coloursFor(slug), [slug]);
+  const colours = palette;
 
   const setFilters = (patch: Partial<ShopFilters>) => {
     const next = new URLSearchParams(sp.toString());

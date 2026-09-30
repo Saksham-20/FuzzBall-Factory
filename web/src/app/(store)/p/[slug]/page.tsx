@@ -1,22 +1,22 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import { ProductView } from "@/components/shop/ProductView";
-import { getProduct, products } from "@/lib/mock/catalog";
+import { serverProduct, serverProducts } from "@/lib/catalog-server";
 import { SITE } from "@/lib/site";
 import type { Product } from "@/lib/types";
 
 type Props = { params: Promise<{ slug: string }> };
 
-// The mock database lives in the browser, so the server reads the seed catalogue for metadata and JSON-LD.
-// A slug that isn't in the seed still renders: the client resolves it and shows "This batch doesn't exist" on a 404.
-export function generateStaticParams() {
-  return products.map((p) => ({ slug: p.slug }));
+// Pieces that exist at build time are prerendered; new ones render on first visit and are cached (see catalog-server).
+export async function generateStaticParams() {
+  return (await serverProducts()).map((p) => ({ slug: p.slug }));
 }
 
 const abs = (path: string) => new URL(path, SITE.url).toString();
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const p = getProduct(slug);
+  const p = await serverProduct(slug).catch(() => null);
   if (!p) return { title: "A FuzzBall piece" };
   const lead = p.fulfilment === "READY" ? "Ready to ship." : `Made to order, ready in about ${p.leadTimeDays} days.`;
   const description = `${p.tagline}. ${lead} Handmade crochet from FuzzBall Factory, ₹${p.price.toLocaleString("en-IN")}.`;
@@ -55,17 +55,21 @@ function jsonLd(p: Product) {
 
 export default async function ProductPage({ params }: Props) {
   const { slug } = await params;
-  const seed = getProduct(slug);
+  // Throws (error page) if the API is down: an outage must never look like "this piece doesn't exist".
+  const product = await serverProduct(slug);
+  // Real data: an unknown or unpublished slug is a real 404. Mock data lives in the browser (a piece the maker just
+  // added there is not on the server), so the client resolves it and shows "This batch doesn't exist" itself.
+  if (!product && !SITE.useMock) notFound();
   return (
     <>
-      {seed ? (
+      {product ? (
         <script
           type="application/ld+json"
           // Escape "<" so product copy can never close the script tag.
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd(seed)).replace(/</g, "\\u003c") }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd(product)).replace(/</g, "\\u003c") }}
         />
       ) : null}
-      <ProductView key={slug} slug={slug} />
+      <ProductView key={slug} slug={slug} initial={product ?? undefined} />
     </>
   );
 }

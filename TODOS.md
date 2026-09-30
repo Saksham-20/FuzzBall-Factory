@@ -54,16 +54,16 @@
 
 ## Storefront (web)
 
-### Parts of the storefront read the mock catalogue even in real-API mode
+### Home door words are sized from a per-letter estimate
 
-**What:** These import `@/lib/mock/catalog` directly, so `NEXT_PUBLIC_USE_MOCK=false` still serves sample data in them: the home page (`Shelf.tsx`, `MakerNote.tsx`), the header and footer category menus, category pages (`shop/[category]/page.tsx`, which returns a 404 for any category not in the sample set), product page metadata, JSON-LD and share images (`p/[slug]/page.tsx`, `opengraph-image.tsx`), `sitemap.ts`, the shop's colour filter (`ShopClient.tsx`) and `lib/state/productCache.ts`.
+**What:** `Shelf.tsx` sizes the category words on the home page from their length (`MODAK_EM_PER_LETTER`). Real category words from the admin may contain wide letters (m, w) that run past the chip.
 
-**Why:** Once real products exist, these keep showing the samples and real categories return a 404. It blocks going live on real data.
+**Why:** The storefront now reads the real catalogue everywhere (server-side `lib/catalog-server.ts`), so the words are no longer the seed set the estimate was tuned for.
 
-**Context:** Route them through `lib/api` like the shop list does. The door-word sizing in `Shelf.tsx` then sees real category words, so measure the rendered word instead of the per-letter estimate (see `MODAK_EM_PER_LETTER`).
+**Context:** Measure the rendered word instead, or cap the word length in the admin category form.
 
-**Effort:** M
-**Priority:** P2
+**Effort:** S
+**Priority:** P3
 **Depends on:** None
 
 ### Credit the sample photos

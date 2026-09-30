@@ -5,6 +5,8 @@ import { join } from "node:path";
 
 const dist = process.argv[2] ?? ".next";
 const FORBIDDEN = ["fuzzball123", "admin@fuzzball.test", "maya@example.com", "fbf-mock-v1"];
+// The seed catalogue may sit in server chunks (the server reads it in mock mode) but must never reach the browser.
+const FORBIDDEN_IN_BROWSER = ["Stuffed firm enough to sit up, soft enough to hug", "Small, round and slightly smug"];
 
 function* files(dir) {
   for (const name of readdirSync(dir)) {
@@ -21,6 +23,7 @@ for (const root of [join(dist, "static"), join(dist, "server")]) {
     for (const file of files(root)) {
       const text = readFileSync(file, "utf8");
       for (const needle of FORBIDDEN) if (text.includes(needle)) hits.push(`${file}: ${needle}`);
+      if (root.endsWith("static")) for (const needle of FORBIDDEN_IN_BROWSER) if (text.includes(needle)) hits.push(`${file}: ${needle}`);
     }
   } catch (error) {
     if (error.code !== "ENOENT") throw error;

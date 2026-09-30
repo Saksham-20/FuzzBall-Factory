@@ -1,12 +1,15 @@
 import type { MetadataRoute } from "next";
 import { LEGAL_UPDATED } from "@/components/content/meta";
 import { POLICY_SLUGS } from "@/components/content/policies";
-import { categories, products } from "@/lib/mock/catalog";
+import { serverCategories, serverProducts } from "@/lib/catalog-server";
 import { SITE } from "@/lib/site";
 
-// PLACEHOLDER(catalogue): product and category URLs come from the seed catalogue. When the real API
-// exists, fetch published products and categories here instead.
-export default function sitemap(): MetadataRoute.Sitemap {
+// Product and category URLs come from the catalogue (the API in real mode, the seed data in mock mode). Rebuilt at
+// most every few minutes; a product's lastmod is when the maker last changed it.
+export const revalidate = 300;
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const [categories, products] = await Promise.all([serverCategories(), serverProducts()]);
   const base = SITE.url.replace(/\/$/, "");
   const now = new Date();
   const legalDate = new Date(`${LEGAL_UPDATED}T12:00:00+05:30`);
@@ -41,7 +44,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     .filter((p) => p.status === "PUBLISHED")
     .map((p) => ({
       url: `${base}/p/${p.slug}`,
-      lastModified: now,
+      lastModified: p.updatedAt ? new Date(p.updatedAt) : now,
       changeFrequency: "weekly",
       priority: 0.7,
     }));

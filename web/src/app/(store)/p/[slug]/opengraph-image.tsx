@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
-import { getProduct } from "@/lib/mock/catalog";
+import { serverProduct } from "@/lib/catalog-server";
 import { formatINR } from "@/lib/format";
 import { SITE } from "@/lib/site";
 
@@ -15,9 +15,21 @@ const BROWN = "#6b4228";
 const KRAFT = "#d4ae80";
 const BUTTER = "#f4cd52";
 
-/** Reads a /public image straight from disk and inlines it, so the card never depends on the network. */
+const MAX_IMAGE_BYTES = 4_000_000;
+
+/**
+ * The card never depends on the visitor's network: the photo is read from /public, or (real data: Cloudinary or the API's
+ * own uploads) downloaded once here, and inlined. A photo that cannot be fetched just leaves the frame empty.
+ */
 async function inlineImage(src: string) {
   try {
+    if (/^https?:\/\//.test(src)) {
+      const res = await fetch(src, { signal: AbortSignal.timeout(5000) });
+      const type = res.headers.get("content-type") ?? "";
+      if (!res.ok || !type.startsWith("image/")) return null;
+      const bytes = Buffer.from(await res.arrayBuffer());
+      return bytes.length > MAX_IMAGE_BYTES ? null : `data:${type};base64,${bytes.toString("base64")}`;
+    }
     const bytes = await readFile(join(process.cwd(), "public", src));
     const type = src.endsWith(".png") ? "image/png" : "image/jpeg";
     return `data:${type};base64,${bytes.toString("base64")}`;
@@ -28,8 +40,8 @@ async function inlineImage(src: string) {
 
 export default async function Image({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const p = getProduct(slug);
-  const photo = p ? await inlineImage(p.images[0].src) : null;
+  const p = await serverProduct(slug).catch(() => null);
+  const photo = p?.images[0] ? await inlineImage(p.images[0].src) : null;
   const lead = p ? (p.fulfilment === "READY" ? "Ready to ship" : `Made to order · ${p.leadTimeDays} days`) : "Crocheted by hand in India";
 
   return new ImageResponse(
