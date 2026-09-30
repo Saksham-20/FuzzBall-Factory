@@ -1,7 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Resend } from 'resend';
+import { withTimeout } from '../common/timeout.js';
 import { isProduction, type Env } from '../config/env.js';
+
+const RESEND_TIMEOUT_MS = 10_000;
 
 export interface EmailMessage {
   to: string;
@@ -40,13 +43,13 @@ export class EmailProvider {
       return { mock: true };
     }
     this.client ??= new Resend(key);
-    const { data, error } = await this.client.emails.send({
+    const { data, error } = await withTimeout(this.client.emails.send({
       from: this.config.get('MAIL_FROM', { infer: true }),
       to: message.to,
       subject: message.subject,
       html: message.html,
       text: message.text,
-    });
+    }), RESEND_TIMEOUT_MS, 'Resend email');
     if (error) throw new Error(`Resend: ${error.name}: ${error.message}`);
     return { mock: false, id: data?.id };
   }

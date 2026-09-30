@@ -9,7 +9,7 @@ export class CloudinaryDriver implements StorageDriver {
 
   constructor(cloudinaryUrl: string) {
     const u = new URL(cloudinaryUrl);
-    cloudinary.config({ cloud_name: u.hostname, api_key: decodeURIComponent(u.username), api_secret: decodeURIComponent(u.password), secure: true });
+    cloudinary.config({ cloud_name: u.hostname, api_key: decodeURIComponent(u.username), api_secret: decodeURIComponent(u.password), secure: true, timeout: 30_000 });
   }
 
   save(input: { buffer: Buffer; contentType: string; extension: string; folder: string }): Promise<StoredFile> {
