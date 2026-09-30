@@ -8,6 +8,11 @@ function harness(review: { id: string; status: string; productId: string; reply?
   const calls: string[] = [];
   let row = { ...review };
   const tx = {
+    // The product row lock taken before the rating is recomputed.
+    $queryRaw: async () => {
+      calls.push('product.lock');
+      return [];
+    },
     review: {
       findUnique: async (args: { where: { id: string } }) => {
         calls.push('review.findUnique');
@@ -49,7 +54,7 @@ describe('AdminReviewsService.moderate', () => {
     const h = harness({ id: 'r1', status: 'PENDING', productId: 'p1' });
     const dto = await h.svc.moderate(ctx, 'r1', 'PUBLISHED');
     expect(dto).toMatchObject({ id: 'r1', status: 'PUBLISHED' });
-    expect(h.calls).toEqual(['review.findUnique', 'review.update', 'review.aggregate', 'product.update', 'audit(tx)']);
+    expect(h.calls).toEqual(['review.findUnique', 'review.update', 'product.lock', 'review.aggregate', 'product.update', 'audit(tx)']);
     expect(h.transactions()).toBe(1);
   });
 
