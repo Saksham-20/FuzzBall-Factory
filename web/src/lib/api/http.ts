@@ -9,6 +9,10 @@ import { openRazorpayCheckout, type RazorpayWindowOptions } from "@/lib/razorpay
  * - JSON in and out; 204 resolves `undefined`.
  * - Errors are `{ code, message, fields? }` from the API and become `ApiError(status, message, fields, code)`.
  * - A 401 triggers ONE silent `POST /auth/refresh` (shared by concurrent requests) and a single retry.
+ * - Every request times out (15s, 60s for uploads) so a hung API becomes an error state instead of a spinner.
+ * - A GET that fails to connect or gets a 502/503/504 is retried once after a short random pause; writes never are
+ *   (a repeated payment or order needs the caller's own idempotency key).
+ * - Concurrent identical GETs share one request (the header, shelf and page all ask for the categories).
  */
 export const API_URL = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000").replace(/\/+$/, "");
 
@@ -38,6 +42,12 @@ export function newIdempotencyKey(): string {
 const NO_REFRESH = new Set(["/auth/login", "/auth/signup", "/auth/refresh", "/auth/logout", "/auth/forgot", "/auth/reset", "/auth/verify-email"]);
 
 const NETWORK_MESSAGE = "We couldn't reach the server. Check your connection and try again.";
+const TIMEOUT_MESSAGE = "The server is taking too long to answer. Please try again in a moment.";
+
+const TIMEOUT_MS = 15_000;
+const UPLOAD_TIMEOUT_MS = 60_000;
+/** Gateway answers that mean "the app was restarting or busy", safe to repeat for a read. */
+const RETRY_STATUSES = new Set([502, 503, 504]);
 
 function url(path: string, query?: HttpOptions["query"]): string {
   const u = `${API_URL}${path.startsWith("/") ? path : `/${path}`}`;
@@ -46,6 +56,21 @@ function url(path: string, query?: HttpOptions["query"]): string {
   for (const [k, v] of Object.entries(query)) if (v !== undefined && v !== null && v !== "") qs.set(k, String(v));
   const s = qs.toString();
   return s ? `${u}?${s}` : u;
+}
+
+async function attempt(path: string, opts: HttpOptions, headers: Record<string, string>, body: BodyInit | undefined): Promise<Response> {
+  try {
+    return await fetch(url(path, opts.query), {
+      method: opts.method ?? "GET",
+      headers,
+      body,
+      credentials: "include",
+      signal: AbortSignal.timeout(opts.form ? UPLOAD_TIMEOUT_MS : TIMEOUT_MS),
+    });
+  } catch (e) {
+    if (e instanceof DOMException && e.name === "TimeoutError") throw new ApiError(0, TIMEOUT_MESSAGE, undefined, "TIMEOUT");
+    throw new ApiError(0, NETWORK_MESSAGE, undefined, "NETWORK");
+  }
 }
 
 async function send(path: string, opts: HttpOptions): Promise<Response> {
@@ -57,11 +82,20 @@ async function send(path: string, opts: HttpOptions): Promise<Response> {
     body = JSON.stringify(opts.body);
   }
   if (opts.idempotencyKey) headers["Idempotency-Key"] = opts.idempotencyKey;
+
+  const readOnly = (opts.method ?? "GET") === "GET";
+  let res: Response | undefined;
   try {
-    return await fetch(url(path, opts.query), { method: opts.method ?? "GET", headers, body, credentials: "include" });
-  } catch {
-    throw new ApiError(0, NETWORK_MESSAGE, undefined, "NETWORK");
+    res = await attempt(path, opts, headers, body);
+  } catch (e) {
+    // A timeout is not retried: the visitor already waited the full time.
+    if (!readOnly || !(e instanceof ApiError) || e.code !== "NETWORK") throw e;
   }
+  if (readOnly && (!res || RETRY_STATUSES.has(res.status))) {
+    await new Promise((r) => setTimeout(r, 200 + Math.random() * 300));
+    res = await attempt(path, opts, headers, body);
+  }
+  return res as Response;
 }
 
 let refreshing: Promise<boolean> | null = null;
@@ -104,7 +138,7 @@ async function toError(res: Response): Promise<ApiError> {
   return new ApiError(res.status, data?.message || fallback, data?.fields, data?.code);
 }
 
-export async function http<T = void>(path: string, opts: HttpOptions = {}): Promise<T> {
+async function request<T>(path: string, opts: HttpOptions): Promise<T> {
   let res = await send(path, opts);
   if (res.status === 401 && !opts.noRefresh && !NO_REFRESH.has(path)) {
     if (await refreshSession()) res = await send(path, opts);
@@ -115,6 +149,26 @@ export async function http<T = void>(path: string, opts: HttpOptions = {}): Prom
   const type = res.headers.get("content-type") ?? "";
   if (!type.includes("json")) return undefined as T;
   return (await res.json()) as T;
+}
+
+const inflight = new Map<string, Promise<unknown>>();
+
+export function http<T = void>(path: string, opts: HttpOptions = {}): Promise<T> {
+  if ((opts.method ?? "GET") !== "GET") {
+    // A write makes anything already in flight stale: later reads must start their own request.
+    inflight.clear();
+    return request<T>(path, opts).finally(() => inflight.clear());
+  }
+  const key = url(path, opts.query);
+  let shared = inflight.get(key) as Promise<T> | undefined;
+  if (!shared) {
+    shared = request<T>(path, opts).finally(() => {
+      if (inflight.get(key) === shared) inflight.delete(key);
+    });
+    inflight.set(key, shared);
+  }
+  // Each caller gets its own copy, so one component editing its data cannot change another's.
+  return shared.then((value) => (value === undefined ? value : structuredClone(value)));
 }
 
 /** Drops `undefined` keys (the API rejects unknown keys, and `undefined` would serialise away anyway). */
