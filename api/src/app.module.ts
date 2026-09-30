@@ -21,6 +21,7 @@ import { ReviewsModule } from './reviews/reviews.module.js';
 import { UploadsModule } from './uploads/uploads.module.js';
 import { JobsModule } from './jobs/jobs.module.js';
 import { ContactModule } from './contact/contact.module.js';
+import { WishlistModule } from './wishlist/wishlist.module.js';
 import { HealthController } from './health/health.controller.js';
 
 /**
@@ -50,6 +51,7 @@ import { HealthController } from './health/health.controller.js';
     OrdersModule,
     AccountModule,
     ContactModule,
+    WishlistModule,
     ReviewsModule,
     UploadsModule,
     JobsModule,

@@ -11,6 +11,7 @@ const PAGES = [
   ["a shelf", "/shop/plushies"],
   ["a product", "/p/rosie-bear"],
   ["cart", "/cart"],
+  ["wishlist", "/wishlist"],
   ["checkout", "/checkout"],
   ["work orders", "/custom"],
   ["track an order", "/track"],

@@ -83,7 +83,7 @@ export function Header({ categories }: { categories: Category[] }) {
         </nav>
 
         <div className="ml-auto flex items-center gap-0.5">
-          <Link href="/account/wishlist" aria-label={`Wishlist, ${wishlist.length} saved`} className={cn(iconBtn, "hidden sm:grid")}>
+          <Link href="/wishlist" aria-label={`Wishlist, ${wishlist.length} saved`} className={cn(iconBtn, "hidden sm:grid")}>
             <Heart className="size-[21px]" strokeWidth={1.8} />
             {wishlist.length > 0 ? (
               <span className="tabular absolute top-1.5 right-1 size-2 rounded-full bg-rose-deep" aria-hidden />
@@ -149,7 +149,7 @@ export function Header({ categories }: { categories: Category[] }) {
                     </Link>
                   </Dialog.Close>
                   <Dialog.Close asChild>
-                    <Link href="/account/wishlist" className="press flex h-11 flex-1 items-center justify-center rounded-full bg-paper font-semibold shadow-ticket">
+                    <Link href="/wishlist" className="press flex h-11 flex-1 items-center justify-center rounded-full bg-paper font-semibold shadow-ticket">
                       Wishlist
                     </Link>
                   </Dialog.Close>

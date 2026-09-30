@@ -1,7 +1,10 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
-import { cartStore, wishStore } from "@/lib/state/stores";
+import { toast } from "sonner";
+import { cartStore, wishOwnerStore, wishStore } from "@/lib/state/stores";
+import { useAuth } from "@/lib/state/AuthContext";
+import { loadWishlist, mergeWishlist, removeFromWishlist, saveToWishlist } from "@/lib/api/wishlist";
 import { lookupProduct } from "@/lib/state/productCache";
 import { getProductsByIds } from "@/lib/api/checkout-extra";
 import type { CartLine, Product } from "@/lib/types";
@@ -32,6 +35,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const lines = useSyncExternalStore(cartStore.subscribe, cartStore.getSnapshot, cartStore.getServerSnapshot);
   const wishlist = useSyncExternalStore(wishStore.subscribe, wishStore.getSnapshot, wishStore.getServerSnapshot);
   const [open, setOpen] = useState(false);
+  const { user } = useAuth();
+  const userId = user?.id ?? null;
   // Real API: cart lines carry database ids, so the products are fetched once per id and cached (productCache).
   const [loaded, setLoaded] = useState(0);
   const tried = useRef(new Set<string>());
@@ -69,11 +74,52 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const clear = useCallback(() => cartStore.set([]), []);
 
-  const toggleWish = useCallback((productId: string) => {
-    const has = wishStore.getSnapshot().includes(productId);
-    wishStore.set((cur) => (has ? cur.filter((id) => id !== productId) : [...cur, productId]));
-    return !has;
-  }, []);
+  // Saved pieces. Signed out (or in mock mode) the list is this device's own. Signed in with the real API it is the
+  // account's: on sign-in the device's list is merged into the account's, `wishStore` then mirrors the server, and
+  // on sign-out it is emptied so the next person on this device starts clean.
+  const syncedFor = useRef<string | null>(null);
+  useEffect(() => {
+    if (SITE.useMock) return;
+    if (!userId) {
+      if (syncedFor.current) {
+        wishStore.set([]);
+        wishOwnerStore.set(null);
+        syncedFor.current = null;
+      }
+      return;
+    }
+    if (syncedFor.current === userId) return;
+    syncedFor.current = userId;
+    // Already this account's mirror (an ordinary page load): just read the server's copy. A device list with no owner
+    // is merged in once. Another account's leftovers are never merged into this one.
+    const owner = wishOwnerStore.getSnapshot();
+    const sync = owner === userId ? loadWishlist() : mergeWishlist(owner === null ? wishStore.getSnapshot() : []);
+    sync.then(
+      (ids) => {
+        wishStore.set(ids);
+        wishOwnerStore.set(userId);
+      },
+      () => {
+        syncedFor.current = null; // try again on the next render of this effect (next sign-in or reload)
+      },
+    );
+  }, [userId]);
+
+  const toggleWish = useCallback(
+    (productId: string) => {
+      const has = wishStore.getSnapshot().includes(productId);
+      wishStore.set((cur) => (has ? cur.filter((id) => id !== productId) : [...cur, productId]));
+      if (!SITE.useMock && userId && wishOwnerStore.getSnapshot() === userId) {
+        (has ? removeFromWishlist(productId) : saveToWishlist(productId)).catch((e: Error) => {
+          // Put it back the way it was and say so: a heart that silently fails is worse than none.
+          wishStore.set((cur) => (has ? (cur.includes(productId) ? cur : [...cur, productId]) : cur.filter((id) => id !== productId)));
+          toast.error(e.message || "We couldn't update your wishlist. Please try again.");
+        });
+      }
+      return !has;
+    },
+    [userId],
+  );
 
   const api = useMemo<CartApi>(() => {
     void loaded; // recompute once products fetched from the API land in the cache

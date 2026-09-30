@@ -426,3 +426,16 @@ Unpaid online orders and unconfirmed COD orders hold stock, so a shopper (matche
 ## Contact form
 
 `POST /contact` (public) `{ name, email, message, website? }`. Name 2-80 characters, message 10-1500, `website` is the hidden honeypot (a request that fills it gets a normal 204 and nothing is sent). Sent to `CONTACT_INBOX_EMAIL`, else `ADMIN_EMAIL`, through the email outbox as event `contact.message` with the visitor's address as Reply-To. 204 on success; 503 `CONTACT_UNAVAILABLE` when neither address is set; 400 with `fields` for bad input; 5 requests per hour per IP, then 429. The message text is never logged, and the outbox row's payload is emptied once the mail is sent.
+
+## Wishlist
+
+Signed-in only; the user is always the session's, never a request value. Signed out, the storefront keeps the device's own list in the browser and merges it into the account on sign-in (`wishStore`, see `CartContext`); signed in, the browser list mirrors the server's.
+
+| Call | Route | Notes |
+|---|---|---|
+| list | `GET /wishlist` | `[{ productId, addedAt }]`, oldest first. Pieces unpublished since are left out |
+| save | `PUT /wishlist/:productId` | 204, idempotent. 404 for an unknown or unpublished piece. 422 `WISHLIST_FULL` past 100 saved pieces (checked under a per-user advisory lock). 60/min |
+| remove | `DELETE /wishlist/:productId` | 204, idempotent, only ever touches the caller's own row. 60/min |
+| merge | `POST /wishlist/merge` `{ productIds: string[] }` (max 100) | Adds the valid published ids that are not saved yet (up to the cap, unknown ids skipped), returns the whole list. 10/min |
+
+The privacy export lists saved pieces and erasure deletes them (`account-export.service.ts`, `erasure.service.ts`).
