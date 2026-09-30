@@ -41,17 +41,13 @@ export function contentSecurityPolicy({ apiOrigin }: Pick<Options, "apiOrigin">)
 export function securityHeaders({ apiOrigin, production }: Options): { key: string; value: string }[] {
   const headers = [
     { key: "X-Content-Type-Options", value: "nosniff" },
-    { key: "X-Frame-Options", value: "DENY" },
     // A password-reset token sits in the URL of one page: never hand it to another site as a referrer.
     { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
     { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), payment=(self), interest-cohort=()" },
   ];
-  // Dev needs eval for hot reload and plain http; only a real deployment gets the strict pair.
-  if (production) {
-    headers.push(
-      { key: "Content-Security-Policy", value: contentSecurityPolicy({ apiOrigin }) },
-      { key: "Strict-Transport-Security", value: "max-age=31536000; includeSubDomains" },
-    );
-  }
+  // Dev needs eval for hot reload and plain http, so only a real deployment gets the CSP. HSTS and X-Frame-Options are
+  // nginx's (ops/nginx/fuzzball-headers.conf): sending them from both places gave duplicate HSTS and, where the two
+  // disagreed (DENY vs SAMEORIGIN), conflicting frame headers. The CSP's frame-ancestors 'none' covers framing here.
+  if (production) headers.push({ key: "Content-Security-Policy", value: contentSecurityPolicy({ apiOrigin }) });
   return headers;
 }

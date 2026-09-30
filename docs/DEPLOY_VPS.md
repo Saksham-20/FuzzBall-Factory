@@ -20,6 +20,8 @@ While it runs in development mode and is reachable from the internet, treat it a
 
 ## Redeploy (build on your machine, never on the VPS)
 
+With `NEXT_DIST_DIR=.next-vps` the standalone server reads `.next-vps/static`, not `.next/static`: copy the static folder into `web/.next-vps/static` on the server, and restart `fuzzball-web` afterwards (Next lists static files at startup). Check with `scripts/smoke.sh <site>`.
+
 ```bash
 # web
 cd web

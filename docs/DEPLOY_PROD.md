@@ -48,6 +48,10 @@ Create an environment named **production** with **required reviewers** (the appr
 
 Branch protection on `main`: require the CI checks and a pull request. The deploy workflow also refuses a commit whose `api`, `web` and `security` checks are not green.
 
+## After every deploy
+
+Run `scripts/smoke.sh https://<domain>`: it is read-only and checks the pages, real 404s for unknown products and shelves, every script and stylesheet the pages reference (a release shipped without its static folder looks fine in a status check and is unusable in a browser), and that security headers are set once and do not conflict.
+
 ## Every deploy
 
 Run the **Deploy** workflow (Actions tab), approve it. It builds the release, uploads it, takes a pre-migration

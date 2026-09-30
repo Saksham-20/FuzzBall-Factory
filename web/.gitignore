@@ -47,6 +47,7 @@ next-env.d.ts
 
 # alternate build outputs (NEXT_DIST_DIR=.next-vps, .next-real, ...)
 /.next-*/
+/.vps-stage/
 
 # maker-supplied photos stay local: they show a real person, not for a public repo
 /public/maker-supplied/

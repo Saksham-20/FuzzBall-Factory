@@ -39,15 +39,19 @@ describe("content security policy", () => {
 describe("security headers", () => {
   const names = (production: boolean) => securityHeaders({ apiOrigin: API, production }).map((h) => h.key);
 
-  it("adds CSP and HSTS only in production", () => {
-    expect(names(true)).toEqual(expect.arrayContaining(["Content-Security-Policy", "Strict-Transport-Security"]));
+  it("adds the CSP only in production", () => {
+    expect(names(true)).toContain("Content-Security-Policy");
     expect(names(false)).not.toContain("Content-Security-Policy");
-    expect(names(false)).not.toContain("Strict-Transport-Security");
+  });
+
+  it("leaves HSTS and X-Frame-Options to nginx, so they are never sent twice or in conflict", () => {
+    expect(names(true)).not.toContain("Strict-Transport-Security");
+    expect(names(true)).not.toContain("X-Frame-Options");
   });
 
   it("always sends the basics", () => {
     expect(names(false)).toEqual(
-      expect.arrayContaining(["X-Content-Type-Options", "X-Frame-Options", "Referrer-Policy", "Permissions-Policy"]),
+      expect.arrayContaining(["X-Content-Type-Options", "Referrer-Policy", "Permissions-Policy"]),
     );
   });
 });
