@@ -33,13 +33,13 @@ Also: `TODOS.md` (deferred work by priority), `plans/` (self-contained fixes for
 ```bash
 cd web
 npm run dev        # http://localhost:3000
-npm run build
+NEXT_PUBLIC_USE_MOCK=true npm run build   # a production build must choose mock (true) or real (false)
 npm run lint
 npm test           # unit (vitest): src/**/*.test.ts
 npm run test:e2e   # layout and accessibility regressions in Chromium (Playwright): builds into .next-e2e, serves on :3310
 ```
 
-`npm run build` writes `web/.next`. If a local `next start` is serving that folder, build into another one: `NEXT_DIST_DIR=.next-verify npx next build`.
+`npm run build` writes `web/.next`. If a local `next start` is serving that folder, build into another one: `NEXT_PUBLIC_USE_MOCK=true NEXT_DIST_DIR=.next-verify npx next build`.
 
 ## Commands (api)
 
