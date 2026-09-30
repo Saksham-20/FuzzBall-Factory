@@ -9,14 +9,24 @@ function uid() {
   return s.userId;
 }
 
-export async function updateProfile(input: { name: string; phone?: string; email: string }): Promise<User> {
+export async function updateProfile(input: { name: string; phone?: string; currentPassword?: string }): Promise<User> {
   if (!SITE.useMock) return real.updateProfile(input);
   await wait();
   const id = uid();
-  db.update((d) => ({ ...d, users: d.users.map((u) => (u.id === id ? { ...u, ...input } : u)) }));
+  const { name, phone } = input;
+  db.update((d) => ({ ...d, users: d.users.map((u) => (u.id === id ? { ...u, name, phone } : u)) }));
   const { password, ...u } = db.get().users.find((x) => x.id === id)!;
   void password;
   return u;
+}
+
+/** Mock: checks the password and reports success; there is no inbox to confirm from, so the address stays put. */
+export async function changeEmail(email: string, password: string): Promise<void> {
+  if (!SITE.useMock) return real.changeEmail(email, password);
+  await wait();
+  const u = db.get().users.find((x) => x.id === uid())!;
+  if (u.password !== password) throw new ApiError(400, "That password isn't right.", { password: "Incorrect" });
+  if (email.trim().toLowerCase() === u.email.toLowerCase()) throw new ApiError(400, "That is already your email.", { email: "Same as now" });
 }
 
 export async function changePassword(current: string, next: string): Promise<void> {

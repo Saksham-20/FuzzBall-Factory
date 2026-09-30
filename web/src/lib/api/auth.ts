@@ -58,3 +58,18 @@ export async function resetPassword(_token: string, password: string): Promise<v
   await wait();
   if (password.length < 8) throw new ApiError(400, "Use at least 8 characters.", { password: "Too short" });
 }
+
+/** Mock: confirms the signed-in user's email (there is no inbox to click in). */
+export async function verifyEmail(token: string): Promise<{ purpose: "VERIFY" | "CHANGE" }> {
+  if (!SITE.useMock) return real.verifyEmail(token);
+  await wait();
+  if (token.length < 20) throw new ApiError(400, "This link is invalid or has expired. Request a new one from your account.");
+  const s = db.get().session;
+  if (s) db.update((d) => ({ ...d, users: d.users.map((u) => (u.id === s.userId ? { ...u, emailVerified: true } : u)) }));
+  return { purpose: "VERIFY" };
+}
+
+export async function resendVerification(): Promise<void> {
+  if (!SITE.useMock) return real.resendVerification();
+  await wait();
+}

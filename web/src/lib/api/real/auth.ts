@@ -35,3 +35,6 @@ export async function logout(): Promise<void> {
 
 export const forgotPassword = (email: string) => http("/auth/forgot", { method: "POST", body: { email: email.trim() } });
 export const resetPassword = (token: string, password: string) => http("/auth/reset", { method: "POST", body: { token, password } });
+
+export const verifyEmail = (token: string) => http<{ purpose: "VERIFY" | "CHANGE" }>("/auth/verify-email", { method: "POST", body: { token } });
+export const resendVerification = () => http("/auth/resend-verification", { method: "POST" });

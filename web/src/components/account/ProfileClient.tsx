@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -12,6 +12,7 @@ import { Modal } from "@/components/ui/Dialog";
 import { Field, Input } from "@/components/ui/Field";
 import { ErrorNote } from "@/components/ui/misc";
 import * as account from "@/lib/api/account";
+import { resendVerification } from "@/lib/api/auth";
 import { useAuth } from "@/lib/state/AuthContext";
 import { ApiError } from "@/lib/mock/db";
 import type { User } from "@/lib/types";
@@ -48,11 +49,11 @@ export function ProfileClient() {
 
 const detailsSchema = z.object({
   name: z.string().trim().min(2, "Tell us your name so we can address your parcels."),
-  email: z.email("That email doesn't look right. Check for typos."),
   phone: z
     .string()
     .trim()
     .refine((v) => v === "" || /^\+?[0-9\s-]{7,16}$/.test(v), "Use digits only, with the country code if you're outside India."),
+  currentPassword: z.string(),
 });
 type DetailsValues = z.infer<typeof detailsSchema>;
 
@@ -64,15 +65,23 @@ function DetailsForm({ user }: { user: User }) {
     handleSubmit,
     reset,
     setError,
+    control,
     formState: { errors, isSubmitting, isDirty },
-  } = useForm<DetailsValues>({ resolver: zodResolver(detailsSchema), defaultValues: { name: user.name, email: user.email, phone: user.phone ?? "" } });
+  } = useForm<DetailsValues>({ resolver: zodResolver(detailsSchema), defaultValues: { name: user.name, phone: user.phone ?? "", currentPassword: "" } });
+  // Moving the phone number (a login and a delivery contact) asks for the password, so only show the field when it is needed.
+  const phoneValue = useWatch({ control, name: "phone" });
+  const phoneChanged = phoneValue.replace(/[\s-]/g, "") !== (user.phone ?? "").replace(/[\s-]/g, "");
 
   async function onSubmit(v: DetailsValues) {
     setFormError("");
+    if (phoneChanged && !v.currentPassword) {
+      setError("currentPassword", { message: "Enter your current password to change your phone number." });
+      return;
+    }
     try {
-      await account.updateProfile({ name: v.name, email: v.email, phone: v.phone || undefined });
+      await account.updateProfile({ name: v.name, phone: v.phone || undefined, currentPassword: phoneChanged ? v.currentPassword : undefined });
       await refresh();
-      reset(v);
+      reset({ name: v.name, phone: v.phone, currentPassword: "" });
       toast.success("Profile saved.");
     } catch (e) {
       if (e instanceof ApiError) for (const [k, m] of Object.entries(e.fields ?? {})) if (k in v) setError(k as keyof DetailsValues, { message: m });
@@ -86,16 +95,143 @@ function DetailsForm({ user }: { user: User }) {
       <Field label="Name" error={errors.name?.message}>
         {(p) => <Input {...p} {...register("name")} autoComplete="name" />}
       </Field>
-      <Field label="Email" error={errors.email?.message}>
-        {(p) => <Input {...p} {...register("email")} type="email" autoComplete="email" autoCapitalize="none" spellCheck={false} />}
-      </Field>
+      <EmailRow user={user} />
       <Field label="Phone" optional hint="For delivery updates and WhatsApp." error={errors.phone?.message}>
         {(p) => <Input {...p} {...register("phone")} type="tel" inputMode="tel" autoComplete="tel" />}
       </Field>
+      {phoneChanged ? (
+        <Field label="Current password" hint="We ask before changing your phone number." error={errors.currentPassword?.message}>
+          {(p) => <PasswordInput {...p} {...register("currentPassword")} autoComplete="current-password" />}
+        </Field>
+      ) : null}
       <Button type="submit" disabled={isSubmitting || !isDirty} aria-busy={isSubmitting}>
         {isSubmitting ? "Saving…" : "Save changes"}
       </Button>
     </form>
+  );
+}
+
+/** The email is not edited in place: a change is confirmed from the new inbox. Unconfirmed accounts can ask for the link again. */
+function EmailRow({ user }: { user: User }) {
+  const [open, setOpen] = useState(false);
+  const [sending, setSending] = useState(false);
+  const unconfirmed = user.emailVerified === false;
+
+  async function resend() {
+    setSending(true);
+    try {
+      await resendVerification();
+      toast.success("Confirmation link sent. Check your inbox.");
+    } catch (e) {
+      toast.error(e instanceof ApiError ? e.message : "We couldn't send that just now. Please try again.");
+    } finally {
+      setSending(false);
+    }
+  }
+
+  return (
+    <div>
+      <p className="text-[15px] font-semibold">Email</p>
+      <p className="mt-1 break-all">{user.email}</p>
+      {unconfirmed ? (
+        <p className="mt-1 text-[15px] text-warn">
+          Not confirmed yet. We sent a link when you signed up; you can shop meanwhile, but changing your email or phone needs it.
+        </p>
+      ) : (
+        <p className="mt-1 text-[15px] text-brown">Confirmed.</p>
+      )}
+      <div className="mt-2 flex flex-wrap gap-2">
+        {unconfirmed ? (
+          <Button type="button" variant="secondary" size="sm" onClick={resend} disabled={sending} aria-busy={sending}>
+            {sending ? "Sending…" : "Send the link again"}
+          </Button>
+        ) : (
+          <Button type="button" variant="secondary" size="sm" onClick={() => setOpen(true)}>
+            Change email
+          </Button>
+        )}
+      </div>
+      <ChangeEmailModal open={open} onOpenChange={setOpen} />
+    </div>
+  );
+}
+
+function ChangeEmailModal({ open, onOpenChange }: { open: boolean; onOpenChange: (o: boolean) => void }) {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const [fields, setFields] = useState<Record<string, string>>({});
+  const [sentTo, setSentTo] = useState("");
+
+  function close(o: boolean) {
+    if (busy) return;
+    onOpenChange(o);
+    if (!o) {
+      setError("");
+      setFields({});
+      setPassword("");
+      setSentTo("");
+      setEmail("");
+    }
+  }
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    setError("");
+    setFields({});
+    if (!/^\S+@\S+\.\S+$/.test(email.trim())) return setFields({ email: "That email doesn't look right. Check for typos." });
+    if (!password) return setFields({ password: "Enter your password to confirm it's you." });
+    setBusy(true);
+    try {
+      await account.changeEmail(email, password);
+      setSentTo(email.trim());
+    } catch (err) {
+      if (err instanceof ApiError) {
+        setFields(err.fields ?? {});
+        if (!err.fields || Object.keys(err.fields).length === 0) setError(err.message);
+      } else setError("We couldn't send that just now. Please try again.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <Modal
+      open={open}
+      onOpenChange={close}
+      title={sentTo ? "Check the new inbox" : "Change your email"}
+      description={sentTo ? undefined : "We'll send a confirmation link to the new address. Your email only changes once you open it, and we'll tell your current address too."}
+    >
+      {sentTo ? (
+        <div role="status">
+          <p className="text-brown">
+            We sent a link to <span className="font-semibold break-all text-cocoa">{sentTo}</span>. It works for an hour. When you open it you&apos;ll be signed out everywhere and can log in with the new email.
+          </p>
+          <div className="mt-6 flex justify-end">
+            <Button onClick={() => close(false)}>Done</Button>
+          </div>
+        </div>
+      ) : (
+        <form onSubmit={submit} noValidate className="space-y-4">
+          {error ? <ErrorNote>{error}</ErrorNote> : null}
+          <Field label="New email" error={fields.email}>
+            {(p) => <Input {...p} type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" autoCapitalize="none" spellCheck={false} />}
+          </Field>
+          <Field label="Your password" error={fields.password}>
+            {(p) => <PasswordInput {...p} value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" />}
+          </Field>
+          <div className="flex flex-wrap justify-end gap-2 pt-2">
+            <Button type="button" variant="ghost" onClick={() => close(false)} disabled={busy}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={busy} aria-busy={busy}>
+              {busy ? "Sending…" : "Send confirmation"}
+            </Button>
+          </div>
+        </form>
+      )}
+    </Modal>
   );
 }
 

@@ -35,7 +35,7 @@ export function newIdempotencyKey(): string {
 }
 
 /** Auth endpoints that must never trigger a refresh (a 401 there is a real answer). */
-const NO_REFRESH = new Set(["/auth/login", "/auth/signup", "/auth/refresh", "/auth/logout", "/auth/forgot", "/auth/reset"]);
+const NO_REFRESH = new Set(["/auth/login", "/auth/signup", "/auth/refresh", "/auth/logout", "/auth/forgot", "/auth/reset", "/auth/verify-email"]);
 
 const NETWORK_MESSAGE = "We couldn't reach the server. Check your connection and try again.";
 

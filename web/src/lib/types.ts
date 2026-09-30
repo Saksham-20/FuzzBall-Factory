@@ -86,6 +86,8 @@ export interface User {
   name: string;
   email: string;
   phone?: string;
+  /** False until the signup link is used. Absent in the mock data layer (treated as confirmed). */
+  emailVerified?: boolean;
   role: Role;
   createdAt: string;
 }
