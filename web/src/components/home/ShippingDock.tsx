@@ -1,5 +1,5 @@
 import { Ticket } from "@/components/brand/Ticket";
-import { Button } from "@/components/ui/Button";
+import { TrackDockForm } from "@/components/home/TrackDockForm";
 import { Reveal } from "@/components/ui/Reveal";
 import { StationSection } from "@/components/home/StationSection";
 import { formatINR } from "@/lib/format";
@@ -12,9 +12,6 @@ const FACTS = [
   { term: "Gifting", text: `Gift wrap and a handwritten note for ${formatINR(S.giftWrapPrice)}.` },
   { term: "Paying", text: `UPI, cards and netbanking. Cash on delivery for ready-to-ship pieces up to ${formatINR(S.codCap)}.` },
 ] as const;
-
-const field =
-  "h-12 w-full rounded-[12px] border-[1.5px] border-line-strong bg-cream px-4 text-base text-cocoa placeholder:text-brown-soft/80 focus-visible:border-rose-deep";
 
 export function ShippingDock() {
   return (
@@ -43,32 +40,7 @@ export function ShippingDock() {
           <Ticket tone="paper" className="p-4 pt-8 sm:p-5 sm:pt-9">
             <div className="px-1 pb-1">
               <h3 className="font-display text-[clamp(1.75rem,3vw,2.25rem)]">Already ordered? Track it.</h3>
-              <form action="/track" method="get" className="mt-5 space-y-3 border-t-2 border-dashed border-line-strong pt-5">
-                <div>
-                  <label htmlFor="track-order" className="mb-1.5 block text-sm font-semibold">
-                    Order number
-                  </label>
-                  <input id="track-order" name="order" placeholder="FB-1023" autoComplete="off" required className={field} />
-                </div>
-                <div>
-                  <label htmlFor="track-phone" className="mb-1.5 block text-sm font-semibold">
-                    Phone number
-                  </label>
-                  <input
-                    id="track-phone"
-                    name="phone"
-                    type="tel"
-                    inputMode="tel"
-                    placeholder="With country code"
-                    autoComplete="tel"
-                    required
-                    className={field}
-                  />
-                </div>
-                <Button type="submit" size="lg" className="w-full sm:w-auto">
-                  Track my order
-                </Button>
-              </form>
+              <TrackDockForm />
             </div>
           </Ticket>
         </Reveal>

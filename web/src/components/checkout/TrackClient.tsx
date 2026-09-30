@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { MessageCircle, PackageSearch } from "lucide-react";
@@ -15,6 +15,7 @@ import { useApi } from "@/lib/api/useApi";
 import { trackSchema, type TrackValues } from "@/lib/schemas/track";
 import { ORDER_STATUS } from "@/lib/status";
 import { formatDate } from "@/lib/format";
+import { takeTrackHandoff } from "@/lib/track-handoff";
 import { waOrder } from "@/lib/whatsapp";
 
 interface Query {
@@ -24,20 +25,27 @@ interface Query {
   n: number;
 }
 
-export function TrackClient({ initialOrder = "", initialContact = "" }: { initialOrder?: string; initialContact?: string }) {
-  // The landing-page form links here with ?order=&phone=, so a full pair looks itself up.
-  const [query, setQuery] = useState<Query | null>(
-    initialOrder.trim() && initialContact.trim() ? { number: initialOrder.trim(), contact: initialContact.trim(), n: 0 } : null,
-  );
-  const { register, handleSubmit, formState } = useForm<TrackValues>({
+export function TrackClient({ initialOrder = "" }: { initialOrder?: string }) {
+  const [query, setQuery] = useState<Query | null>(null);
+  const { register, handleSubmit, setValue, formState } = useForm<TrackValues>({
     resolver: zodResolver(trackSchema),
-    defaultValues: { number: initialOrder, contact: initialContact },
+    defaultValues: { number: initialOrder, contact: "" },
   });
   const { errors } = formState;
 
+  const submit = handleSubmit((v) => setQuery((q) => ({ number: v.number, contact: v.contact, n: (q?.n ?? 0) + 1 })));
+
+  // The landing-page form hands over number + phone through sessionStorage (never the URL), so a full pair looks itself up.
+  useEffect(() => {
+    const handoff = takeTrackHandoff();
+    if (!handoff) return;
+    setValue("number", handoff.order);
+    setValue("contact", handoff.contact);
+    if (handoff.order.trim() && handoff.contact.trim()) void submit();
+  }, [setValue, submit]);
+
   const { data: order, error, loading } = useApi(() => trackOrder(query!.number, query!.contact), `track:${query?.number}:${query?.contact}:${query?.n}`, !!query);
 
-  const submit = handleSubmit((v) => setQuery((q) => ({ number: v.number, contact: v.contact, n: (q?.n ?? 0) + 1 })));
   const pending = !!query && loading;
 
   return (

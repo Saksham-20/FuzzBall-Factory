@@ -101,3 +101,32 @@ export function toOrderDto(o: OrderRow): OrderDto {
     createdAt: o.createdAt.toISOString(),
   };
 }
+
+/** `maya.iyer@example.com` -> `m***@example.com`. */
+export function maskEmail(email: string): string {
+  const [local = '', domain = ''] = email.split('@');
+  return domain ? `${local.slice(0, 1)}***@${domain}` : '***';
+}
+
+/** `+919811122233` -> `******2233`: enough to recognise, not enough to use. */
+export function maskPhone(phone: string): string {
+  const d = phone.replace(/\D/g, '');
+  return d.length > 4 ? `${'*'.repeat(d.length - 4)}${d.slice(-4)}` : '***';
+}
+
+/**
+ * The order as the public tracker shows it. Anyone holding an order number plus a guessed phone or email gets this, so
+ * it carries progress (status, timeline, courier, items) but not the street address, full contact details or the
+ * account id: only city and state remain, and the phone and email are masked.
+ */
+export function toTrackDto(o: OrderRow): OrderDto {
+  const full = toOrderDto(o);
+  const { userId: _userId, ...rest } = full;
+  void _userId;
+  return {
+    ...rest,
+    contact: { name: full.contact.name.trim().split(/\s+/)[0] ?? '', email: maskEmail(full.contact.email), phone: maskPhone(full.contact.phone) },
+    address: { name: '', phone: '', line1: '', city: full.address.city, state: full.address.state, postalCode: '', country: full.address.country },
+    giftNote: undefined,
+  };
+}

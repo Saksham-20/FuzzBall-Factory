@@ -1,5 +1,5 @@
 import type { OrderRow } from './order.mapper.js';
-import { toOrderDto } from './order.mapper.js';
+import { maskEmail, maskPhone, toOrderDto, toTrackDto } from './order.mapper.js';
 
 const row = (over: Partial<OrderRow> = {}): OrderRow =>
   ({
@@ -47,5 +47,23 @@ describe('toOrderDto', () => {
     const dto = toOrderDto(row({ contact: null, items: [{ ...row().items[0], productId: null, size: 'M', personalization: 'Priya' }] } as unknown as Partial<OrderRow>));
     expect(dto.items[0]).toMatchObject({ productId: '', size: 'M', personalization: 'Priya' });
     expect(dto.contact).toEqual({ name: '', email: '', phone: '' });
+  });
+});
+
+describe('toTrackDto (the public tracker)', () => {
+  it('keeps progress but hides the street address, full contact details and account id', () => {
+    const dto = toTrackDto(row({ userId: 'u1', giftNote: 'Happy birthday, love Maya' } as never));
+    expect(dto).toMatchObject({ number: 'FB-1001', status: 'PENDING_PAYMENT', items: [{ name: 'Mug Rug', qty: 2 }], events: [{ status: 'PENDING_PAYMENT' }] });
+    expect(dto.contact).toEqual({ name: 'Maya', email: 'm***@x.com', phone: '********0001' });
+    expect(dto.address).toEqual({ name: '', phone: '', line1: '', city: 'Blr', state: 'Karnataka', postalCode: '', country: 'IN' });
+    const json = JSON.stringify(dto);
+    for (const leak of ['1 Road', '560038', 'm@x.com', '+919800000001', 'u1', 'userId', 'Happy birthday']) expect(json).not.toContain(leak);
+  });
+
+  it('masks emails and phones', () => {
+    expect(maskEmail('maya.iyer@example.com')).toBe('m***@example.com');
+    expect(maskEmail('nonsense')).toBe('***');
+    expect(maskPhone('+91 98111 22233')).toBe('********2233');
+    expect(maskPhone('123')).toBe('***');
   });
 });

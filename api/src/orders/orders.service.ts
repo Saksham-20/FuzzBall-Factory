@@ -16,7 +16,7 @@ import type { PlaceOrderDto } from './dto/orders.dto.js';
 import { OrderNotifier } from './order-notifier.service.js';
 import { OrderStateService, SYSTEM_ACTOR, type OrderActor } from './order-state.service.js';
 import { CUSTOMER_CANCELLABLE, PAYMENT_WINDOW_MINUTES, RETURN_WINDOW_DAYS } from './order-transitions.js';
-import { ORDER_INCLUDE, toOrderDto, type OrderDto, type OrderRow } from './order.mapper.js';
+import { ORDER_INCLUDE, toOrderDto, toTrackDto, type OrderDto, type OrderRow } from './order.mapper.js';
 
 /** `POST /orders` response: the order (web `Order`) plus, for online payments, what the checkout needs to pay. */
 export type PlacedOrderDto = OrderDto & { payment?: CheckoutPayment };
@@ -240,7 +240,7 @@ export class OrdersService {
       throw miss();
     }
     await this.throttle.reset(key);
-    return toOrderDto(o);
+    return toTrackDto(o);
   }
 
   // ───────────── customer actions ─────────────
