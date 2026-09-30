@@ -224,7 +224,9 @@ Counters, messages, change requests, new requests and payments are throttled to 
 | `setReviewReply(id, reply)` | `PUT /admin/reviews/:id/reply` | `{ reply }` → `Review` (sets `reply` + `repliedAt`) |
 | `clearReviewReply(id)` | `DELETE /admin/reviews/:id/reply` | → `Review` (clears `reply` + `repliedAt`) |
 | `listCoupons()` | `GET /admin/coupons` | → `Coupon[]` |
-| `saveCoupon(c)` | `PUT /admin/coupons/:code` (upsert) or `POST /admin/coupons` | `Coupon` → `Coupon` (`uses` is never overwritten) |
+| `saveCoupon(c)` | `PUT /admin/coupons/:code` (upsert) or `POST /admin/coupons` | `Coupon` → `Coupon` (`uses` is never overwritten). Optional `maxUses` (total redemptions) and `perUserLimit` (per account, or per email for guests): leave a key out to keep the stored value, send `null` to clear it. Both are enforced while the order is placed, under the coupon's row lock, so concurrent orders can't exceed them |
+| `listPayments({ order? \| request? })` | `GET /admin/payments?order=FB-1001` or `?request=WO-001` | → `AdminPayment[]`: each payment with `refundedAmount`, `refundable` (rupees still refundable now) and its `refunds` jobs (`PENDING`/`PROCESSING`/`DONE`/`FAILED`, `attempts`, `lastError`) |
+| `refundPayment(id, { amount?, reason })` | `POST /admin/payments/:id/refund` (200) | Manual refund of a captured payment (order, deposit or balance), whole remainder unless `amount`. `reason` 3-200 chars (audited as `payment.refund`). → `{ refunded, pending }` rupees. 400 over the refundable amount, 409 not captured |
 | `deleteCoupon(code)` | `DELETE /admin/coupons/:code` (204) | |
 | `listMaterials()` | `GET /admin/materials` | → `Material[]` (non-archived only) |
 | `saveMaterial(input)` create | `POST /admin/materials` (201) | `MaterialInput` → `Material` |
@@ -324,9 +326,13 @@ and is the single place a payment becomes PAID (`markPaid`): one transaction fli
   and the order stays `PENDING_PAYMENT` with `paymentStatus: FAILED` (retry via `POST /orders/:number/pay`). The web `confirmPayment(number, ok)` becomes: confirm with the `paymentId` from `placeOrder`, then `GET /orders/:number`.
 - `POST /payments/razorpay/webhook`: HMAC of the **raw** body with `RAZORPAY_WEBHOOK_SECRET` (`X-Razorpay-Signature`), deduped on `X-Razorpay-Event-Id` in `WebhookEvent.eventId` (falls back to a body hash), idempotent.
   Handles `payment.captured` / `order.paid` (amount + currency verified), `payment.failed`, `refund.created` / `refund.processed` (mirrors dashboard refunds), `refund.failed` (logged). Answers 200 for anything else, 400 for a bad signature,
-  500 when processing failed (Razorpay retries; the event stays unprocessed and is retried). Stored payloads have customer identifiers redacted. Configure the dashboard webhook with auto-capture on.
-- Refunds: cancelling (or refunding) a paid online order refunds through `PaymentsService.refundOrder` (real Razorpay refund when live, DB-only in mock). A refund that fails does not block the cancellation:
-  the timeline note says it needs a manual refund and `paymentStatus` stays `PAID`. A payment that arrives after its order was cancelled, or a duplicate payment for a paid order, is refunded automatically.
+  500 when processing failed (Razorpay retries; the event stays unprocessed and is retried). A captured amount that differs from the payment's is **not** retryable: it answers 200, keeps the payment `PENDING` with the reason in `failureReason` and on the event's `error`, and logs `[NEEDS REVIEW]`. Stored payloads have customer identifiers redacted. Configure the dashboard webhook with auto-capture on.
+- Refunds are durable. `PaymentsService.refundPayment` writes a `RefundJob` first (reserving the rupees on `Payment.refundReserved`, so two refunds can never exceed the payment), then sends it to Razorpay at once (real refund when live, DB-only in mock).
+  If Razorpay is down or slow the job stays `PENDING` and a cron (`refunds.process`, every minute) retries it with backoff (1, 5, 15, 60, 180, 360, 720 minutes). Every Razorpay refund carries `receipt = rf-<jobId>`: before a retry the payment's refunds are listed and a match is adopted,
+  so a call that timed out is never sent twice. A permanent 4xx, or the eighth failure, marks the job `FAILED`, frees the reservation and logs `[REFUND FAILED]`; the admin then refunds by hand (`POST /admin/payments/:id/refund`). Cancelling an order never waits on any of this:
+  the timeline note says either that the refund is on its way, that it is retrying automatically, or that it will be done by hand; `paymentStatus` becomes `REFUNDED` when the money has actually gone back.
+  A payment that arrives after its order (or work order) was cancelled, or a second payment for an already-paid order / deposit / balance, is refunded automatically (work orders also get a message on the thread).
+- Resuming: `createPayment` returns the same open Razorpay order (status `PENDING` or `FAILED`, same owner, purpose and amount) instead of creating another, so tapping pay again, or retrying after a failed attempt, can never lead to two captures.
 - For other modules: `registerPaidHandler(purpose, (event, tx) => ...)` (inside the payment transaction; must be idempotent), `registerPaidListener(purpose, async (event) => ...)` (after commit: send emails here),
   `createPayment({ purpose: 'DEPOSIT' | 'BALANCE', amount, customRequestId, userId?, receipt })`, `refundPayment(paymentId, { amount?, reason })`. `Payment.quoteId` is not part of `CreatePaymentInput`: set it on the row yourself if you need it.
 
