@@ -2,6 +2,7 @@ import type { INestApplication } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import cookieParser from 'cookie-parser';
+import { json, urlencoded } from 'express';
 import helmet from 'helmet';
 import type { Env } from './config/env.js';
 import { createValidationPipe } from './common/validation.js';
@@ -13,6 +14,11 @@ export function configureApp(app: INestApplication) {
   const proxyHops = config.get('TRUST_PROXY', { infer: true });
   if (proxyHops > 0) (app as NestExpressApplication).set('trust proxy', proxyHops);
 
+  // Body parsing is configured here (create the app with `bodyParser: false`) so only the Razorpay webhook keeps
+  // its raw bytes for HMAC verification; every other route pays nothing for them.
+  app.use('/payments/razorpay/webhook', json({ verify: (req, _res, buf) => void ((req as { rawBody?: Buffer }).rawBody = buf) }));
+  app.use(json());
+  app.use(urlencoded({ extended: true }));
   app.use(helmet());
   app.use(cookieParser());
   app.enableCors({
@@ -24,6 +30,7 @@ export function configureApp(app: INestApplication) {
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Idempotency-Key'],
+    exposedHeaders: ['X-Request-Id'],
     maxAge: 600,
   });
   app.useGlobalPipes(createValidationPipe());

@@ -45,13 +45,15 @@ export async function bootCommerce(opts: { env?: Record<string, string | undefin
     });
   if (opts.gateway) builder = builder.overrideProvider(RAZORPAY_GATEWAY).useValue(opts.gateway);
   const moduleRef = await builder.compile();
-  const app: INestApplication = moduleRef.createNestApplication({ rawBody: true });
+  const app: INestApplication = moduleRef.createNestApplication({ bodyParser: false });
   configureApp(app);
   const pinned: Record<string, unknown> = { PAYMENTS_MODE: opts.env?.RAZORPAY_KEY_ID ? 'razorpay' : 'mock', ...opts.config };
   const cfg = app.get(ConfigService);
   const original = cfg.get.bind(cfg) as (key: string, ...rest: unknown[]) => unknown;
   (cfg as unknown as { get: typeof original }).get = (key, ...rest) => (key in pinned ? pinned[key] : original(key, ...rest));
-  await app.init();
+  // Listen once on a fixed ephemeral port: left unbound, supertest binds and closes the server around every
+  // request, which resets concurrent in-flight requests and can hand a reused port to the wrong server.
+  await app.listen(0, '127.0.0.1');
   return {
     app,
     prisma: app.get(PrismaService),

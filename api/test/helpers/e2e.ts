@@ -36,9 +36,11 @@ export async function bootApp(opts: { throttle?: boolean } = {}): Promise<TestAp
       },
     })
     .compile();
-  const app = moduleRef.createNestApplication({ rawBody: true });
+  const app = moduleRef.createNestApplication({ bodyParser: false });
   configureApp(app);
-  await app.init();
+  // Listen once on a fixed ephemeral port: left unbound, supertest binds and closes the server around every
+  // request, which resets concurrent in-flight requests and can hand a reused port to the wrong server.
+  await app.listen(0, '127.0.0.1');
   return { app, prisma: app.get(PrismaService), sent };
 }
 

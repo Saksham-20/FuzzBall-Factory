@@ -24,6 +24,8 @@ const rawSchema = z.object({
   TRUST_PROXY: optional(z.coerce.number().int().min(0)),
   /** Bind address. Defaults to 127.0.0.1 in production (behind a reverse proxy) and 0.0.0.0 elsewhere. */
   HOST: optional(z.string().min(1)),
+  /** pino level. Defaults to info in production, debug in development, silent under test. */
+  LOG_LEVEL: optional(z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent'])),
 
   DATABASE_URL: z.string().min(1, 'DATABASE_URL is required'),
   /** Connections in the Prisma pool. Keep (instances x this) under Postgres `max_connections`. */
@@ -118,6 +120,7 @@ export const envSchema = rawSchema
     ...env,
     WEB_ORIGIN: env.WEB_ORIGIN ?? 'http://localhost:3000',
     TRUST_PROXY: env.TRUST_PROXY ?? 0,
+    LOG_LEVEL: env.LOG_LEVEL ?? (env.NODE_ENV === 'production' ? 'info' : env.NODE_ENV === 'test' ? 'silent' : 'debug'),
     HOST: env.HOST ?? (env.NODE_ENV === 'production' ? '127.0.0.1' : '0.0.0.0'),
     COOKIE_SECURE: env.COOKIE_SECURE ?? env.NODE_ENV === 'production',
     // Never undefined here: superRefine already rejected a production env without a mode.

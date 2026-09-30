@@ -19,9 +19,11 @@ describe('health + auth round trip (e2e)', () => {
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).compile();
-    app = moduleRef.createNestApplication({ rawBody: true });
+    app = moduleRef.createNestApplication({ bodyParser: false });
     configureApp(app);
-    await app.init();
+    // Listen once on a fixed ephemeral port: left unbound, supertest binds and closes the server around every
+    // request, which resets concurrent in-flight requests and can hand a reused port to the wrong server.
+    await app.listen(0, '127.0.0.1');
     prisma = app.get(PrismaService);
   });
 

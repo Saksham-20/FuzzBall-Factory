@@ -2,14 +2,16 @@ import 'reflect-metadata';
 import { Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
+import { Logger as PinoLogger } from 'nestjs-pino';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from './app.module.js';
 import { configureApp } from './app.setup.js';
 import type { Env } from './config/env.js';
 
 async function bootstrap() {
-  // rawBody: keeps the unparsed body on req.rawBody for Razorpay webhook signature verification.
-  const app = await NestFactory.create<NestExpressApplication>(AppModule, { rawBody: true });
+  // Body parsing (and the webhook's raw body) is set up in configureApp; logs are buffered until pino is ready.
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, { bodyParser: false, bufferLogs: true });
+  app.useLogger(app.get(PinoLogger));
   configureApp(app);
 
   const port = app.get<ConfigService<Env, true>>(ConfigService).get('PORT', { infer: true });
