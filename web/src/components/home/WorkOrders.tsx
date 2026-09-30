@@ -18,7 +18,7 @@ export function WorkOrders() {
   return (
     <StationSection
       id="work-orders"
-      n="04"
+      n="03"
       name="Work Orders"
       className="kraft perforated py-[clamp(4.5rem,9vw,7.5rem)]"
       style={{ ["--hole" as string]: "var(--color-kraft-light)" }}
@@ -44,7 +44,7 @@ export function WorkOrders() {
               <Link href="/custom">Start a work order</Link>
             </Button>
             <Link href="/shop" className="inline-flex min-h-11 items-center gap-1.5 font-semibold text-cocoa underline">
-              Customize something from the shelf <ArrowRight className="size-4" />
+              Customize a whale <ArrowRight className="size-4" />
             </Link>
           </div>
           <p className="mt-5 max-w-[52ch] text-sm text-brown">

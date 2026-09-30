@@ -2,7 +2,8 @@ import { ConveyorThread } from "@/components/home/ConveyorThread";
 import { Hero } from "@/components/home/Hero";
 import { YarnRoom } from "@/components/home/YarnRoom";
 import { HookFloor } from "@/components/home/HookFloor";
-import { Shelf } from "@/components/home/Shelf";
+import { TheCrew } from "@/components/home/TheCrew";
+import { WhalePod } from "@/components/home/WhalePod";
 import { WorkOrders } from "@/components/home/WorkOrders";
 import { ShippingDock } from "@/components/home/ShippingDock";
 import { MakerNote } from "@/components/home/MakerNote";
@@ -19,9 +20,10 @@ export default function HomePage() {
       <div className="relative">
         <ConveyorThread />
         <Hero />
+        <WhalePod />
         <YarnRoom />
         <HookFloor />
-        <Shelf />
+        <TheCrew />
         <WorkOrders />
         <ShippingDock />
       </div>

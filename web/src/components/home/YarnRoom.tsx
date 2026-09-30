@@ -19,23 +19,18 @@ export function YarnRoom() {
   return (
     <StationSection id="yarn-room" n="01" name="Yarn Room">
       <div className="grid items-start gap-12 lg:grid-cols-[0.85fr_1.15fr] lg:gap-16">
-        <Reveal kind="drop" className="mx-auto w-full max-w-[420px] lg:top-28 lg:mx-0 lg-tall:sticky">
-          <Ticket
-            data-placeholder="sample-photo"
-            head={["Yarn Room", "Stock check"]}
-            className="-rotate-2"
-          >
-            <div className="relative aspect-[6/5] overflow-hidden rounded-[10px]">
+        <Reveal kind="drop" className="mx-auto w-full max-w-[380px] lg:top-28 lg:mx-0 lg-tall:sticky">
+          <Ticket head={["Yarn Room", "Up close"]} className="-rotate-2">
+            <div className="relative aspect-[3/4] overflow-hidden rounded-[10px] bg-kraft-light">
               <Image
-                src="/samples/yarn-assorted.jpg"
-                alt="Balls of yarn in assorted colours"
+                src="/maker/yarn-hedgehog.jpg"
+                alt="Close-up of a cream crochet hedgehog in chunky velvety yarn, with brown curls around its face"
                 fill
                 sizes="(min-width:1024px) 34vw, 90vw"
                 className="object-cover"
               />
             </div>
-            {/* PLACEHOLDER(sample-photo): openly licensed stand-in, replace with the maker's own photo (docs/PLACEHOLDERS.md) */}
-            <p className="px-1 pt-3 pb-1 text-sm text-brown">Sample photo. Real yarn shots coming.</p>
+            <p className="px-1 pt-3 pb-1 text-sm text-brown">Chunky yarn, worked loop by loop.</p>
           </Ticket>
         </Reveal>
 

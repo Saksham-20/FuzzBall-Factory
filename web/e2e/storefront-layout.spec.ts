@@ -111,6 +111,37 @@ test.describe("thread", () => {
   }
 });
 
+test.describe("thread route", () => {
+  for (const width of [390, 768, 1280]) {
+    test(`only heads down and stays on the page at ${width}px`, async ({ page }) => {
+      await open(page, width, "/");
+      const line = page.locator("[data-thread-line]");
+      await expect.poll(() => line.evaluate((p) => (p as SVGPathElement).getTotalLength())).toBeGreaterThan(1000);
+      // The route is rebuilt as images and fonts settle, so wait for it to hold still before judging it.
+      await expect(async () => {
+        const r = await line.evaluate((p, w) => {
+          const path = p as SVGPathElement;
+          const total = path.getTotalLength();
+          let worstUp = 0;
+          let outside = 0;
+          let maxY = path.getPointAtLength(0).y;
+          // Up to the last 300px: the loose curl at the end turns back on itself by design.
+          for (let d = 0; d < total - 300; d += 5) {
+            const pt = path.getPointAtLength(d);
+            worstUp = Math.max(worstUp, maxY - pt.y);
+            maxY = Math.max(maxY, pt.y);
+            if (pt.x < -2 || pt.x > w + 2) outside++;
+          }
+          return { worstUp, outside };
+        }, width);
+        // A spline dips a few px at a corner, but it must never climb: scroll maps onto its length.
+        expect(r.worstUp, "the route climbs").toBeLessThan(30);
+        expect(r.outside, "points off the page").toBe(0);
+      }).toPass({ timeout: 8_000 });
+    });
+  }
+});
+
 test.describe("page width", () => {
   for (const width of [320, 360, 390, 768, 1024, 1440]) {
     test(`home never scrolls sideways at ${width}px`, async ({ page }) => {
@@ -121,17 +152,43 @@ test.describe("page width", () => {
   }
 });
 
-test.describe("pegged photo line", () => {
-  // The reveal is the thing under test here, so motion stays on.
-  test.use({ reducedMotion: "no-preference" });
+test.describe("whale clips", () => {
+  test.describe("with motion allowed", () => {
+    test.use({ reducedMotion: "no-preference" });
 
-  test("shows every photo on a phone, including ones scrolled out of the strip", async ({ page }) => {
-    await open(page, 390, "/");
-    await page.locator("#ig-h").scrollIntoViewIfNeeded();
-    const photos = page.locator('section[aria-labelledby="ig-h"] li.hang');
-    await expect(photos).toHaveCount(6);
-    await expect
-      .poll(() => photos.evaluateAll((els) => els.filter((el) => getComputedStyle(el).opacity !== "1").length), { timeout: 5_000 })
-      .toBe(0);
+    test("play while on screen and stop when paused", async ({ page }) => {
+      await open(page, 1280, "/");
+      await page.locator("#pod-h").scrollIntoViewIfNeeded();
+      const clips = page.locator('section[aria-labelledby="pod-h"] video');
+      await expect(clips).toHaveCount(4);
+      const first = clips.first();
+      await expect.poll(() => first.evaluate((v: HTMLVideoElement) => !v.paused), { timeout: 5_000 }).toBe(true);
+      await page.getByRole("button", { name: /^Pause video: Red whale/ }).click();
+      await expect.poll(() => first.evaluate((v: HTMLVideoElement) => v.paused)).toBe(true);
+      await expect(page.getByRole("button", { name: /^Play video: Red whale/ })).toHaveAttribute("aria-pressed", "true");
+    });
   });
+
+  test.describe("with reduced motion", () => {
+    test.use({ reducedMotion: "reduce" });
+
+    test("start stopped, and can be played on request", async ({ page }) => {
+      await open(page, 1280, "/");
+      await page.locator("#pod-h").scrollIntoViewIfNeeded();
+      const clips = page.locator('section[aria-labelledby="pod-h"] video');
+      await page.waitForTimeout(600);
+      expect(await clips.evaluateAll((els) => els.filter((v) => !(v as HTMLVideoElement).paused).length)).toBe(0);
+      await page.getByRole("button", { name: /^Play video: Blue whale/ }).click();
+      await expect.poll(() => clips.nth(2).evaluate((v: HTMLVideoElement) => !v.paused), { timeout: 5_000 }).toBe(true);
+    });
+  });
+});
+
+test("the hero ticket scrolls to the whales, clear of the sticky header", async ({ page }) => {
+  await open(page, 390, "/");
+  await page.getByRole("link", { name: "Meet the whales" }).click();
+  await expect(page.locator("#pod-h")).toBeInViewport();
+  const top = await page.locator("#pod-h").evaluate((el) => el.getBoundingClientRect().top);
+  const header = await page.locator("header").first().evaluate((el) => el.getBoundingClientRect().bottom);
+  expect(top).toBeGreaterThanOrEqual(header);
 });

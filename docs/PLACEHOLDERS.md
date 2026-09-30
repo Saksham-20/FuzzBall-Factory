@@ -16,14 +16,14 @@ _Resolved: `razorpay-test` and `razorpay-checkout` (the fake payment windows). L
 |---|---|---|---|
 | `catalogue` | `web/src/lib/mock/catalog.ts` | 15 sample products, 8 categories, prices, lead times, fibers, sizes | Real products via admin / API |
 | `sample-product` | Every `ProductTicket` while on mock data | Marks sample products on screen | Disappears once `sample` is not set |
-| `sample-photo` | `YarnRoom.tsx`, `HookFloor.tsx`, `web/public/samples/*` | Openly licensed Wikimedia Commons photos (see `web/public/samples/PROVENANCE.md`) | The maker's own photos. Delete `web/public/samples/` afterwards |
+| `sample-photo` | `about/page.tsx`, the mock catalogue and category images (`web/public/samples/*`). The home page's own photos (Yarn Room, Hook Floor, maker note, whales, crew) are the maker's (`web/public/maker/`) | Openly licensed Wikimedia Commons photos (see `web/public/samples/PROVENANCE.md`) | The maker's own photos. Delete `web/public/samples/` afterwards |
 | `copy-fibers` | `web/src/components/home/YarnRoom.tsx` | Generic list of fibers | The yarns actually used |
 | `copy-process` | `web/src/components/home/HookFloor.tsx` | Making-process wording | The maker's real process |
 | `copy-leadtimes` | `web/src/components/home/HookFloor.tsx` | "Ready 1–2 days / Made to order 4–10 days" | Real lead times |
 | `example-work-order` | `web/src/components/home/WorkOrders.tsx` | Illustrative work order (WO-027, ₹1,850) | Keep as an example, or swap for a real (consented) one |
 | `shipping-rates` | `web/src/lib/site.ts` (`SAMPLE_SETTINGS`), `ShippingDock.tsx` | ₹79 domestic, free above ₹999, intl from ₹899, gift wrap ₹59, COD cap ₹2,000 / fee ₹49, 50% deposit | Real rates; later moved to admin Settings |
-| `maker-note` | `web/src/components/home/MakerNote.tsx` | Generic "Hi, I'm the maker" copy, no photo | The maker's name, photo and own words |
-| `instagram` | `MakerNote.tsx`, `SITE.instagram` | Tiles use sample photos and link to instagram.com | Real handle and feed |
+| `maker-note` | `web/src/components/home/MakerNote.tsx` | Generic "Hi, I'm the maker" copy. The stall photo is real (`web/public/maker/founder-isb-stall.jpg`) | The maker's name and own words |
+| `instagram` | `SITE.instagram` (the maker note's button) | `instagram.com/fuzzballfactory`, read off the stall's QR card | Confirmed handle |
 | `whatsapp-number` | `web/src/lib/site.ts` (`NEXT_PUBLIC_WHATSAPP`) | `910000000000` | The real WhatsApp Business number (digits, with country code) |
 | `contact-email` | `web/src/lib/site.ts` | `hello@fuzzballfactory.example` | Real email |
 | `legal-details` | `web/src/components/content/policies/*.tsx`, `SellerDetails.tsx`, `contact/page.tsx`, `terms.tsx` (GST wording, court city), `privacy.tsx` (retention periods, including the order-record period and whether work-order conversations should also expire on a schedule) | Bracketed stand-ins for the seller's legal name, registered address, GSTIN, business phone, grievance officer name/designation/phone/hours, jurisdiction city and retention periods, rendered by `Ph` in `Placeholder.tsx` | The real legal details (Consumer Protection (E-Commerce) Rules 2020 and Razorpay require them). Search the repo for `PLACEHOLDER(legal-details)` |

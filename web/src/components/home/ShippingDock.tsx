@@ -15,7 +15,7 @@ const FACTS = [
 
 export function ShippingDock() {
   return (
-    <StationSection id="shipping-dock" n="05" name="Shipping Dock" className="pb-[clamp(10rem,16vw,14rem)]">
+    <StationSection id="shipping-dock" n="04" name="Shipping Dock" className="pb-[clamp(10rem,16vw,14rem)]">
       <div className="grid gap-12 lg:grid-cols-[1.1fr_0.9fr] lg:gap-16">
         <div>
           <Reveal as="h2" className="font-display text-[clamp(2.5rem,5.6vw,4.5rem)]">

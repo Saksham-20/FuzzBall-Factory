@@ -11,8 +11,8 @@ export const SITE = {
   whatsapp: process.env.NEXT_PUBLIC_WHATSAPP ?? "910000000000",
   // PLACEHOLDER(contact-email)
   email: "hello@fuzzballfactory.example",
-  // PLACEHOLDER(instagram): the maker's real profile URL
-  instagram: "https://www.instagram.com/",
+  // PLACEHOLDER(instagram): handle read off the stall's QR card (@fuzzballfactory); confirm it before launch
+  instagram: "https://www.instagram.com/fuzzballfactory",
   useMock: process.env.NEXT_PUBLIC_USE_MOCK !== "false",
 } as const;
 

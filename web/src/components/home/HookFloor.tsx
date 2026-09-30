@@ -127,18 +127,17 @@ export function HookFloor() {
         </div>
 
         <Reveal kind="drop" className="mx-auto w-full max-w-[380px] lg:top-28 lg:mx-0 lg-tall:sticky">
-          <Ticket data-placeholder="sample-photo" head={["Hook Floor", "Close-up"]} className="rotate-2">
-            <div className="relative aspect-[3/4] overflow-hidden rounded-[10px]">
+          <Ticket head={["Hook Floor", "Off the hook"]} className="rotate-2">
+            <div className="relative aspect-[738/1310] overflow-hidden rounded-[10px]">
               <Image
-                src="/samples/flower-single.jpg"
-                alt="Close-up of crochet stitches with a pink flower"
+                src="/maker/table-full.jpg"
+                alt="A carved wooden tray from above holding a blue and white plush, a cream hedgehog, a brown keychain plush, a pink-and-white blossom charm, a blue scrunchie and a rolled cream scarf"
                 fill
                 sizes="(min-width:1024px) 30vw, 80vw"
                 className="object-cover"
               />
             </div>
-            {/* PLACEHOLDER(sample-photo): openly licensed stand-in, replace with the maker's own photo (docs/PLACEHOLDERS.md) */}
-            <p className="px-1 pt-3 pb-1 text-sm text-brown">Sample photo. Your stitches go here.</p>
+            <p className="px-1 pt-3 pb-1 text-sm text-brown">Fresh off our table: scarf, scrunchie, hedgehog and charms.</p>
           </Ticket>
         </Reveal>
       </div>

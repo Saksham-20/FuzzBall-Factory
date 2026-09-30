@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { ProductTicket } from "@/components/store/ProductTicket";
@@ -42,11 +41,6 @@ export async function Shelf() {
               href={`/shop/${c.slug}`}
               className="group relative flex items-center gap-2 overflow-hidden border-t border-line py-1.5 outline-offset-[-4px] sm:gap-3 md:py-1"
             >
-              {/* Mobile has no hover, so the image peek (below, md:block) never plays there. A small
-                  always-visible thumbnail gives touch users the same recognition cue as the peek. */}
-              <span aria-hidden className="relative size-11 shrink-0 overflow-hidden rounded-[10px] shadow-ticket sm:size-12 md:hidden">
-                <Image src={c.image} alt="" fill sizes="48px" className="object-cover" />
-              </span>
               <span className="@container min-w-0 flex-1">
                 {/* The class is the fallback size: a browser without container units drops the inline
                     value at parse time (it holds no var(), which would defer that and lose both). */}
@@ -56,12 +50,6 @@ export async function Shelf() {
                 >
                   {c.word}
                 </span>
-              </span>
-              <span
-                aria-hidden
-                className={`pointer-events-none absolute top-1/2 right-24 hidden h-[72%] w-[clamp(120px,14vw,190px)] -translate-y-1/2 translate-x-6 rotate-3 overflow-hidden rounded-[10px] opacity-0 shadow-lift transition-[opacity,transform] duration-300 ease-out md:block hf:group-hover:translate-x-0 hf:group-hover:opacity-100`}
-              >
-                <Image src={c.image} alt="" fill sizes="190px" className="object-cover" />
               </span>
               <span className="font-stencil tabular relative z-10 mr-2 flex min-w-[3.25rem] shrink-0 items-center justify-between gap-2 rounded-full bg-butter px-3.5 py-2 text-[12px] text-cocoa ring-4 ring-cream sm:min-w-[12rem] md:mr-3 md:px-4">
                 <span className="hidden sm:inline">

@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { Ticket } from "@/components/brand/Ticket";
 import { Tape } from "@/components/brand/Tape";
@@ -6,6 +7,7 @@ import { Button } from "@/components/ui/Button";
 
 const TAPE = [
   "Handmade in India",
+  "Sold out at ISB",
   "Ready to ship & made to order",
   "UPI · Cards · COD",
   "Ships worldwide",
@@ -34,12 +36,12 @@ export function Hero() {
             </h1>
 
             <p className="hero-rise mt-6 max-w-[46ch] text-[1.0625rem] leading-relaxed text-brown md:text-lg" style={line(3)}>
-              Plushies, bouquets, bags and wearables crocheted by hand. Ready to ship, or made to order just for you.
+              Whale keychains crocheted by hand, one loop at a time. Pick a colour, or ask for one made just for you.
             </p>
 
             <div className="hero-rise mt-8 flex flex-wrap gap-3" style={line(4)}>
               <Button asChild size="lg">
-                <Link href="/shop">Shop the shelf</Link>
+                <Link href="/shop">Shop the whales</Link>
               </Button>
               <Button asChild size="lg" variant="secondary">
                 <Link href="/custom">Start a work order</Link>
@@ -53,14 +55,27 @@ export function Hero() {
 
           <div className="hero-ball relative order-1 ml-auto w-[min(62vw,290px)] lg:order-2 lg:mx-auto lg:w-full lg:max-w-[500px]">
             <YarnBall tone="rose" tailAnchor title="A ball of rose-coloured yarn" />
-            {/* Below 360px the ball is too small for the ticket to sit at its foot without covering
-                the thread's loose end, so it hangs from the top instead. */}
-            <Ticket
-              head={["Batch #001", "One of one"]}
-              className="ticket-swing absolute -right-2 -bottom-3 w-[168px] rotate-[5deg] max-[360px]:top-0 max-[360px]:bottom-auto md:-right-4 md:-bottom-5 md:w-[176px]"
+            {/* The pinned ticket is a real whale, and a way down to them. Below 360px the ball is too small for
+                the ticket to sit at its foot without covering the thread's loose end, so it hangs from the top. */}
+            <a
+              href="#pod-h"
+              aria-label="Meet the whales"
+              className="absolute -right-2 -bottom-3 block w-[138px] rotate-[5deg] rounded-ticket max-[360px]:top-0 max-[360px]:bottom-auto md:-right-4 md:-bottom-5 md:w-[158px]"
             >
-              <p className="px-1 pb-1.5 text-[13px] leading-snug font-semibold text-cocoa md:text-[15px]">Wound by hand, ready to unspool.</p>
-            </Ticket>
+              <Ticket head={["Batch #002"]} className="ticket-swing press hf:hover:shadow-lift">
+                <div className="relative aspect-square overflow-hidden rounded-[8px] bg-kraft-light">
+                  <Image
+                    src="/maker/whale-pod.jpg"
+                    alt=""
+                    fill
+                    priority
+                    sizes="158px"
+                    className="object-cover object-[50%_62%]"
+                  />
+                </div>
+                <p className="px-1 pt-2 pb-1 text-[13px] leading-snug font-semibold text-cocoa md:text-sm">Meet the whales</p>
+              </Ticket>
+            </a>
           </div>
         </div>
       </div>
