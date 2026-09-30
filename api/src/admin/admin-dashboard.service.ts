@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { PRODUCT_INCLUDE, toProductDto, type ProductDto } from '../catalog/product.mapper.js';
-import { QuoteExpiryService } from '../custom/quote-expiry.service.js';
 import type { OrderStatus } from '../generated/prisma/enums.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 
@@ -91,13 +90,9 @@ export function workshopSummary(ordersInProduction: number, customInProgress: nu
 export class AdminDashboardService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly expiry: QuoteExpiryService,
   ) {}
 
   async get(now: Date = new Date()): Promise<DashboardDto> {
-    // Make sure "expiring" and "awaiting customer" reflect quotes that lapsed since anyone last looked.
-    await this.expiry.sweep();
-
     const days = lastDays(now, REVENUE_DAYS);
     const startToday = istMidnight(days[days.length - 1]);
     const startWindow = istMidnight(days[0]);

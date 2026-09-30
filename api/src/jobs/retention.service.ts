@@ -1,0 +1,30 @@
+import { Injectable } from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service.js';
+
+const DAY_MS = 86_400_000;
+/** Refresh and reset tokens are useless once expired; the small grace keeps reuse-detection evidence for a while. */
+const TOKEN_GRACE_DAYS = 7;
+/** Webhook deliveries are kept for support and reconciliation, then dropped. */
+const WEBHOOK_KEEP_DAYS = 90;
+
+/** Deletes rows that only exist to be looked at briefly. Each method returns how many rows it removed. */
+@Injectable()
+export class RetentionService {
+  constructor(private readonly prisma: PrismaService) {}
+
+  async purgeAuthTokens(now: Date = new Date()): Promise<{ refresh: number; reset: number }> {
+    const cutoff = new Date(now.getTime() - TOKEN_GRACE_DAYS * DAY_MS);
+    const [refresh, reset] = await Promise.all([
+      this.prisma.refreshToken.deleteMany({ where: { expiresAt: { lt: cutoff } } }),
+      this.prisma.passwordResetToken.deleteMany({ where: { expiresAt: { lt: cutoff } } }),
+    ]);
+    return { refresh: refresh.count, reset: reset.count };
+  }
+
+  /** Only processed deliveries: an unprocessed or errored one is evidence somebody still needs to see. */
+  async purgeWebhookEvents(now: Date = new Date()): Promise<number> {
+    const cutoff = new Date(now.getTime() - WEBHOOK_KEEP_DAYS * DAY_MS);
+    const { count } = await this.prisma.webhookEvent.deleteMany({ where: { receivedAt: { lt: cutoff }, processedAt: { not: null }, error: null } });
+    return count;
+  }
+}

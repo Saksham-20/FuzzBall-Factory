@@ -6,7 +6,6 @@ import { DECLINABLE, QUOTABLE } from '../custom/custom-transitions.js';
 import { customInclude, toCustomRequestDto, type CustomRequestDto, type CustomRow } from '../custom/custom.mapper.js';
 import { addDays, depositAmount, priceFromBreakdown, rupees, scaleBreakdown } from '../custom/custom.rules.js';
 import type { QuoteInputDto } from '../custom/dto/custom.dto.js';
-import { QuoteExpiryService } from '../custom/quote-expiry.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { SettingsService } from '../settings/settings.service.js';
 import { AuditService } from './audit.service.js';
@@ -25,13 +24,11 @@ export class AdminCustomService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly state: CustomStateService,
-    private readonly expiry: QuoteExpiryService,
     private readonly settings: SettingsService,
     private readonly audit: AuditService,
   ) {}
 
   async list(status?: string): Promise<CustomRequestDto[]> {
-    await this.expiry.sweep();
     const rows = await this.prisma.customRequest.findMany({
       where: status ? { status: status as CustomRow['status'] } : {},
       include: customInclude,
@@ -42,9 +39,7 @@ export class AdminCustomService {
   }
 
   async get(number: string): Promise<CustomRequestDto> {
-    const row = await this.load(number);
-    if (await this.expiry.expireIfDue(row)) return toCustomRequestDto(await this.load(number));
-    return toCustomRequestDto(row);
+    return toCustomRequestDto(await this.load(number));
   }
 
   /** Sends (or re-sends after a counter/expiry) a quote. Deposit % is snapshotted from settings right now. */

@@ -1,5 +1,6 @@
 import type { INestApplication } from '@nestjs/common';
 import request from 'supertest';
+import { QuoteExpiryService } from '../src/custom/quote-expiry.service.js';
 import { bootApp, makeUser, type TestApp, type TestUser } from './helpers/e2e.js';
 
 /**
@@ -257,17 +258,23 @@ describe('custom work orders (e2e)', () => {
     expect(requoted.quotes.map((x: { status: string }) => x.status)).toEqual(['EXPIRED', 'SENT']);
   });
 
-  it('expires on a plain GET too, and the admin sweep catches quotes nobody opened', async () => {
+  it('a plain GET never writes; the scheduled sweep expires quotes nobody acted on', async () => {
     const wo = await newRequest({ title: 'Read expiry' });
     const q = (await adminPost(wo, 'quote', quoteBody([900])).expect(200)).body.quotes[0];
     await t.prisma.quote.update({ where: { id: q.id }, data: { validUntil: new Date(Date.now() - 1000) } });
-    expect((await get(maya, wo)).status).toBe('EXPIRED');
+    const before = (await t.prisma.customRequest.findUniqueOrThrow({ where: { number: wo }, select: { updatedAt: true } })).updatedAt;
+    expect((await get(maya, wo)).status).toBe('QUOTED');
+    await admin.agent.get(`/admin/custom/${wo}`).expect(200);
+    await admin.agent.get('/admin/custom').expect(200);
+    expect((await t.prisma.customRequest.findUniqueOrThrow({ where: { number: wo }, select: { updatedAt: true } })).updatedAt).toEqual(before);
 
     const wo2 = await newRequest({ title: 'Sweep expiry' });
     const q2 = (await adminPost(wo2, 'quote', quoteBody([900])).expect(200)).body.quotes[0];
     await t.prisma.quote.update({ where: { id: q2.id }, data: { validUntil: new Date(Date.now() - 1000) } });
+    expect(await t.app.get(QuoteExpiryService).sweep()).toBeGreaterThanOrEqual(2);
     const list = (await admin.agent.get('/admin/custom?status=EXPIRED').expect(200)).body as { number: string }[];
     expect(list.map((r) => r.number)).toEqual(expect.arrayContaining([wo, wo2]));
+    expect((await get(maya, wo)).status).toBe('EXPIRED');
   });
 
   it('customer can decline (→ CANCELLED); the maker can decline (→ DECLINED) and accept a counter', async () => {

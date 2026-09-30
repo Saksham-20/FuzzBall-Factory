@@ -1,9 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { QuoteExpiryService } from '../custom/quote-expiry.service.js';
 import { IdempotencyService } from '../common/idempotency/idempotency.service.js';
 import { OrdersService } from '../orders/orders.service.js';
 import { RefundsService } from '../payments/refunds.service.js';
 import { JobRunner } from './job-runner.service.js';
+import { RetentionService } from './retention.service.js';
 
 /** Every recurring job in one place. Each tick goes through `JobRunner` (one at a time, logged, never throws). */
 @Injectable()
@@ -13,6 +15,8 @@ export class ScheduledJobs {
     private readonly orders: OrdersService,
     private readonly idempotency: IdempotencyService,
     private readonly refunds: RefundsService,
+    private readonly quotes: QuoteExpiryService,
+    private readonly retention: RetentionService,
   ) {}
 
   /** Releases stock held by online orders nobody paid within the payment window. */
@@ -31,5 +35,23 @@ export class ScheduledJobs {
   @Cron('15 3 * * *')
   purgeIdempotencyKeys() {
     return this.runner.run('idempotency.purge', () => this.idempotency.purgeExpired());
+  }
+
+  /** Moves work orders whose open quote lapsed to EXPIRED (reads never do this; accepting an expired quote is refused regardless). */
+  @Cron(CronExpression.EVERY_5_MINUTES)
+  expireQuotes() {
+    return this.runner.run('custom.expire-quotes', () => this.quotes.sweep());
+  }
+
+  /** Drops long-expired refresh and password-reset tokens. */
+  @Cron('30 3 * * *')
+  purgeAuthTokens() {
+    return this.runner.run('auth.purge-tokens', () => this.retention.purgeAuthTokens());
+  }
+
+  /** Drops old, cleanly processed webhook deliveries. */
+  @Cron('45 3 * * *')
+  purgeWebhookEvents() {
+    return this.runner.run('webhooks.purge', () => this.retention.purgeWebhookEvents());
   }
 }

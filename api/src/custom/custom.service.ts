@@ -60,16 +60,13 @@ export class CustomService implements OnModuleInit {
   /* ───────────── reads ───────────── */
 
   async list(user: RequestUser): Promise<CustomRequestDto[]> {
-    await this.expiry.sweep(user.userId);
     const rows = await this.prisma.customRequest.findMany({ where: { userId: user.userId }, include: customInclude, orderBy: [{ createdAt: 'desc' }, { id: 'desc' }] });
     return rows.map(toCustomRequestDto);
   }
 
   /** Owner or admin. Everyone else gets a 404 (never confirm that someone else's work order exists). */
   async get(user: RequestUser, number: string): Promise<CustomRequestDto> {
-    const row = await this.load(number, user, { allowAdmin: true });
-    if (await this.expiry.expireIfDue(row)) return toCustomRequestDto(await this.load(number, user, { allowAdmin: true }));
-    return toCustomRequestDto(row);
+    return toCustomRequestDto(await this.load(number, user, { allowAdmin: true }));
   }
 
   /* ───────────── create ───────────── */
