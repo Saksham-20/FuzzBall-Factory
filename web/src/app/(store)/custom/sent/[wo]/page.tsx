@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { SentClient } from "@/components/custom/SentClient";
+import { routeParam } from "@/lib/route-param";
 
 export const metadata: Metadata = {
   title: "Work order received",
@@ -8,5 +9,5 @@ export const metadata: Metadata = {
 
 export default async function SentPage(props: { params: Promise<{ wo: string }> }) {
   const { wo } = await props.params;
-  return <SentClient wo={decodeURIComponent(wo)} />;
+  return <SentClient wo={routeParam(wo)} />;
 }

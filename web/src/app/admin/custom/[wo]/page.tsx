@@ -1,14 +1,15 @@
 import type { Metadata } from "next";
 import { CustomDetailClient } from "@/components/admin/custom/CustomDetailClient";
+import { routeParam } from "@/lib/route-param";
 
 type Props = { params: Promise<{ wo: string }> };
 
 export async function generateMetadata(props: Props): Promise<Metadata> {
   const { wo } = await props.params;
-  return { title: `Work order ${decodeURIComponent(wo)}` };
+  return { title: `Work order ${routeParam(wo)}` };
 }
 
 export default async function AdminWorkOrderPage(props: Props) {
   const { wo } = await props.params;
-  return <CustomDetailClient number={decodeURIComponent(wo)} />;
+  return <CustomDetailClient number={routeParam(wo)} />;
 }

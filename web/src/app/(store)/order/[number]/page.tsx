@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { OrderClient } from "@/components/checkout/OrderClient";
+import { routeParam } from "@/lib/route-param";
 
 export const metadata: Metadata = {
   title: "Your order",
@@ -11,5 +12,5 @@ export default async function OrderPage(props: { params: Promise<{ number: strin
   const sp = await props.searchParams;
   const isNew = (Array.isArray(sp.new) ? sp.new[0] : sp.new) === "1";
   const confirming = (Array.isArray(sp.confirming) ? sp.confirming[0] : sp.confirming) === "1";
-  return <OrderClient number={decodeURIComponent(number)} isNew={isNew} confirming={confirming} />;
+  return <OrderClient number={routeParam(number)} isNew={isNew} confirming={confirming} />;
 }
