@@ -1,6 +1,7 @@
 import type { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import request from 'supertest';
+import { HealthController } from '../src/health/health.controller.js';
 import { AppModule } from '../src/app.module.js';
 import { configureApp } from '../src/app.setup.js';
 import { PrismaService } from '../src/prisma/prisma.service.js';
@@ -29,9 +30,19 @@ describe('health + auth round trip (e2e)', () => {
     await app.close();
   });
 
-  it('GET /health', async () => {
-    const res = await request(app.getHttpServer()).get('/health').expect(200);
-    expect(res.body).toMatchObject({ status: 'ok', db: 'up' });
+  it('GET /health/live needs nothing; /health/ready (and the /health alias) check db + migrations', async () => {
+    expect((await request(app.getHttpServer()).get('/health/live').expect(200)).body).toMatchObject({ status: 'ok' });
+    for (const path of ['/health/ready', '/health']) {
+      expect((await request(app.getHttpServer()).get(path).expect(200)).body).toMatchObject({ status: 'ok', db: 'up', migrations: 'applied' });
+    }
+  });
+
+  it('reports not-ready once shutdown begins, while live stays up', async () => {
+    const health = new HealthController(app.get(PrismaService));
+    await expect(health.ready()).resolves.toMatchObject({ status: 'ok' });
+    health.beforeApplicationShutdown();
+    await expect(health.ready()).rejects.toThrow('Shutting down');
+    expect(health.live()).toMatchObject({ status: 'ok' });
   });
 
   it('rejects unauthenticated /auth/me with the standard error shape', async () => {

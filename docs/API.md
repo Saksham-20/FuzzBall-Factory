@@ -20,7 +20,7 @@ api/
     auth/            signup/login/refresh/logout/me/forgot/reset (done)
     users/           user.mapper.ts (UserDto), later: account profile/addresses
     notifications/   NotificationsService + email provider + template registry
-    health/          GET /health
+    health/          GET /health/live (process up), GET /health/ready (db + migrations, 503 while draining; /health is an alias)
     <domain>/        one folder per domain (below)
   test/              *.e2e-spec.ts (supertest, real DB)
 ```

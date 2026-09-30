@@ -64,7 +64,7 @@ Reset the local database completely: `npx prisma migrate reset` (drops, re-migra
 ## Try it
 
 ```bash
-curl -s localhost:4000/health
+curl -s localhost:4000/health/ready   # /health/live = process only; ready = db + migrations, 503 while shutting down
 curl -si -c jar -H 'content-type: application/json' \
   -d '{"name":"Maya","email":"maya2@example.com","password":"hunter2hunter2"}' localhost:4000/auth/signup
 curl -s -b jar localhost:4000/auth/me

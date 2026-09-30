@@ -26,6 +26,15 @@ const rawSchema = z.object({
   HOST: optional(z.string().min(1)),
 
   DATABASE_URL: z.string().min(1, 'DATABASE_URL is required'),
+  /** Connections in the Prisma pool. Keep (instances x this) under Postgres `max_connections`. */
+  DB_POOL_MAX: positiveInt(10),
+  /** A statement running longer than this is cancelled by Postgres. */
+  DB_STATEMENT_TIMEOUT_MS: positiveInt(15_000),
+  /**
+   * A transaction left idle this long is killed. Must stay above the longest scheduled job (JobRunner holds its
+   * advisory-lock transaction idle while the job works on other connections: 5 minutes by default).
+   */
+  DB_IDLE_TX_TIMEOUT_MS: positiveInt(6 * 60_000),
 
   JWT_ACCESS_SECRET: z.string().min(16, 'JWT_ACCESS_SECRET must be at least 16 characters'),
   JWT_REFRESH_SECRET: z.string().min(16, 'JWT_REFRESH_SECRET must be at least 16 characters'),
