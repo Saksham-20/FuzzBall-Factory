@@ -179,15 +179,17 @@ describe('Razorpay live mode (e2e, fake gateway)', () => {
       expect(await t.prisma.webhookEvent.count({ where: { eventId } })).toBe(1);
     });
 
-    it('an amount that does not match the payment is refused (500 so Razorpay retries) and recorded, never marked paid', async () => {
+    it('an amount that does not match the payment answers 200 (a retry cannot fix it), is flagged for review, and is never marked paid', async () => {
       const o = await placeOnline('wh-amount');
       const w = webhook(captured(o.payment.razorpayOrderId, 'pay_wh_amount', 100));
-      await w.res.expect(500);
-      expect((await paymentRow(o.payment.paymentId)).status).toBe('PENDING');
+      await w.res.expect(200);
+      expect(await paymentRow(o.payment.paymentId)).toMatchObject({ status: 'PENDING', failureReason: expect.stringContaining('Amount mismatch') });
       expect((await orderRow(o.number)).status).toBe('PENDING_PAYMENT');
       const stored = await t.prisma.webhookEvent.findUniqueOrThrow({ where: { eventId: w.eventId! } });
-      expect(stored.processedAt).toBeNull();
+      expect(stored.processedAt).not.toBeNull();
       expect(stored.error).toContain('Amount mismatch');
+      // The same delivery again is a duplicate, not another 24 hours of retries.
+      await webhook(captured(o.payment.razorpayOrderId, 'pay_wh_amount', 100), { eventId: w.eventId! }).res.expect(200);
     });
 
     it('payment.failed marks the attempt failed but can never downgrade a paid payment', async () => {

@@ -70,6 +70,14 @@ const toJson = (v: unknown) => JSON.parse(JSON.stringify(v)) as Prisma.InputJson
  *   - optionally `registerPaidListener(purpose, listener)` for post-commit work (emails).
  * Money is rupees everywhere except inside `createPayment` / `refundPayment`, which convert to paise.
  */
+/** Razorpay captured a different amount than we asked for. Never marks the payment paid; needs a human. */
+export class AmountMismatchError extends Error {
+  constructor(paymentId: string, gotPaise: number, expectedPaise: number) {
+    super(`Amount mismatch on payment ${paymentId}: Razorpay says ${gotPaise} paise, expected ${expectedPaise}`);
+    this.name = 'AmountMismatchError';
+  }
+}
+
 @Injectable()
 export class PaymentsService implements PaymentsPort {
   private readonly logger = new Logger(PaymentsService.name);
@@ -205,7 +213,7 @@ export class PaymentsService implements PaymentsPort {
         });
         if (payment.status === 'PAID' || payment.status === 'REFUNDED') return { ...result(payment.status, false) };
         if (info.expectedAmountPaise != null && info.expectedAmountPaise !== paise(payment.amount)) {
-          throw new Error(`Amount mismatch on payment ${payment.id}: Razorpay says ${info.expectedAmountPaise} paise, expected ${paise(payment.amount)}`);
+          throw new AmountMismatchError(payment.id, info.expectedAmountPaise, paise(payment.amount));
         }
 
         const claimed = await tx.payment.updateMany({
@@ -285,8 +293,9 @@ export class PaymentsService implements PaymentsPort {
     }
 
     try {
-      const handled = await this.dispatch(body);
-      await this.prisma.webhookEvent.update({ where: { eventId }, data: { processedAt: new Date(), error: null } });
+      const { handled, note } = await this.dispatch(body);
+      // `note` keeps a problem that a retry cannot fix (amount mismatch) visible on the event while still answering 200.
+      await this.prisma.webhookEvent.update({ where: { eventId }, data: { processedAt: new Date(), error: note ?? null } });
       return { status: handled ? 'processed' : 'ignored' };
     } catch (err) {
       await this.prisma.webhookEvent.update({ where: { eventId }, data: { error: (err as Error).message.slice(0, 500) } }).catch(() => undefined);
@@ -295,36 +304,45 @@ export class PaymentsService implements PaymentsPort {
     }
   }
 
-  private async dispatch(body: WebhookBody): Promise<boolean> {
+  private async dispatch(body: WebhookBody): Promise<{ handled: boolean; note?: string }> {
     const payment = body.payload?.payment?.entity;
     switch (body.event) {
       case 'payment.captured':
       case 'order.paid': {
         const orderId = payment?.order_id ?? body.payload?.order?.entity?.id;
-        if (!orderId || !payment?.id) return false;
+        if (!orderId || !payment?.id) return { handled: false };
         const exists = await this.prisma.payment.findUnique({ where: { razorpayOrderId: orderId }, select: { id: true } });
-        if (!exists) return false; // not one of ours (another integration on the same account)
+        if (!exists) return { handled: false }; // not one of ours (another integration on the same account)
         if (payment.currency && payment.currency !== 'INR') throw new Error(`Unexpected currency ${payment.currency}`);
-        await this.markPaid({ razorpayOrderId: orderId }, { razorpayPaymentId: payment.id, expectedAmountPaise: payment.amount });
-        return true;
+        try {
+          await this.markPaid({ razorpayOrderId: orderId }, { razorpayPaymentId: payment.id, expectedAmountPaise: payment.amount });
+        } catch (err) {
+          if (!(err instanceof AmountMismatchError)) throw err;
+          // Retrying cannot fix a wrong amount (Razorpay would re-send for 24h): answer 200, keep the payment pending
+          // with the reason on it, and shout so someone reconciles it by hand in the Razorpay dashboard.
+          await this.prisma.payment.updateMany({ where: { id: exists.id, status: 'PENDING' }, data: { failureReason: err.message.slice(0, 500) } });
+          this.logger.error(`[NEEDS REVIEW] ${err.message} (Razorpay payment ${payment.id})`);
+          return { handled: true, note: err.message.slice(0, 500) };
+        }
+        return { handled: true };
       }
       case 'payment.failed': {
-        if (!payment?.order_id) return false;
+        if (!payment?.order_id) return { handled: false };
         await this.markFailed({ razorpayOrderId: payment.order_id }, payment.error_description ?? payment.error_reason ?? 'Payment failed');
-        return true;
+        return { handled: true };
       }
       case 'refund.created':
       case 'refund.processed': {
         const refund = body.payload?.refund?.entity;
-        if (!refund?.payment_id || refund.amount == null) return false;
+        if (!refund?.payment_id || refund.amount == null) return { handled: false };
         await this.recordExternalRefund(refund.payment_id, refund.amount / 100);
-        return true;
+        return { handled: true };
       }
       case 'refund.failed':
         this.logger.warn(`Razorpay reported a failed refund for payment ${body.payload?.refund?.entity?.payment_id ?? '?'}: process it manually`);
-        return true;
+        return { handled: true };
       default:
-        return false;
+        return { handled: false };
     }
   }
 
