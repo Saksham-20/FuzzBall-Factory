@@ -6,14 +6,10 @@ import { HookSpinner } from "@/components/ui/misc";
 import { useAuth } from "@/lib/state/AuthContext";
 import { ApiError } from "@/lib/mock/db";
 import type { User } from "@/lib/types";
+import { safeNext } from "@/lib/safe-next";
 import type { FieldValues, Path, UseFormSetError } from "react-hook-form";
 
-/** Only same-site paths: must start with "/" and not "//" or "/\". */
-export function safeNext(next?: string | null): string | undefined {
-  if (!next) return undefined;
-  if (!next.startsWith("/") || next.startsWith("//") || next.startsWith("/\\")) return undefined;
-  return next;
-}
+export { safeNext };
 
 /** Where to send someone after they sign in. Never send a customer to /admin (it would bounce them back here). */
 export function destinationFor(user: User, next?: string | null): string {
