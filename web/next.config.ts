@@ -1,4 +1,6 @@
 import type { NextConfig } from "next";
+import { PHASE_PRODUCTION_BUILD } from "next/constants";
+import { assertBuildEnv } from "./src/lib/build-env";
 
 // Images uploaded through the real API (POST /uploads) are served from the API origin (local disk driver) or Cloudinary.
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
@@ -20,4 +22,8 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+export default function config(phase: string): NextConfig {
+  // Stop a production build that would ship the demo storefront or localhost links by accident (see build-env.ts).
+  if (phase === PHASE_PRODUCTION_BUILD) assertBuildEnv(process.env);
+  return nextConfig;
+}

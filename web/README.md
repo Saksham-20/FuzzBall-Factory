@@ -15,7 +15,7 @@ npm run dev          # http://localhost:3000
 npm run lint
 npm test             # unit tests (Vitest): src/**/*.test.ts
 npm run test:e2e     # layout and accessibility checks in Chromium (Playwright): builds into .next-e2e, serves on :3310
-npm run build        # production build into .next
+npm run build        # production build into .next (needs NEXT_PUBLIC_USE_MOCK=true|false, see below)
 npm run start        # serve that build
 ```
 
@@ -27,10 +27,11 @@ By default every function in `src/lib/api/*` runs against a sample database kept
 
 | Variable | Default | What it does |
 |---|---|---|
-| `NEXT_PUBLIC_USE_MOCK` | on | `false` sends each call to the real API (`src/lib/api/real/*`) |
+| `NEXT_PUBLIC_USE_MOCK` | on in dev; **required** for `next build` | `false` sends each call to the real API (`src/lib/api/real/*`); `true` is the demo storefront. A production build with it unset fails on purpose |
 | `NEXT_PUBLIC_API_URL` | `http://localhost:4000` | where the API lives. Set it explicitly with the real API: `next.config.ts` only adds the API's host to the image allow-list when the variable is set, so uploaded photos break without it |
 | `NEXT_PUBLIC_SITE_URL` | `http://localhost:3000` | the site's own address, for canonical links, the sitemap and share images |
 | `NEXT_PUBLIC_WHATSAPP` | a placeholder number | the maker's WhatsApp number |
+| `LAUNCH_BUILD` | unset | build-time only. `true` also refuses a placeholder WhatsApp number (and, as it lands, unresolved legal stand-ins). Real-API builds always refuse localhost URLs |
 | `NEXT_DIST_DIR` | `.next` | the build output folder |
 | `NEXT_OUTPUT` | unset | `standalone` builds a self-contained server bundle, as the test server uses |
 
