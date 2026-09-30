@@ -78,7 +78,7 @@ export function ImageUploader({ value, onChange, max = 5, label, hint, className
           </button>
         ) : null}
       </div>
-      <input ref={input} type="file" accept={OK_TYPES.join(",")} multiple className="sr-only" tabIndex={-1} onChange={(e) => { if (e.target.files) void add(e.target.files); e.target.value = ""; }} />
+      <input ref={input} type="file" accept={OK_TYPES.join(",")} multiple className="sr-only" tabIndex={-1} aria-labelledby={`${id}-l`} onChange={(e) => { if (e.target.files) void add(e.target.files); e.target.value = ""; }} />
       {hint && !err ? <p className="mt-1.5 text-sm text-brown">{hint}</p> : null}
       {err ? <p role="alert" className="mt-1.5 text-sm font-medium text-err">{err}</p> : null}
     </div>

@@ -73,6 +73,27 @@ cd api && NODE_ENV=production ADMIN_EMAIL=you@example.com ADMIN_PASSWORD='<long,
 never set `SEED_SAMPLES=true` against production. Then sign in to the admin and add the real categories and products.
 Remove `ADMIN_EMAIL` and `ADMIN_PASSWORD` from any env file afterwards.
 
+## Staging (the existing test VPS, or a second small box)
+
+Same setup as production with three differences in `/etc/fuzzball/api.env`: `NODE_ENV=production` (so the production checks apply),
+`PAYMENTS_MODE=mock` (simulated "test payment", no Razorpay), and its own secrets, database and domain. Put the whole site behind
+basic auth and keep search engines out by uncommenting the two marked lines in `ops/nginx/fuzzball.conf`
+(`htpasswd -c /etc/nginx/fuzzball.htpasswd <user>`). Do real-money checks with Razorpay **test** keys on staging
+(`PAYMENTS_MODE=razorpay` with test key ids) before the live keys ever touch production.
+
+The test VPS predates this layout. Moving it over means running `ops/install.sh` on it, which changes its nginx, firewall and
+systemd units: ask before doing that to a shared box, and stop the old `fuzzball-*` units first.
+
+## Rehearsing a risky migration
+
+Restore the newest backup into a scratch database (`ops/backup/restore-drill.sh` shows how), point `DATABASE_URL` at it and run
+`npx prisma migrate deploy` from `api/`. Constraints that reject existing rows show up here instead of during a deploy.
+
+## Load and contention tests
+
+`load/k6-shop.js` (header has the commands): browsing at 200 requests a second, 50 buyers racing for a last item (exactly one
+order must win), and a webhook replay storm. Run it against staging, never production.
+
 ## Stripping the test-server leftovers
 
 Before going live, rotate **every** secret that ever lived on the test VPS (JWT secrets, database password, admin password) and never copy its database.

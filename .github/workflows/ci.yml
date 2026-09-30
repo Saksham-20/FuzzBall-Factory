@@ -51,6 +51,9 @@ jobs:
       - run: npm test
       - run: npm run build
       - run: npm run test:e2e
+      - name: schema.prisma matches what the migrations built
+        # The raw-SQL CHECKs and partial index are invisible to Prisma's diff on purpose; anything else that differs fails.
+        run: npx prisma migrate diff --from-config-datasource --to-schema prisma/schema.prisma --exit-code
 
   web:
     name: web (lint, unit, build)
