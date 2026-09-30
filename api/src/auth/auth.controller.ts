@@ -4,6 +4,7 @@ import { Throttle } from '@nestjs/throttler';
 import type { Request, Response } from 'express';
 import type { Env } from '../config/env.js';
 import { CurrentUser } from '../common/decorators/current-user.decorator.js';
+import { AppException, ErrorCode } from '../common/errors.js';
 import { Public } from '../common/decorators/public.decorator.js';
 import type { RequestUser } from '../common/types/auth.types.js';
 import type { UserDto } from '../users/user.mapper.js';
@@ -48,7 +49,8 @@ export class AuthController {
     try {
       return this.respond(res, await this.auth.refresh(readCookie(req, REFRESH_COOKIE), meta(req)));
     } catch (err) {
-      clearAuthCookies(res, this.cookieConfig());
+      // A lost refresh race is not a sign-out: the browser already holds a newer cookie, so leave it alone.
+      if (!(err instanceof AppException && err.code === ErrorCode.REFRESH_RACE)) clearAuthCookies(res, this.cookieConfig());
       throw err;
     }
   }

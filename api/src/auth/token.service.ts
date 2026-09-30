@@ -5,7 +5,7 @@ import { JwtService } from '@nestjs/jwt';
 import type { Env } from '../config/env.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { safeEqualHex, sha256Hex } from '../common/hashing.service.js';
-import { ErrorCode, unauthorized } from '../common/errors.js';
+import { conflict, ErrorCode, unauthorized } from '../common/errors.js';
 import type { AccessTokenPayload, RefreshTokenPayload } from '../common/types/auth.types.js';
 import type { Role } from '../generated/prisma/enums.js';
 
@@ -101,7 +101,7 @@ export class TokenService {
 
     if (row.revokedAt) {
       const recentlyRotated = row.replacedById !== null && Date.now() - row.revokedAt.getTime() < REUSE_GRACE_MS;
-      if (recentlyRotated) throw expired();
+      if (recentlyRotated) return this.continueRace(row, row.replacedById!, payload.tv, meta);
       await this.revokeFamily(row.familyId);
       throw unauthorized('Your session was signed out for your security. Please log in again.', ErrorCode.TOKEN_REUSED);
     }
@@ -119,6 +119,28 @@ export class TokenService {
 
     const tokens = await this.issue(user, row.familyId, meta, newId);
     return { ...tokens, userId: user.id };
+  }
+
+  /**
+   * Two tabs refreshed at the same moment: the second presented a token the first had just rotated. That is a race, not
+   * theft, so the second caller is handed a session too: its token was already replaced by `successorId` (which the
+   * browser's cookie jar now holds), so we rotate that one. The caller gets the newest cookies and both tabs carry on.
+   * If even the successor has moved on (a third racer got there first) the caller is told to retry, without being
+   * signed out.
+   */
+  private async continueRace(row: RefreshRow, successorId: string, tv: number, meta: SessionMeta): Promise<IssuedTokens & { userId: string }> {
+    const busy = () => conflict('Your session is being refreshed. Try again in a moment.', undefined, ErrorCode.REFRESH_RACE);
+    const successor: RefreshRow | null = await this.prisma.refreshToken.findUnique({ where: { id: successorId } });
+    if (!successor || successor.familyId !== row.familyId || successor.revokedAt || successor.expiresAt.getTime() <= Date.now()) throw busy();
+    const user = await this.prisma.user.findUnique({ where: { id: row.userId }, select: { id: true, role: true, tokenVersion: true } });
+    if (!user || user.tokenVersion !== tv) {
+      await this.revokeFamily(row.familyId);
+      throw unauthorized('Your session has expired. Please log in again.', ErrorCode.SESSION_EXPIRED);
+    }
+    const newId = randomUUID();
+    const claimed = await this.prisma.refreshToken.updateMany({ where: { id: successor.id, revokedAt: null }, data: { revokedAt: new Date(), replacedById: newId } });
+    if (claimed.count !== 1) throw busy();
+    return { ...(await this.issue(user, row.familyId, meta, newId)), userId: user.id };
   }
 
   /** Log out one session: revoke the family the presented token belongs to. Tolerant of garbage tokens. */

@@ -83,14 +83,36 @@ describe('TokenService refresh rotation', () => {
     await expect(service.rotate(second.refresh)).rejects.toMatchObject({ response: { code: expect.stringMatching(/TOKEN_REUSED|SESSION_EXPIRED/) } });
   });
 
-  it('a just-rotated token presented again (two tabs racing) is refused but the family survives', async () => {
+  it('a just-rotated token presented again (two tabs racing) still gets a live session; the family survives', async () => {
+    const { service, tokens, user } = setup();
+    const first = await service.startSession(user);
+    const second = await service.rotate(first.refresh); // tab A
+    const third = await service.rotate(first.refresh); // tab B, same old cookie: handed the newest session
+    expect(third.userId).toBe('u1');
+    expect(third.refresh).not.toBe(first.refresh);
+    expect(third.refresh).not.toBe(second.refresh);
+    const live = [...tokens.values()].filter((t) => t.revokedAt === null);
+    expect(live).toHaveLength(1);
+    expect(new Set([...tokens.values()].map((t) => t.familyId)).size).toBe(1);
+    await expect(service.rotate(third.refresh)).resolves.toBeDefined(); // the cookie the browser now holds keeps working
+  });
+
+  it('when a third racer already moved the chain on, the loser is told to retry, not signed out', async () => {
     const { service, tokens, user } = setup();
     const first = await service.startSession(user);
     const second = await service.rotate(first.refresh);
+    await service.rotate(second.refresh); // the chain is now first -> second -> third
+    await expect(service.rotate(first.refresh)).rejects.toMatchObject({ response: { code: 'REFRESH_RACE' } });
+    expect([...tokens.values()].filter((t) => t.revokedAt === null)).toHaveLength(1); // family intact
+  });
+
+  it('a race after a password change or logout-everywhere does not resurrect the session', async () => {
+    const { service, tokens, users, user } = setup();
+    const first = await service.startSession(user);
+    await service.rotate(first.refresh);
+    users.get('u1')!.tokenVersion = 1;
     await expect(service.rotate(first.refresh)).rejects.toMatchObject({ response: { code: 'SESSION_EXPIRED' } });
-    const live = [...tokens.values()].filter((t) => t.revokedAt === null);
-    expect(live).toHaveLength(1);
-    await expect(service.rotate(second.refresh)).resolves.toBeDefined();
+    expect([...tokens.values()].every((t) => t.revokedAt !== null)).toBe(true);
   });
 
   it('tokenVersion bump revokes the family and rejects the refresh', async () => {
