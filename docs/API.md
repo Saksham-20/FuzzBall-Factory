@@ -403,3 +403,8 @@ On top of the per-IP request limiter (5 per minute on credential routes), wrong 
 - **Order tracking:** ten wrong phone/email guesses against one order number lock that number's lookup for 15 minutes.
 
 Counters older than a day are deleted by the scheduler.
+
+## Token and request hardening
+
+- Access and refresh JWTs are HS256 only, carry issuer `fuzzball-api` and audience `fuzzball-access` / `fuzzball-refresh`, and are verified against all three, so a token of one kind (or minted elsewhere, or unsigned) is refused by the other. Deploying this signs everyone out once.
+- Every `POST`/`PUT`/`PATCH`/`DELETE` that carries an `Origin` header must name one of `WEB_ORIGIN`, else `403 FORBIDDEN`. Requests without an `Origin` (the Razorpay webhook, curl, monitors) pass; reads are never checked.

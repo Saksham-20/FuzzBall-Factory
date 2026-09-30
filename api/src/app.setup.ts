@@ -5,6 +5,7 @@ import cookieParser from 'cookie-parser';
 import { json, urlencoded } from 'express';
 import helmet from 'helmet';
 import type { Env } from './config/env.js';
+import { originCheck, parseOrigins } from './common/origin-check.js';
 import { createValidationPipe } from './common/validation.js';
 
 /** Everything main.ts configures on the Nest app. Shared with e2e tests so they run the real setup. */
@@ -19,14 +20,11 @@ export function configureApp(app: INestApplication) {
   app.use('/payments/razorpay/webhook', json({ verify: (req, _res, buf) => void ((req as { rawBody?: Buffer }).rawBody = buf) }));
   app.use(json());
   app.use(urlencoded({ extended: true }));
+  app.use(originCheck(parseOrigins(config.get('WEB_ORIGIN', { infer: true }))));
   app.use(helmet());
   app.use(cookieParser());
   app.enableCors({
-    origin: config
-      .get('WEB_ORIGIN', { infer: true })
-      .split(',')
-      .map((o) => o.trim().replace(/\/$/, ''))
-      .filter(Boolean),
+    origin: parseOrigins(config.get('WEB_ORIGIN', { infer: true })),
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Idempotency-Key'],

@@ -15,6 +15,17 @@ import type { Role } from '../generated/prisma/enums.js';
  */
 export const REUSE_GRACE_MS = 10_000;
 
+/**
+ * Every token is pinned three ways so a token minted for one purpose (or by anyone else) never validates for another:
+ * HS256 only (no `none`, no algorithm confusion), our issuer, and a separate audience for access and refresh tokens.
+ */
+export const JWT_ALGORITHM = 'HS256' as const;
+export const JWT_ISSUER = 'fuzzball-api';
+export const ACCESS_AUDIENCE = 'fuzzball-access';
+export const REFRESH_AUDIENCE = 'fuzzball-refresh';
+export const accessVerifyOptions = (secret: string) => ({ secret, algorithms: [JWT_ALGORITHM], issuer: JWT_ISSUER, audience: ACCESS_AUDIENCE });
+export const refreshVerifyOptions = (secret: string) => ({ secret, algorithms: [JWT_ALGORITHM], issuer: JWT_ISSUER, audience: REFRESH_AUDIENCE });
+
 export interface TokenUser {
   id: string;
   role: Role;
@@ -59,7 +70,13 @@ export class TokenService {
 
   signAccess(user: TokenUser): Promise<string> {
     const payload: AccessTokenPayload = { sub: user.id, role: user.role, tv: user.tokenVersion };
-    return this.jwt.signAsync(payload, { secret: this.config.get('JWT_ACCESS_SECRET', { infer: true }), expiresIn: Math.floor(this.accessTtlMs / 1000) });
+    return this.jwt.signAsync(payload, {
+      secret: this.config.get('JWT_ACCESS_SECRET', { infer: true }),
+      expiresIn: Math.floor(this.accessTtlMs / 1000),
+      algorithm: JWT_ALGORITHM,
+      issuer: JWT_ISSUER,
+      audience: ACCESS_AUDIENCE,
+    });
   }
 
   /** Start a new session (new family). */
@@ -72,6 +89,9 @@ export class TokenService {
     const refresh = await this.jwt.signAsync(payload, {
       secret: this.config.get('JWT_REFRESH_SECRET', { infer: true }),
       expiresIn: Math.floor(this.refreshTtlMs / 1000),
+      algorithm: JWT_ALGORITHM,
+      issuer: JWT_ISSUER,
+      audience: REFRESH_AUDIENCE,
     });
     await this.prisma.refreshToken.create({
       data: { id, userId: user.id, familyId, tokenHash: sha256Hex(refresh), expiresAt: new Date(Date.now() + this.refreshTtlMs), userAgent: meta.userAgent?.slice(0, 255), ip: meta.ip },
@@ -90,7 +110,7 @@ export class TokenService {
 
     let payload: RefreshTokenPayload;
     try {
-      payload = await this.jwt.verifyAsync<RefreshTokenPayload>(presented, { secret: this.config.get('JWT_REFRESH_SECRET', { infer: true }) });
+      payload = await this.jwt.verifyAsync<RefreshTokenPayload>(presented, refreshVerifyOptions(this.config.get('JWT_REFRESH_SECRET', { infer: true })));
     } catch {
       throw expired();
     }
@@ -148,7 +168,7 @@ export class TokenService {
     if (!presented) return;
     try {
       const payload = await this.jwt.verifyAsync<RefreshTokenPayload>(presented, {
-        secret: this.config.get('JWT_REFRESH_SECRET', { infer: true }),
+        ...refreshVerifyOptions(this.config.get('JWT_REFRESH_SECRET', { infer: true })),
         ignoreExpiration: true,
       });
       await this.revokeFamily(payload.fam);

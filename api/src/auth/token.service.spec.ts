@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { JwtService } from '@nestjs/jwt';
-import { REUSE_GRACE_MS, TokenService, type RefreshRow } from './token.service.js';
+import { accessVerifyOptions, JWT_ISSUER, REFRESH_AUDIENCE, REUSE_GRACE_MS, TokenService, type RefreshRow } from './token.service.js';
 import { sha256Hex } from '../common/hashing.service.js';
 
 /** In-memory stand-in for the two Prisma delegates TokenService touches. */
@@ -130,7 +130,7 @@ describe('TokenService refresh rotation', () => {
     const foreign = await jwt.signAsync({ sub: 'u1', fam: 'f', jti: randomUUID(), tv: 0 }, { secret: 'z'.repeat(32) });
     await expect(service.rotate(foreign)).rejects.toMatchObject({ response: { code: 'SESSION_EXPIRED' } });
 
-    const orphan = await jwt.signAsync({ sub: 'u1', fam: 'f', jti: randomUUID(), tv: 0 }, { secret: CONFIG.JWT_REFRESH_SECRET as string });
+    const orphan = await jwt.signAsync({ sub: 'u1', fam: 'f', jti: randomUUID(), tv: 0 }, { secret: CONFIG.JWT_REFRESH_SECRET as string, issuer: JWT_ISSUER, audience: REFRESH_AUDIENCE });
     await expect(service.rotate(orphan)).rejects.toMatchObject({ response: { code: 'SESSION_EXPIRED' } });
 
     const { refresh } = await service.startSession(user);
@@ -153,5 +153,38 @@ describe('TokenService refresh rotation', () => {
     expect([...tokens.values()].every((t) => t.revokedAt !== null)).toBe(true);
     await expect(service.revokeByToken('garbage')).resolves.toBeUndefined();
     await expect(service.revokeByToken(undefined)).resolves.toBeUndefined();
+  });
+});
+
+describe('JWT pinning', () => {
+  const b64 = (o: object) => Buffer.from(JSON.stringify(o)).toString('base64url');
+
+  it('access and refresh tokens carry our issuer and their own audience', async () => {
+    const { service, user, jwt } = setup();
+    const { access, refresh } = await service.startSession(user);
+    expect(jwt.decode(access)).toMatchObject({ iss: JWT_ISSUER, aud: 'fuzzball-access' });
+    expect(jwt.decode(refresh)).toMatchObject({ iss: JWT_ISSUER, aud: 'fuzzball-refresh' });
+  });
+
+  it('an access token cannot be used as a refresh token, even with the same secret', async () => {
+    const jwtSame = new JwtService();
+    const service = new TokenService(jwtSame, { get: (k: string) => (k === 'JWT_REFRESH_SECRET' ? CONFIG.JWT_ACCESS_SECRET : CONFIG[k]) } as never, fakePrisma().prisma as never);
+    const access = await jwtSame.signAsync({ sub: 'u1', fam: 'f', jti: randomUUID(), tv: 0 }, { secret: CONFIG.JWT_ACCESS_SECRET as string, issuer: JWT_ISSUER, audience: 'fuzzball-access' });
+    await expect(service.rotate(access)).rejects.toMatchObject({ response: { code: 'SESSION_EXPIRED' } });
+  });
+
+  it('rejects a token with the wrong issuer or audience, and an unsigned (alg none) token', async () => {
+    const { jwt } = setup();
+    const secret = CONFIG.JWT_ACCESS_SECRET as string;
+    const opts = accessVerifyOptions(secret);
+    const good = await jwt.signAsync({ sub: 'u1' }, { secret, issuer: JWT_ISSUER, audience: 'fuzzball-access' });
+    await expect(jwt.verifyAsync(good, opts)).resolves.toMatchObject({ sub: 'u1' });
+    await expect(jwt.verifyAsync(await jwt.signAsync({ sub: 'u1' }, { secret, audience: 'fuzzball-access' }), opts)).rejects.toThrow();
+    await expect(jwt.verifyAsync(await jwt.signAsync({ sub: 'u1' }, { secret, issuer: 'someone-else', audience: 'fuzzball-access' }), opts)).rejects.toThrow();
+    await expect(jwt.verifyAsync(await jwt.signAsync({ sub: 'u1' }, { secret, issuer: JWT_ISSUER, audience: 'fuzzball-refresh' }), opts)).rejects.toThrow();
+    const none = `${b64({ alg: 'none', typ: 'JWT' })}.${b64({ sub: 'u1', iss: JWT_ISSUER, aud: 'fuzzball-access' })}.`;
+    await expect(jwt.verifyAsync(none, opts)).rejects.toThrow();
+    // a different HMAC size is refused too
+    await expect(jwt.verifyAsync(await jwt.signAsync({ sub: 'u1' }, { secret, algorithm: 'HS512', issuer: JWT_ISSUER, audience: 'fuzzball-access' }), opts)).rejects.toThrow();
   });
 });

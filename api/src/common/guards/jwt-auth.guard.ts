@@ -5,6 +5,7 @@ import { JwtService } from '@nestjs/jwt';
 import type { Env } from '../../config/env.js';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { ACCESS_COOKIE } from '../../auth/cookies.js';
+import { accessVerifyOptions } from '../../auth/token.service.js';
 import { ErrorCode, unauthorized } from '../errors.js';
 import { IS_PUBLIC_KEY, OPTIONAL_AUTH_KEY } from '../decorators/public.decorator.js';
 import type { AccessTokenPayload, AuthedRequest } from '../types/auth.types.js';
@@ -46,7 +47,7 @@ export class JwtAuthGuard implements CanActivate {
   private async authenticate(token: string) {
     let payload: AccessTokenPayload;
     try {
-      payload = await this.jwt.verifyAsync<AccessTokenPayload>(token, { secret: this.config.get('JWT_ACCESS_SECRET', { infer: true }) });
+      payload = await this.jwt.verifyAsync<AccessTokenPayload>(token, accessVerifyOptions(this.config.get('JWT_ACCESS_SECRET', { infer: true })));
     } catch {
       throw unauthorized('Your session has expired. Please log in again.', ErrorCode.SESSION_EXPIRED);
     }
