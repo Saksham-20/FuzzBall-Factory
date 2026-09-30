@@ -22,7 +22,8 @@ jobs:
         image: postgres:17
         env:
           POSTGRES_USER: fuzzball
-          POSTGRES_PASSWORD: fuzzball
+          # Throwaway CI container, reachable only from the job: no password to keep or leak.
+          POSTGRES_HOST_AUTH_METHOD: trust
           POSTGRES_DB: fuzzball_test
         ports: ['5432:5432']
         options: >-
@@ -33,8 +34,8 @@ jobs:
         working-directory: api
     env:
       NODE_ENV: test
-      DATABASE_URL: postgresql://fuzzball:fuzzball@localhost:5432/fuzzball_test
-      TEST_DATABASE_URL: postgresql://fuzzball:fuzzball@localhost:5432/fuzzball_test
+      DATABASE_URL: postgresql://fuzzball@localhost:5432/fuzzball_test
+      TEST_DATABASE_URL: postgresql://fuzzball@localhost:5432/fuzzball_test
       JWT_ACCESS_SECRET: ci-access-secret-not-used-anywhere-else
       JWT_REFRESH_SECRET: ci-refresh-secret-not-used-anywhere-else
     steps:
