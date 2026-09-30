@@ -19,9 +19,11 @@ const order = (over: Row = {}): Row => ({
   ...over,
 });
 
+const throttle = { assertOpen: () => Promise.resolve(), recordFailure: () => Promise.resolve(false), reset: () => Promise.resolve() };
+
 function service(rows: Row[]) {
   const prisma = { order: { findUnique: ({ where }: { where: { number: string } }) => Promise.resolve(rows.find((r) => r.number === where.number) ?? null) } };
-  return new OrdersService(prisma as unknown as PrismaService, undefined as never, undefined as never, undefined as never, undefined as never, undefined as never, undefined as never, undefined as never, undefined as never);
+  return new OrdersService(prisma as unknown as PrismaService, undefined as never, undefined as never, undefined as never, undefined as never, undefined as never, undefined as never, undefined as never, throttle as never);
 }
 
 const rejection = (p: Promise<unknown>) =>
