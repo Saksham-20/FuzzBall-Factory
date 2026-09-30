@@ -46,7 +46,7 @@ npm run test:e2e   # layout and accessibility regressions in Chromium (Playwrigh
 ```bash
 cd api
 npm run build && npm run lint && npm test   # unit
-npm run test:e2e                            # needs local Postgres (see api/README.md)
+npm run test:e2e                            # needs local Postgres + a *_test DB via TEST_DATABASE_URL (refuses any other; see api/README.md)
 npm run seed
 ```
 

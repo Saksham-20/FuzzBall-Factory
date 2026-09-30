@@ -56,7 +56,7 @@ function harness(existing?: { id: string; name: string; qtyOnHand: number }) {
       },
       update: async (args: { data: Record<string, unknown> }) => {
         calls.push('material.update');
-        return row({ id: existing?.id ?? 'm1', name: existing?.name ?? 'Cotton yarn', ...(args.data as never) });
+        return row({ id: existing?.id ?? 'm1', name: existing?.name ?? 'Cotton yarn', ...args.data });
       },
     },
     auditLog: { create: async () => { calls.push('auditLog.create'); } },

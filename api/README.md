@@ -39,13 +39,12 @@ Seeded logins (dev only, password `fuzzball123`): `admin@fuzzball.test` (admin, 
 | `npm run lint` | oxlint (type-aware) |
 | `npm run typecheck` | `tsc --noEmit` (includes specs) |
 | `npm test` | Vitest unit tests (`src/**/*.spec.ts`), no DB needed |
-| `npm run test:e2e` | supertest against the real app and your local dev DB (`test/*.e2e-spec.ts`) |
+| `npm run test:e2e` | supertest against the real app and a `*_test` database from `TEST_DATABASE_URL` (`test/*.e2e-spec.ts`); refuses any other database and runs `prisma migrate deploy` on it first |
 | `npm run prisma:generate` | regenerate the client into `src/generated/prisma` (git-ignored) |
 | `npm run prisma:migrate` | `prisma migrate dev` (create + apply a migration; pass `--name x`) |
 | `npm run prisma:deploy` | `prisma migrate deploy` (production) |
 | `npm run prisma:studio` | browse the data |
 | `npm run seed` | idempotent seed (`prisma/seed.ts`, run through `jiti`) |
-| `npm run deploy` | `nest deploy`, NestJS's own cloud (Mau). Not how the test server is deployed: see [`../docs/DEPLOY_VPS.md`](../docs/DEPLOY_VPS.md) |
 
 Reset the local database completely: `npx prisma migrate reset` (drops, re-migrates, re-seeds).
 

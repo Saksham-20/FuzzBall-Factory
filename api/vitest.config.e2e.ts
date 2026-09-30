@@ -7,7 +7,9 @@ export default defineConfig({
     globals: true,
     root: './',
     include: ['**/*.e2e-spec.ts'],
-    // Every file shares the one dev database (and the dashboard test counts rows): run files one at a time.
+    // Refuses any database not named *_test, then migrates it (see test/global-setup.ts).
+    globalSetup: ['./test/global-setup.ts'],
+    // Every file shares the one test database (and the dashboard test counts rows): run files one at a time.
     fileParallelism: false,
   },
 });
