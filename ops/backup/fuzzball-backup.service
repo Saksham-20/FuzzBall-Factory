@@ -1,0 +1,11 @@
+[Unit]
+Description=FuzzBall Factory offsite backup
+After=postgresql.service network-online.target
+Wants=network-online.target
+ConditionPathExists=/etc/fuzzball/backup.env
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/fuzzball-backup
+# A failed backup must be loud: systemd marks the unit failed; the uptime monitor's "failed units" check (or
+# `systemctl --failed` in the login banner) shows it. See docs/RUNBOOK_OPS.md.

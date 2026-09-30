@@ -26,9 +26,10 @@ echo "== api =="
 cd "$root/api"
 npm ci
 npm run build
-cp -R dist package.json package-lock.json "$stage/api/"
-mkdir -p "$stage/api/scripts"
-cp scripts/postinstall.mjs "$stage/api/scripts/"
+cp -R dist package-lock.json "$stage/api/"
+# The release only runs `node dist/main`: drop the project's own scripts (its postinstall runs `prisma generate`,
+# which the compiled dist/ already contains). Dependencies' install scripts (argon2, sharp) still run.
+node -e 'const p=require("./package.json"); delete p.scripts; require("fs").writeFileSync(process.argv[1], JSON.stringify(p, null, 2))' "$stage/api/package.json"
 (cd "$stage/api" && npm ci --omit=dev)
 
 echo "== web =="

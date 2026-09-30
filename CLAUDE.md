@@ -19,7 +19,7 @@ FuzzBall Factory — e-commerce site for a solo maker's handmade crochet product
 5. `DESIGN.md` — the visual system as built: tokens, components, named rules (sidecar: `.impeccable/design.json`)
 6. `docs/research-brief.md` — domain research
 
-Also: `TODOS.md` (deferred work by priority), `plans/` (self-contained fixes for the storefront's motion; `plans/README.md` gives the order), `docs/BUILD_GUIDE.md` (page-building conventions), `docs/DEPLOY_VPS.md` (the test server; real addresses live only in the gitignored `docs/DEPLOY_VPS.local.md`).
+Also: `TODOS.md` (deferred work by priority), `plans/` (self-contained fixes for the storefront's motion; `plans/README.md` gives the order), `docs/BUILD_GUIDE.md` (page-building conventions), `docs/DEPLOY_VPS.md` (the test server; real addresses live only in the gitignored `docs/DEPLOY_VPS.local.md`). Production: `ops/` (nginx, systemd, release build, deploy and rollback, backups; see `ops/README.md`), `docs/DEPLOY_PROD.md`, `docs/RUNBOOK_OPS.md`, `docs/RUNBOOK_DR.md`. `scripts/verify.sh` runs the same checks as CI.
 
 ## Current state
 

@@ -1,0 +1,63 @@
+name: Deploy
+
+# Manual only. Runs against the `production` GitHub environment, which must have required reviewers (an approval
+# click before any job that can read the server key starts). Setup and secrets: docs/DEPLOY_PROD.md.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  checks: read
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: production
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+
+      - name: Only ship a commit whose checks passed
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for name in "api (lint, types, unit, e2e)" "web (lint, unit, build)" "security (audit, secret scan)"; do
+            result="$(gh api "repos/$GITHUB_REPOSITORY/commits/$GITHUB_SHA/check-runs" --jq "[.check_runs[] | select(.name == \"$name\")] | map(.conclusion) | last // \"missing\"")"
+            echo "$name: $result"
+            [ "$result" = "success" ] || { echo "::error::'$name' is $result for $GITHUB_SHA. Get CI green first."; exit 1; }
+          done
+
+      - name: Build the release
+        run: ops/build.sh "$GITHUB_SHA"
+        env:
+          NEXT_PUBLIC_USE_MOCK: 'false'
+          NEXT_PUBLIC_API_URL: ${{ vars.NEXT_PUBLIC_API_URL }}
+          NEXT_PUBLIC_SITE_URL: ${{ vars.NEXT_PUBLIC_SITE_URL }}
+          NEXT_PUBLIC_WHATSAPP: ${{ vars.NEXT_PUBLIC_WHATSAPP }}
+          NEXT_PUBLIC_CLOUDINARY_CLOUD: ${{ vars.NEXT_PUBLIC_CLOUDINARY_CLOUD }}
+          LAUNCH_BUILD: ${{ vars.LAUNCH_BUILD }}
+
+      - name: Deploy
+        run: |
+          umask 077
+          printf '%s\n' "$SSH_KEY_CONTENT" > "$RUNNER_TEMP/deploy_key"
+          printf '%s\n' "$KNOWN_HOSTS_CONTENT" > "$RUNNER_TEMP/known_hosts"
+          export DEPLOY_SSH_KEY="$RUNNER_TEMP/deploy_key" DEPLOY_KNOWN_HOSTS="$RUNNER_TEMP/known_hosts"
+          ops/deploy.sh "$GITHUB_SHA"
+        env:
+          DEPLOY_HOST: ${{ vars.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ vars.DEPLOY_USER }}
+          SSH_KEY_CONTENT: ${{ secrets.DEPLOY_SSH_KEY }}
+          KNOWN_HOSTS_CONTENT: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+          MIGRATE_DATABASE_URL: ${{ secrets.MIGRATE_DATABASE_URL }}
+
+      - name: Remove the key
+        if: always()
+        run: rm -f "$RUNNER_TEMP/deploy_key" "$RUNNER_TEMP/known_hosts"

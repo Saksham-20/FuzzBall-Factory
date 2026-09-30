@@ -83,6 +83,31 @@ jobs:
           NEXT_PUBLIC_SITE_URL: https://shop.example.com
           NEXT_DIST_DIR: .next-real
 
+  web-e2e:
+    name: web (browser tests)
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      # Builds the storefront (mock mode) into .next-e2e, serves it, and runs the layout, accessibility and privacy specs.
+      - run: npm run test:e2e
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: failure()
+        with:
+          name: playwright-report
+          path: web/test-results
+          retention-days: 7
+
   security:
     name: security (audit, secret scan)
     runs-on: ubuntu-latest
@@ -103,6 +128,11 @@ jobs:
             echo "::endgroup::"
           done
           exit $status
+      - name: npm audit signatures (registry provenance of installed packages)
+        run: |
+          for dir in api web; do
+            (cd "$dir" && npm ci --ignore-scripts && npm audit signatures)
+          done
       - uses: gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e # v3.0.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -9,3 +9,6 @@
 
 # Hand-assembled test-VPS bundle (contains node_modules and maker photos)
 web/.deploy-vps/
+
+# Release artifacts built by ops/build.sh
+dist-release/
