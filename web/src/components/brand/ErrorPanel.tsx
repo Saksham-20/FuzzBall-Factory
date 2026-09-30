@@ -1,21 +1,25 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect } from "react";
 import { Button } from "@/components/ui/Button";
 import { YarnBall } from "@/components/brand/YarnBall";
 import { cn } from "@/lib/cn";
+import { reportClientError } from "@/lib/report-error";
 
 interface Props {
   /** Try the failed render again. */
   reset: () => void;
-  /** Server-side error id, shown so the maker can find the log line. */
-  digest?: string;
+  /** The error Next caught: reported once (see lib/report-error.ts) and its digest shown so the maker can find the log line. */
+  error: Error & { digest?: string };
   /** Fills the screen (root and global boundaries) instead of sitting inside the store layout. */
   fullPage?: boolean;
 }
 
 /** The "something broke" screen. Same voice as the 404: plain words, one way forward. */
-export function ErrorPanel({ reset, digest, fullPage }: Props) {
+export function ErrorPanel({ reset, error, fullPage }: Props) {
+  const digest = error.digest;
+  useEffect(() => reportClientError(error, "render"), [error]);
   return (
     <div
       role="alert"

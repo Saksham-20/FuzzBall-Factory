@@ -4,7 +4,7 @@ import { IsInt, IsOptional, IsString, Max, MaxLength, Min } from 'class-validato
 const blank = () => Transform(({ value }: { value: unknown }) => (typeof value === 'string' ? value.trim() || undefined : value));
 
 export class AuditListQuery {
-  /** Exact action, e.g. `payment.refund`. */
+  /** An action or the start of one: `payment.refund` for that action, `order` for every order action. */
   @blank()
   @IsOptional()
   @IsString()

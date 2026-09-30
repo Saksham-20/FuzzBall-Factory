@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect } from "react";
+import { reportClientError } from "@/lib/report-error";
 import "./globals.css";
 
 /**
@@ -7,6 +9,7 @@ import "./globals.css";
  * and the palette from globals.css only; a full reload is the only retry that can help here.
  */
 export default function GlobalError({ error }: { error: Error & { digest?: string }; reset: () => void }) {
+  useEffect(() => reportClientError(error, "global"), [error]);
   return (
     <html lang="en-IN">
       <body className="min-h-dvh antialiased">

@@ -7,7 +7,7 @@ Day-to-day checks, alerts and the usual fixes. Restores are in `docs/RUNBOOK_DR.
 | Signal | How | Alert when |
 |---|---|---|
 | Site and API up | Uptime monitor (UptimeRobot, Better Stack) on `https://<domain>/api/health/ready` every minute, and on `https://<domain>/` | 2 failed checks in a row. `/health/ready` is 503 while the database is down, migrations are unfinished, or the API is shutting down |
-| Errors | Sentry (`SENTRY_DSN` in `api.env`): failed refunds, payment mismatches, job crashes, emails that gave up, unexpected 500s | Any new issue; route alerts to the maker's email and phone |
+| Errors | Sentry (`SENTRY_DSN` in `api.env`): failed refunds, payment mismatches, job crashes, emails that gave up, unexpected 500s, and storefront crash screens (`area=web`, sent by the browser through the API). Server-side render errors are only in `journalctl -u fuzzball-web`; the visitor's error screen shows the same `Ref` digest | Any new issue; route alerts to the maker's email and phone |
 | Disk and memory | The VPS provider's alerts (or `node_exporter` + alert rule) | Disk over 80%, memory over 90% for 10 minutes |
 | Backups | The nightly job's exit status (`systemctl status fuzzball-backup`), and the file dates in the bucket | No new file in 26 hours |
 | TLS | Let's Encrypt renews by timer; monitor certificate expiry on the uptime monitor | Under 14 days left |
@@ -35,7 +35,7 @@ Logs never contain passwords, tokens, reset links or query strings (redacted in 
 | API won't start: "Invalid environment configuration" | A value in `/etc/fuzzball/api.env` is missing or weak | The message lists every problem; edit, `sudo systemctl restart fuzzball-api` |
 | Customers see "Snagged a thread" on product pages | API unreachable from the storefront (it reads the catalogue server side) | Check the API; pages recover by themselves once it answers (cache is 2 minutes) |
 | 429 from `/api/auth/...` | nginx or the API's login lock-out working as intended | Wait; an account locked after 5 wrong passwords lifts in 15 minutes |
-| Emails not arriving | Resend problem, or the outbox is retrying | Admin > Emails (when built) or `select * from "EmailOutbox" where status <> 'SENT'`; rows retry on a 1/5/15/60/240 minute schedule, then show FAILED and alert |
+| Emails not arriving | Resend problem, or the outbox is retrying | Admin > Emails ("Gave up" lists the ones to resend by hand), or `select * from "EmailOutbox" where status <> 'SENT'`; rows retry on a 1/5/15/60/240 minute schedule, then show FAILED and alert |
 | Payment taken, order still "pending" | Webhook delayed or blocked | The storefront polls for ~30 s; Razorpay retries the webhook for 24 h; check Razorpay's webhook log; the `razorpay/verify` call from the browser also settles it |
 | Disk filling | Logs, dumps, uploads | `journalctl --vacuum-size=500M`; `/var/backups/fuzzball` keeps 10 pre-migration and 3 nightly dumps; uploads are on Cloudinary in production |
 

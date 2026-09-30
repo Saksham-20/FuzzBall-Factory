@@ -229,7 +229,7 @@ Counters, messages, change requests, new requests and payments are throttled to 
 | `refundPayment(id, { amount?, reason })` | `POST /admin/payments/:id/refund` (200) | Manual refund of a captured payment (order, deposit or balance), whole remainder unless `amount`. `reason` 3-200 chars (audited as `payment.refund`). → `{ refunded, pending }` rupees. 400 over the refundable amount, 409 not captured |
 | _(outbox)_ | `GET /admin/email?status=&limit=` | Email outbox, newest first: `{ id, event, to, status (PENDING/SENDING/SENT/FAILED), attempts, lastError, createdAt, sentAt, resendable }`. `status=FAILED` lists emails that gave up |
 | _(outbox)_ | `POST /admin/email/:id/retry` (200) | Resend a `FAILED` email (audited as `email.retry`). 400 if it is not failed or its content was cleared (password-reset emails forget their link), 404 unknown |
-| _(audit)_ | `GET /admin/audit?action=&entity=&entityId=&actorId=&before=&limit=` | Admin audit trail, newest first: `{ items: [{ id, at, actor: {id,name,email}\|null, action, entity, entityId, meta, ip }], nextCursor? }`. Page with `before=<nextCursor>`; `limit` 1-100 (default 50). IPs are dropped from rows older than 90 days |
+| _(audit)_ | `GET /admin/audit?action=&entity=&entityId=&actorId=&before=&limit=` | Admin audit trail, newest first (`action` matches the start of an action: `order` finds every order action): `{ items: [{ id, at, actor: {id,name,email}\|null, action, entity, entityId, meta, ip }], nextCursor? }`. Page with `before=<nextCursor>`; `limit` 1-100 (default 50). IPs are dropped from rows older than 90 days |
 | `deleteCoupon(code)` | `DELETE /admin/coupons/:code` (204) | |
 | `listMaterials()` | `GET /admin/materials` | → `Material[]` (non-archived only) |
 | `saveMaterial(input)` create | `POST /admin/materials` (201) | `MaterialInput` → `Material` |
@@ -446,4 +446,8 @@ The privacy export lists saved pieces and erasure deletes them (`account-export.
 - **Zones**: countries named in `intlZones` use that zone's rate and transit window; everything else falls into the `*` zone. International shipping is never free (free shipping is an India-only rule) and **cash on delivery is refused outside India** (`COD_NOT_AVAILABLE`).
 - **Postal codes** (`api/src/shipping/postal.ts`, mirrored in `web/src/lib/postal.ts`): 17 countries are checked by shape (US, CA, GB, IE, AU, NZ, SG, MY, DE, FR, IT, ES, NL, NP, LK, BD, SA); any other country accepts 3 to 12 letters, digits, spaces or hyphens ("000" where a country has no codes). A bad one is a 400 with `fields["address.postalCode"]`.
 - **Emails**: `order.confirmed` and `order.shipped` carry the customs and duties reminder when the address is abroad.
+
+## Storefront error reports
+
+`POST /client-errors` (public, 204) `{ message (1-300), kind: "render" | "global", digest?, path? }`. The storefront's "Snagged a thread" screens send it once per crash (real mode only) so it reaches Sentry with `area=web`, without a browser SDK. Ten a minute per IP, unknown fields refused, nothing stored, no stack or page content sent. Server-side render errors are not reported this way: they are in `journalctl -u fuzzball-web` with the same digest the visitor sees on the error screen.
 

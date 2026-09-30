@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, type ReactNode } from "react";
-import { BarChart3, Boxes, Calculator, ClipboardList, Package, PackageOpen, Star, Settings, Store, Tag, Users, FolderTree, LogOut, MoreHorizontal } from "lucide-react";
+import { BarChart3, Boxes, Calculator, ClipboardList, Package, PackageOpen, Star, Settings, Store, Tag, Users, FolderTree, LogOut, MoreHorizontal, Mail, ScrollText } from "lucide-react";
 import { LogoMark } from "@/components/brand/LogoMark";
 import { Drawer } from "@/components/ui/Dialog";
 import { RequireAuth } from "@/components/ui/RequireAuth";
@@ -21,6 +21,8 @@ const NAV = [
   { href: "/admin/customers", label: "Customers", icon: Users },
   { href: "/admin/reviews", label: "Reviews", icon: Star },
   { href: "/admin/coupons", label: "Coupons", icon: Tag },
+  { href: "/admin/emails", label: "Emails", icon: Mail },
+  { href: "/admin/audit", label: "Audit log", icon: ScrollText },
   { href: "/admin/settings", label: "Settings", icon: Settings },
 ] as const;
 

@@ -41,6 +41,9 @@ describe('admin audit log (e2e)', () => {
 
     const even = (await admin.agent.get('/admin/audit').query({ action: `${tag}.even` }).expect(200)).body as Page;
     expect(even.items.map((r) => r.entityId)).toEqual([4, 2, 0].map((i) => `${tag}-${i}`));
+    // The start of an action matches every action under it.
+    const prefix = (await admin.agent.get('/admin/audit').query({ action: tag, entity: 'Probe' }).expect(200)).body as Page;
+    expect(prefix.items).toHaveLength(5);
     const one = (await admin.agent.get('/admin/audit').query({ entity: 'Probe', entityId: `${tag}-3` }).expect(200)).body as Page;
     expect(one.items).toHaveLength(1);
   });

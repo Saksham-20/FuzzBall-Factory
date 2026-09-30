@@ -31,7 +31,7 @@ export class AdminAuditService {
     const limit = q.limit ?? DEFAULT_LIMIT;
     if (q.before && !(await this.prisma.auditLog.findUnique({ where: { id: q.before }, select: { id: true } }))) throw badRequest('That page cursor is no longer valid.');
     const rows = await this.prisma.auditLog.findMany({
-      where: { ...(q.action ? { action: q.action } : {}), ...(q.entity ? { entity: q.entity } : {}), ...(q.entityId ? { entityId: q.entityId } : {}), ...(q.actorId ? { actorId: q.actorId } : {}) },
+      where: { ...(q.action ? { action: { startsWith: q.action } } : {}), ...(q.entity ? { entity: q.entity } : {}), ...(q.entityId ? { entityId: q.entityId } : {}), ...(q.actorId ? { actorId: q.actorId } : {}) },
       orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
       take: limit + 1,
       ...(q.before ? { cursor: { id: q.before }, skip: 1 } : {}),

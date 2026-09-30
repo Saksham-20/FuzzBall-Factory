@@ -1,3 +1,4 @@
+import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
 
 /** The main paths a shopper and the maker take, end to end in mock mode (data lives in the browser, so runs are independent). */
@@ -66,6 +67,15 @@ test("the admin can open an order and a work order; a customer cannot reach the 
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   await page.goto("/admin/custom/WO-021");
   await expect(page.getByText("The first penguin is done!")).toBeVisible();
+
+  // The operations screens open (the sample shop has no outbox or audit trail, so they say so) and pass an axe scan.
+  for (const [path, heading, empty] of [["/admin/emails", "Emails", "Nothing has failed"], ["/admin/audit", "Audit log", "Nothing recorded"]] as const) {
+    await page.goto(path);
+    await expect(page.getByRole("heading", { level: 1, name: heading })).toBeVisible();
+    await expect(page.getByText(empty)).toBeVisible();
+    const scan = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
+    expect(scan.violations.map((v) => `${v.id}: ${v.nodes[0]?.target.join(" ")}`)).toEqual([]);
+  }
 });
 
 test("the work order form opens for a signed-in customer", async ({ page }) => {
