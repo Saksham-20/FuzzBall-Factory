@@ -58,6 +58,9 @@ export function ConveyorThread() {
     let raf = 0;
     let started = false;
 
+    // The node the thread has reached (the one live thing); the attribute is only written when it changes.
+    let liveEl: Element | null = null;
+
     const STEP = 4;
     const lenForY = (y: number) => {
       let lo = 0;
@@ -156,13 +159,31 @@ export function ConveyorThread() {
       s!.setAttribute("viewBox", `0 0 ${wb.width} ${wb.height}`);
       s!.setAttribute("width", String(wb.width));
       s!.setAttribute("height", String(wb.height));
-      for (const p of [g!, h!, l!]) p.setAttribute("d", d);
+      for (const p of [h!, l!]) p.setAttribute("d", d);
       const sw = small ? 3.5 : 4.5;
       l!.setAttribute("stroke-width", String(sw));
       h!.setAttribute("stroke-width", String(sw + 5));
 
       total = l!.getTotalLength();
       for (const p of [h!, l!]) p.style.strokeDasharray = `${total}`;
+
+      // The stitches still to come: little cross-stitches (x) laid along the route, each turned to the
+      // thread's heading. They are small enough that the drawn thread and its halo cover them completely.
+      const gap = small ? 20 : 26;
+      const arm = small ? 2.4 : 2.9;
+      let x = "";
+      for (let len = gap; len < total - 6; len += gap) {
+        const a = l!.getPointAtLength(len);
+        const b = l!.getPointAtLength(len + 2);
+        const tl = Math.hypot(b.x - a.x, b.y - a.y) || 1;
+        const tx = ((b.x - a.x) / tl) * arm;
+        const ty = ((b.y - a.y) / tl) * arm;
+        const nx = -ty;
+        const ny = tx;
+        const f = (v: number) => v.toFixed(1);
+        x += `M${f(a.x - tx - nx)} ${f(a.y - ty - ny)}L${f(a.x + tx + nx)} ${f(a.y + ty + ny)}M${f(a.x - tx + nx)} ${f(a.y - ty + ny)}L${f(a.x + tx - nx)} ${f(a.y + ty - ny)}`;
+      }
+      g!.setAttribute("d", x);
 
       ys = [];
       let run = -Infinity;
@@ -203,12 +224,12 @@ export function ConveyorThread() {
       if (started) hk!.style.opacity = "1";
 
       // The node the thread has just reached goes live (rose): the one live thing.
-      const readY = pt.y;
       let live: Element | null = null;
-      for (const n of nodeYs) if (n.y <= readY + 8) live = n.el;
-      for (const n of nodeYs) {
-        if (n.el === live) n.el.setAttribute("data-live", "");
-        else n.el.removeAttribute("data-live");
+      for (const n of nodeYs) if (n.y <= pt.y + 8) live = n.el;
+      if (live !== liveEl) {
+        liveEl?.removeAttribute("data-live");
+        live?.setAttribute("data-live", "");
+        liveEl = live;
       }
     }
 
@@ -260,8 +281,8 @@ export function ConveyorThread() {
   return (
     <div ref={box} aria-hidden className="pointer-events-none absolute inset-0 z-20 overflow-hidden">
       <svg ref={svg} className="absolute top-0 left-0" fill="none">
-        {/* stitches still to come */}
-        <path ref={ghost} stroke="#a8804f" strokeOpacity="0.5" strokeWidth="2.5" strokeLinecap="round" strokeDasharray="1 11" />
+        {/* stitches still to come: cross-stitches along the route */}
+        <path ref={ghost} stroke="#a8804f" strokeOpacity="0.6" strokeWidth="2" strokeLinecap="round" />
         {/* paper halo keeps the thread legible on kraft and cream alike */}
         <path ref={halo} stroke="#fcf8f2" strokeOpacity="0.9" strokeLinecap="round" strokeLinejoin="round" />
         <path ref={line} data-thread-line stroke="#c98586" strokeLinecap="round" strokeLinejoin="round" />
