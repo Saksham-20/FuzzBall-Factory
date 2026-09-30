@@ -54,6 +54,18 @@
 
 ## Storefront (web)
 
+### Content-Security-Policy still allows inline scripts
+
+**What:** `web/src/lib/security-headers.ts` sends `script-src 'self' 'unsafe-inline' https://checkout.razorpay.com`. Inline scripts are allowed because Next's bootstrap scripts need it without a per-request nonce.
+
+**Why:** A nonce (generated in `proxy.ts`) forces every page to render per request, which gives up the cached catalogue pages on a small VPS. The rest of the policy is strict (no framing, no plugins, no foreign forms, connect/img/frame limited to this site, the API, Cloudinary and Razorpay), so the remaining gap is an injected inline script, and the app has no raw-HTML sinks besides two JSON-LD blocks.
+
+**Context:** Revisit if traffic allows dynamic rendering, or once Next supports hash-based CSP for static pages. Check the PDP and checkout once against the live Razorpay window (frame/script origins) before launch.
+
+**Effort:** M
+**Priority:** P3
+**Depends on:** None
+
 ### Home door words are sized from a per-letter estimate
 
 **What:** `Shelf.tsx` sizes the category words on the home page from their length (`MODAK_EM_PER_LETTER`). Real category words from the admin may contain wide letters (m, w) that run past the chip.

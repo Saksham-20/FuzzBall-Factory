@@ -3,6 +3,7 @@ import type { NextConfig } from "next";
 import { PHASE_PRODUCTION_BUILD } from "next/constants";
 import { assertBuildEnv } from "./src/lib/build-env";
 import { assertNoPlaceholders } from "./src/lib/placeholders-scan";
+import { securityHeaders } from "./src/lib/security-headers";
 
 // Images uploaded through the real API (POST /uploads) are served from the API origin (local disk driver) or Cloudinary.
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
@@ -13,6 +14,10 @@ const local = !!api && ["localhost", "127.0.0.1"].includes(api.hostname);
 const realApiBuild = process.env.NEXT_PUBLIC_USE_MOCK === "false";
 
 const nextConfig: NextConfig = {
+  poweredByHeader: false,
+  async headers() {
+    return [{ source: "/:path*", headers: securityHeaders({ apiOrigin: api?.origin, production: process.env.NODE_ENV === "production" }) }];
+  },
   // Lets a second build (e.g. the real-API smoke build) live beside the default one: NEXT_DIST_DIR=.next-real npm run build
   distDir: process.env.NEXT_DIST_DIR || ".next",
   // Self-contained server bundle for VPS deploys: NEXT_OUTPUT=standalone npm run build
