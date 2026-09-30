@@ -11,6 +11,7 @@ export interface EmailMessage {
   subject: string;
   html: string;
   text: string;
+  replyTo?: string;
 }
 
 export interface EmailSendResult {
@@ -49,6 +50,7 @@ export class EmailProvider {
       subject: message.subject,
       html: message.html,
       text: message.text,
+      ...(message.replyTo ? { replyTo: message.replyTo } : {}),
     }), RESEND_TIMEOUT_MS, 'Resend email');
     if (error) throw new Error(`Resend: ${error.name}: ${error.message}`);
     return { mock: false, id: data?.id };

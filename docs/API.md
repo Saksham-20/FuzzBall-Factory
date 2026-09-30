@@ -422,3 +422,7 @@ Counters older than a day are deleted by the scheduler.
 ## Stock-hold limits
 
 Unpaid online orders and unconfirmed COD orders hold stock, so a shopper (matched by account or email address, case-insensitive) can have at most 3 of them open at once: a fourth `POST /orders` answers `429 TOO_MANY_OPEN_ORDERS` until one is paid, cancelled or confirmed. It is a soft cap. A cash-on-delivery order the maker has not confirmed within 72 hours is cancelled by the scheduler (hourly) and its stock released, with a timeline note telling the customer to message on WhatsApp.
+
+## Contact form
+
+`POST /contact` (public) `{ name, email, message, website? }`. Name 2-80 characters, message 10-1500, `website` is the hidden honeypot (a request that fills it gets a normal 204 and nothing is sent). Sent to `CONTACT_INBOX_EMAIL`, else `ADMIN_EMAIL`, through the email outbox as event `contact.message` with the visitor's address as Reply-To. 204 on success; 503 `CONTACT_UNAVAILABLE` when neither address is set; 400 with `fields` for bad input; 5 requests per hour per IP, then 429. The message text is never logged, and the outbox row's payload is emptied once the mail is sent.

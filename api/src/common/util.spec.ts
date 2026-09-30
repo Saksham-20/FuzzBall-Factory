@@ -44,7 +44,7 @@ describe('email templates', () => {
     const order = { to: 'a@b.co', name: 'Maya Iyer', orderNumber: 'FB-1001', url: 'http://x/o', total: 1450 };
     const wo = { to: 'a@b.co', name: 'Maya Iyer', workOrderNumber: 'WO-001', title: 'Panda', url: 'http://x/w', amount: 1850 };
     for (const event of Object.keys(templates) as NotificationEvent[]) {
-      const payload = event.startsWith('order.') ? order : event.startsWith('workorder.') ? wo : { ...order, resetUrl: 'http://x/r', verifyUrl: 'http://x/v', confirmUrl: 'http://x/c', newEmail: 'new@b.co', expiresInMinutes: 60 };
+      const payload = event.startsWith('order.') ? order : event.startsWith('workorder.') ? wo : { ...order, resetUrl: 'http://x/r', verifyUrl: 'http://x/v', confirmUrl: 'http://x/c', newEmail: 'new@b.co', expiresInMinutes: 60, fromEmail: 'visitor@b.co', message: 'Do you make blue bunnies?' };
       const r = renderTemplate(event, payload as never, ctx);
       expect(r.subject.length).toBeGreaterThan(3);
       expect(r.html).toContain('<!doctype html>');
@@ -61,5 +61,12 @@ describe('email templates', () => {
     const r = renderTemplate('auth.password_reset', { to: 'a@b.co', name: 'Maya', resetUrl: 'http://x/reset?token=abc', expiresInMinutes: 60 }, ctx);
     expect(r.text).toContain('http://x/reset?token=abc');
     expect(r.text).toContain('60 minutes');
+  });
+  it('contact message replies to the visitor and escapes their text', () => {
+    const r = renderTemplate('contact.message', { to: 'maker@b.co', name: 'Mo\n<b>', fromEmail: 'visitor@b.co', message: '<img src=x onerror=alert(1)>' }, ctx);
+    expect(r.replyTo).toBe('visitor@b.co');
+    expect(r.subject).not.toContain('\n');
+    expect(r.html).not.toContain('<img');
+    expect(r.html).toContain('&lt;img');
   });
 });

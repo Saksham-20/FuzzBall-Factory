@@ -41,6 +41,18 @@ const note = (n?: string) => (n ? [n] : []);
 const itemLines = (p: OrderPayload) => (p.items?.length ? [p.items.map((i) => `${i.qty} x ${i.name}`).join(', ')] : []);
 
 export const templates: Registry = {
+  'contact.message': (p, ctx) => ({
+    ...renderEmail({
+      brandName: ctx.brandName,
+      subject: `New message from ${p.name.replace(/[\r\n]+/g, ' ').slice(0, 60)}`,
+      preheader: p.message.slice(0, 90),
+      heading: 'New message from the contact form',
+      paragraphs: [`From: ${p.name} <${p.fromEmail}>`, p.message],
+      footnote: 'Reply to this email to answer them directly.',
+    }),
+    replyTo: p.fromEmail,
+  }),
+
   'auth.welcome': (p, ctx) =>
     renderEmail({
       ...base(ctx),

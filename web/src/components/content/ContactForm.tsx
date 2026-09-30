@@ -9,6 +9,8 @@ import { toast } from "sonner";
 import { CheckCircle2, Send } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Field, Input, Textarea } from "@/components/ui/Field";
+import { ApiError } from "@/lib/api/errors";
+import { sendContactMessage } from "@/lib/api/contact";
 import { SITE } from "@/lib/site";
 
 const schema = z.object({
@@ -19,17 +21,10 @@ const schema = z.object({
     .trim()
     .min(10, "Tell us a little more, at least 10 characters.")
     .max(1500, "Please keep your message under 1,500 characters."),
+  // Hidden honeypot: empty for people, filled by form-stuffing bots.
+  website: z.string().max(200).optional(),
 });
 type Values = z.infer<typeof schema>;
-
-/**
- * Mock send: nothing leaves the browser. The real endpoint replaces `send` when the API exists.
- * PLACEHOLDER(contact-form): swap the simulated delay for a POST to the API.
- */
-async function send(values: Values) {
-  void values;
-  await new Promise((r) => setTimeout(r, 700));
-}
 
 export function ContactForm() {
   const [sent, setSent] = useState(false);
@@ -38,16 +33,17 @@ export function ContactForm() {
     handleSubmit,
     reset,
     formState: { errors, isSubmitting },
-  } = useForm<Values>({ resolver: zodResolver(schema), defaultValues: { name: "", email: "", message: "" } });
+  } = useForm<Values>({ resolver: zodResolver(schema), defaultValues: { name: "", email: "", message: "", website: "" } });
 
   const onSubmit = async (values: Values) => {
     try {
-      await send(values);
+      await sendContactMessage(values);
       setSent(true);
       reset();
       toast.success(SITE.useMock ? "Sample mode: nothing was actually sent." : "Message sent. We will reply by email.");
-    } catch {
-      toast.error("We couldn't send that. Check your connection and try again, or use WhatsApp.");
+    } catch (e) {
+      // 503 means the shop inbox is not switched on: the API's own words already point to WhatsApp.
+      toast.error(e instanceof ApiError && (e.status === 503 || e.status === 429) ? e.message : "We couldn't send that. Check your connection and try again, or use WhatsApp.");
     }
   };
 
@@ -69,7 +65,13 @@ export function ContactForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-5 rounded-ticket bg-paper p-5 shadow-ticket sm:p-7">
+    <form onSubmit={handleSubmit(onSubmit)} noValidate className="relative space-y-5 rounded-ticket bg-paper p-5 shadow-ticket sm:p-7">
+      <div aria-hidden className="absolute -left-[9999px] h-0 w-0 overflow-hidden">
+        <label>
+          Leave this empty
+          <input type="text" tabIndex={-1} autoComplete="off" {...register("website")} />
+        </label>
+      </div>
       <Field label="Your name" error={errors.name?.message}>
         {(p) => <Input {...p} autoComplete="name" {...register("name")} />}
       </Field>

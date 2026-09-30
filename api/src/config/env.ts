@@ -71,6 +71,9 @@ const rawSchema = z.object({
   RESEND_API_KEY: optional(z.string()),
   MAIL_FROM: z.string().min(1).default('FuzzBall Factory <hello@fuzzballfactory.example>'),
 
+  /** Where the contact form's messages are sent. Falls back to ADMIN_EMAIL; with neither, the form answers 503. */
+  CONTACT_INBOX_EMAIL: optional(z.string().email()),
+
   WHATSAPP_NUMBER: optional(z.string()),
 
   /** Error tracking. Unset = off. Failed refunds, payment mismatches, job crashes and unexpected 500s are sent. */

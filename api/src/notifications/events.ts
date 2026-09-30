@@ -40,6 +40,9 @@ export interface WorkOrderPayload extends Recipient {
 }
 
 export interface NotificationEventMap {
+  // Contact form: goes to the shop inbox (`to`), with the visitor's address as Reply-To. `name` is the visitor's.
+  'contact.message': Recipient & { fromEmail: string; message: string };
+
   // Accounts
   'auth.welcome': Recipient;
   'auth.password_reset': Recipient & { resetUrl: string; expiresInMinutes: number };
@@ -75,6 +78,8 @@ export type NotificationEvent = keyof NotificationEventMap;
 
 export interface RenderedEmail {
   subject: string;
+  /** Where a reply should go, when that is not the sender address. */
+  replyTo?: string;
   html: string;
   text: string;
 }

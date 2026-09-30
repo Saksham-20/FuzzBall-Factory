@@ -20,6 +20,7 @@ import { AccountModule } from './account/account.module.js';
 import { ReviewsModule } from './reviews/reviews.module.js';
 import { UploadsModule } from './uploads/uploads.module.js';
 import { JobsModule } from './jobs/jobs.module.js';
+import { ContactModule } from './contact/contact.module.js';
 import { HealthController } from './health/health.controller.js';
 
 /**
@@ -48,6 +49,7 @@ import { HealthController } from './health/health.controller.js';
     PaymentsModule,
     OrdersModule,
     AccountModule,
+    ContactModule,
     ReviewsModule,
     UploadsModule,
     JobsModule,

@@ -29,8 +29,12 @@ export function WhatsAppButton() {
 
   return (
     <div data-wa-button className="fixed right-4 bottom-4 z-40 flex items-center gap-3 md:right-6 md:bottom-6" style={{ bottom: "calc(1rem + var(--sticky-offset, 0px))" }}>
+      {/* Announced to screen readers only when it appears (text inserted into a live region), not on load. */}
+      <span role="status" className="sr-only">
+        {nudge ? "Questions? Chat with the maker on WhatsApp" : ""}
+      </span>
       <span
-        role="status"
+        aria-hidden
         className={
           "hidden rounded-full bg-paper px-4 py-2 text-sm font-semibold text-cocoa shadow-lift transition-[opacity,transform] duration-300 ease-out sm:block " +
           (nudge ? "translate-x-0 opacity-100" : "pointer-events-none translate-x-2 opacity-0")
