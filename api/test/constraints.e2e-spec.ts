@@ -74,4 +74,34 @@ describe('database integrity constraints (e2e)', () => {
       await refuses(quote(other.id, 'SENT', { depositPct: 101 }), /Quote_price_positive|check constraint/i);
     });
   });
+
+  describe('deleting a user keeps the financial record', () => {
+    it('orders survive (unlinked), payments and reviews too; a user with a work order cannot be deleted', async () => {
+      const gone = await makeUser(t, 'customer', `${TAG}-gone`);
+      const fx = await makeProduct(t.prisma, TAG, {});
+      const order = await t.prisma.order.create({
+        data: {
+          number: `FB-${TAG}-1`, userId: gone.id, contact: { name: 'G', email: `${TAG}-gone@e2e.test`, phone: '+919811122233' }, contactEmail: `${TAG}-gone@e2e.test`, contactPhone: '+919811122233',
+          address: { name: 'G', line1: 'x', city: 'Blr', state: 'KA', postalCode: '560038', country: 'IN' }, subtotal: 400, total: 479, paymentMethod: 'COD', estimatedDispatch: new Date(),
+          items: { create: [{ productId: fx.productId, variantId: fx.variantId, name: 'Bear', image: '/a.jpg', colour: 'Cream', qty: 1, unitPrice: 400, fulfilment: 'READY' }] },
+        },
+      });
+      const pay = await t.prisma.payment.create({ data: { purpose: 'ORDER', amount: 479, orderId: order.id, status: 'PAID' } });
+
+      await t.prisma.user.delete({ where: { id: gone.id } });
+      expect(await t.prisma.order.findUniqueOrThrow({ where: { id: order.id } })).toMatchObject({ userId: null, total: 479 });
+      expect(await t.prisma.payment.findUniqueOrThrow({ where: { id: pay.id } })).toMatchObject({ orderId: order.id, amount: 479 });
+      await t.prisma.payment.delete({ where: { id: pay.id } });
+      await t.prisma.order.delete({ where: { id: order.id } });
+
+      const holder = await makeUser(t, 'customer', `${TAG}-holder`);
+      const wo = await t.prisma.customRequest.create({
+        data: { number: `WO-${TAG}-h`, userId: holder.id, customerName: 'H', customerPhone: '+919811122233', category: 'toys', title: 'Bear', description: 'x'.repeat(40), colours: ['Cream'], budgetMin: 500, budgetMax: 900 },
+      });
+      await refuses(t.prisma.user.delete({ where: { id: holder.id } }), /foreign key|violat/i);
+      expect(await t.prisma.customRequest.findUnique({ where: { id: wo.id } })).not.toBeNull();
+      await t.prisma.customRequest.delete({ where: { id: wo.id } });
+      await t.prisma.user.delete({ where: { id: holder.id } });
+    });
+  });
 });
