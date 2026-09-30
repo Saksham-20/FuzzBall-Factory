@@ -83,7 +83,7 @@
         line-height: 1;
       }
       .display {
-        font-family: "Modak", "Arial Rounded MT Bold", ui-rounded, sans-serif;
+        font-family: "Modak", sans-serif;
         font-weight: 400;
         line-height: 0.92;
         letter-spacing: -0.005em;
@@ -168,6 +168,7 @@
         padding: 0 4px;
         font-size: 46px;
         font-weight: 700;
+        text-wrap: balance;
         line-height: 1.16;
         letter-spacing: -0.01em;
       }
@@ -204,8 +205,8 @@
       /* payoff line */
       #fuzz {
         left: 230px;
-        top: 4000px;
-        font-size: 176px;
+        top: 4010px;
+        font-size: 140px;
       }
       #fuzz .hl {
         position: absolute;
@@ -228,11 +229,11 @@
       }
       #dots i {
         display: block;
-        width: 26px;
-        height: 26px;
+        width: 22px;
+        height: 22px;
         border-radius: 50%;
         background: var(--cocoa);
-        margin-top: 88px;
+        margin-top: 70px;
       }
 
       /* end card */
@@ -302,15 +303,10 @@
       <div id="world">
         <!-- the one live thing: rose yarn thread + the hook that leads it -->
         <svg id="thread" viewBox="0 0 1080 7000" fill="none" stroke-linecap="round" stroke-linejoin="round">
-          <defs>
-            <mask id="reveal" maskUnits="userSpaceOnUse" x="-200" y="-200" width="1500" height="7400">
-              <path id="reveal-path" stroke="#fff" stroke-width="80" pathLength="1" stroke-dasharray="1 2" stroke-dashoffset="1" />
-            </mask>
-          </defs>
-          <g mask="url(#reveal)">
-            <path id="thread-path" stroke="#c98586" stroke-width="18" />
-            <path id="thread-twist" stroke="#a95f62" stroke-width="18" stroke-dasharray="3 15" opacity="0.55" />
-            <path id="thread-sheen" stroke="#e2acab" stroke-width="4" transform="translate(-3 -3)" opacity="0.8" />
+          <g stroke-dasharray="1 2" stroke-dashoffset="1">
+            <path id="thread-shadow" pathLength="1" stroke="#a95f62" stroke-width="18" opacity="0.4" transform="translate(3 5)" />
+            <path id="thread-path" pathLength="1" stroke="#c98586" stroke-width="18" />
+            <path id="thread-sheen" pathLength="1" stroke="#e2acab" stroke-width="4" transform="translate(-3 -3)" opacity="0.85" />
           </g>
         </svg>
 
@@ -355,7 +351,7 @@
         <!-- the hook rides above the ball -->
         <svg id="hook-layer" class="abs" style="left: 0; top: 0; width: 1080px; height: 7000px; overflow: visible; pointer-events: none" viewBox="0 0 1080 7000">
           <g id="hook">
-            <g transform="rotate(158) scale(2.1) translate(-27 -22)">
+            <g transform="rotate(-158) scale(2.1) translate(-27 -22)">
               <path d="M13 66 V32 C13 15 22 5 31 5 C37.5 5 40 11 35.5 15.5 C32 19 27 20 27 29 V66 Z" fill="#6b4228" />
               <rect x="13" y="60" width="14" height="250" rx="7" fill="#6b4228" />
               <rect x="8" y="150" width="24" height="52" rx="11" fill="#8a6249" />
@@ -409,7 +405,7 @@
         "C140,5000 140,5800 140,6500", // 9 tail runs off the bottom
       ];
       const D = START + " " + SEGS.join(" ");
-      ["thread-path", "thread-twist", "thread-sheen", "reveal-path"].forEach((id) => document.getElementById(id).setAttribute("d", D));
+      ["thread-shadow", "thread-path", "thread-sheen"].forEach((id) => document.getElementById(id).setAttribute("d", D));
 
       const probe = document.createElementNS("http://www.w3.org/2000/svg", "path");
       const total = (probe.setAttribute("d", D), probe.getTotalLength());
@@ -424,10 +420,11 @@
       const INOUT = "power3.inOut";
 
       /* thread + hook run: [fromSeg, toSeg, start, dur, ease] */
-      gsap.set("#reveal-path", { strokeDashoffset: 1 });
+      const DRAW = ["#thread-shadow", "#thread-path", "#thread-sheen"];
+      gsap.set(DRAW, { strokeDashoffset: 1 });
       gsap.set("#hook", { x: 950, y: -60 });
       const run = (a, b, t, dur, ease) => {
-        tl.to("#reveal-path", { strokeDashoffset: 1 - F[b], duration: dur, ease }, t);
+        tl.to(DRAW, { strokeDashoffset: 1 - F[b], duration: dur, ease }, t);
         tl.to("#hook", { motionPath: { path: "#thread-path", start: F[a], end: F[b] }, duration: dur, ease }, t);
       };
       run(0, 3, 0.15, 2.45, "power2.inOut"); // hero: drop, sweep, into lane
@@ -436,7 +433,8 @@
       run(5, 6, 4.2, 0.55, "power2.inOut"); // to station 03
       run(6, 7, 4.95, 1.3, "power2.inOut"); // to the ball
       run(7, 9, 6.55, 0.6, "power2.in");
-      run(9, 10, 7.15, 1.9, "none");
+      run(9, 10, 7.15, 1.45, "none");
+      tl.set("#hook-layer", { opacity: 0 }, 8.7);
 
       /* camera */
       gsap.set("#world", { y: 0 });
@@ -473,9 +471,7 @@
       tl.to("#ball", { scale: 1, opacity: 1, rotation: 0, duration: 0.6, ease: "back.out(1.7)" }, 5.7);
       tl.fromTo("#ball-wraps", { rotation: -16 }, { rotation: 10, duration: 2.6, ease: "sine.inOut" }, 5.8);
 
-      /* hook flicks away up-right once the ball is wound */
-      tl.to("#hook-layer", { opacity: 1, duration: 0.01 }, 0);
-
+      
       /* payoff: Fuzzballs + butter swipe, then three dots */
       gsap.set("#fuzz-word", { opacity: 0, y: 40 });
       gsap.set("#fuzz .hl", { scaleX: 0 });

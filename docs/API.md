@@ -416,3 +416,7 @@ Counters older than a day are deleted by the scheduler.
 - **Work orders:** `references` (on create) and message `attachments` must be images the same customer uploaded, else 400 with `fields.references` / `fields.attachments`. Using an image marks it attached.
 - **Maker fields** (product and category photos, progress and approval photos, message attachments) must point into our own storage: `/uploads/...`, the configured `API_PUBLIC_URL`'s `/uploads/`, or our Cloudinary cloud (development also allows `/samples/` and `/brand/`). Anything else is 400.
 - **Orphans:** a customer image nobody attached within 7 days is deleted (file and record) by the scheduler.
+
+## Stock-hold limits
+
+Unpaid online orders and unconfirmed COD orders hold stock, so a shopper (matched by account or email address, case-insensitive) can have at most 3 of them open at once: a fourth `POST /orders` answers `429 TOO_MANY_OPEN_ORDERS` until one is paid, cancelled or confirmed. It is a soft cap. A cash-on-delivery order the maker has not confirmed within 72 hours is cancelled by the scheduler (hourly) and its stock released, with a timeline note telling the customer to message on WhatsApp.

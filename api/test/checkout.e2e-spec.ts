@@ -312,6 +312,11 @@ describe('checkout flows (e2e, mock payments)', () => {
     let bob: TestUser;
     let admin: TestUser;
 
+    // These tests place many orders as the same account; the open-order cap (see stock-hold.e2e-spec) is not their subject.
+    beforeEach(async () => {
+      await t.prisma.order.updateMany({ where: { userId: { in: [alice.id, bob.id] }, status: { in: ['PENDING_PAYMENT', 'PLACED'] } }, data: { status: 'CANCELLED' } });
+    });
+
     beforeAll(async () => {
       alice = await makeUser(t, 'customer', 'alice');
       bob = await makeUser(t, 'customer', 'bob');

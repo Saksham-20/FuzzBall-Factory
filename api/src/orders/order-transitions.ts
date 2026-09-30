@@ -32,3 +32,13 @@ export const RETURN_WINDOW_DAYS = 7;
 
 /** A Razorpay order that is still unpaid after this long is cancelled and its stock released. */
 export const PAYMENT_WINDOW_MINUTES = 30;
+
+/**
+ * Stock-hold limits. An unpaid online order and an unconfirmed cash-on-delivery order both hold real stock, so a
+ * shopper (or a script) could park the whole shelf. Per email address or account: this many open orders at once.
+ * (Phone numbers are not counted: families share one, and anyone scripting this varies it anyway.)
+ */
+export const MAX_OPEN_ORDERS_PER_CONTACT = 3;
+
+/** A cash-on-delivery order the maker has not confirmed on WhatsApp within this long is cancelled and its stock released. */
+export const COD_CONFIRM_WINDOW_HOURS = 72;

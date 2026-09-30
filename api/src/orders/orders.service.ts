@@ -15,7 +15,7 @@ import { addressFieldErrors } from '../shipping/address-validation.js';
 import type { PlaceOrderDto } from './dto/orders.dto.js';
 import { OrderNotifier } from './order-notifier.service.js';
 import { OrderStateService, SYSTEM_ACTOR, type OrderActor } from './order-state.service.js';
-import { CUSTOMER_CANCELLABLE, PAYMENT_WINDOW_MINUTES, RETURN_WINDOW_DAYS } from './order-transitions.js';
+import { COD_CONFIRM_WINDOW_HOURS, CUSTOMER_CANCELLABLE, MAX_OPEN_ORDERS_PER_CONTACT, PAYMENT_WINDOW_MINUTES, RETURN_WINDOW_DAYS } from './order-transitions.js';
 import { ORDER_INCLUDE, toOrderDto, toTrackDto, type OrderDto, type OrderRow } from './order.mapper.js';
 
 /** `POST /orders` response: the order (web `Order`) plus, for online payments, what the checkout needs to pay. */
@@ -103,6 +103,8 @@ export class OrdersService {
     if (dto.paymentMethod === 'COD' && !quote.codEligible) throw badRequest(quote.codReason ?? "Cash on delivery isn't available for this order.", undefined, 'COD_NOT_AVAILABLE');
     if (dto.coupon && !quote.couponApplied) throw badRequest(quote.couponError ?? "That code can't be used.", { coupon: quote.couponError ?? 'Not valid' }, 'COUPON_INVALID');
     if (dto.paymentMethod === 'RAZORPAY' && quote.total < 1) throw badRequest("This order doesn't need an online payment. Please contact us.");
+
+    await this.assertOpenOrderLimit(tx, dto.contact, user);
 
     // Stock: one conditional decrement per variant (rows are locked in a fixed order to avoid deadlocks).
     // `updateMany ... WHERE stock >= qty` is the race guard: two shoppers can't both take the last piece.
@@ -281,6 +283,26 @@ export class OrdersService {
     return payment;
   }
 
+  /**
+   * Refuses a new order while the shopper already has several waiting on them (unpaid online, or COD the maker has not
+   * confirmed yet): each one holds stock. Counts by account and email; a soft cap (two orders placed in the
+   * same instant can slip past), which is all that is needed to stop shelf-parking.
+   */
+  private async assertOpenOrderLimit(tx: Prisma.TransactionClient, contact: { email: string }, user?: RequestUser): Promise<void> {
+    const open = [{ status: 'PENDING_PAYMENT' as const, paymentMethod: 'RAZORPAY' as const }, { status: 'PLACED' as const, paymentMethod: 'COD' as const }];
+    const email = contact.email.trim().toLowerCase();
+    const waiting = await tx.order.count({
+      where: { AND: [{ OR: open }, { OR: [...(user ? [{ userId: user.userId }] : []), { contactEmail: { equals: email, mode: 'insensitive' as const } }] }] },
+    });
+    if (waiting >= MAX_OPEN_ORDERS_PER_CONTACT) {
+      throw new AppException(
+        429,
+        'TOO_MANY_OPEN_ORDERS',
+        `You already have ${MAX_OPEN_ORDERS_PER_CONTACT} orders waiting on payment or confirmation. Pay for or cancel one of them first, or message us on WhatsApp.`,
+      );
+    }
+  }
+
   // ───────────── housekeeping ─────────────
 
   /** Cancels online orders that were never paid within the payment window, returning their stock. */
@@ -298,6 +320,22 @@ export class OrdersService {
         cancelled += 1;
       } catch (err) {
         this.logger.warn(`Could not expire ${number}: ${(err as Error).message}`);
+      }
+    }
+    return cancelled;
+  }
+
+  /** Cancels cash-on-delivery orders the maker never confirmed within the window, returning their stock. */
+  async expireUnconfirmedCod(now: Date = new Date()): Promise<number> {
+    const cutoff = new Date(now.getTime() - COD_CONFIRM_WINDOW_HOURS * 3_600_000);
+    const stale = await this.prisma.order.findMany({ where: { status: 'PLACED', paymentMethod: 'COD', createdAt: { lt: cutoff } }, select: { number: true }, take: 100 });
+    let cancelled = 0;
+    for (const { number } of stale) {
+      try {
+        await this.state.transition(number, 'CANCELLED', SYSTEM_ACTOR, { note: "We couldn't confirm this cash-on-delivery order in time, so the pieces were released. Message us on WhatsApp to order again." });
+        cancelled += 1;
+      } catch (err) {
+        this.logger.warn(`Could not release unconfirmed COD order ${number}: ${(err as Error).message}`);
       }
     }
     return cancelled;

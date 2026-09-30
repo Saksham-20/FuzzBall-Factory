@@ -29,6 +29,12 @@ export class ScheduledJobs {
     return this.runner.run('orders.sweep-unpaid', () => this.orders.expireUnpaidOrders());
   }
 
+  /** Releases the stock held by cash-on-delivery orders the maker never confirmed. */
+  @Cron(CronExpression.EVERY_HOUR)
+  expireUnconfirmedCod() {
+    return this.runner.run('orders.expire-cod', () => this.orders.expireUnconfirmedCod());
+  }
+
   /** Sends every refund that is due to Razorpay (queued after a failure, or left half-done by a crashed process). */
   @Cron(CronExpression.EVERY_MINUTE)
   processRefunds() {
