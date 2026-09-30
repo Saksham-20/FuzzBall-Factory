@@ -31,7 +31,7 @@ By default every function in `src/lib/api/*` runs against a sample database kept
 | `NEXT_PUBLIC_API_URL` | `http://localhost:4000` | where the API lives. Set it explicitly with the real API: `next.config.ts` only adds the API's host to the image allow-list when the variable is set, so uploaded photos break without it |
 | `NEXT_PUBLIC_SITE_URL` | `http://localhost:3000` | the site's own address, for canonical links, the sitemap and share images |
 | `NEXT_PUBLIC_WHATSAPP` | a placeholder number | the maker's WhatsApp number |
-| `LAUNCH_BUILD` | unset | build-time only. `true` also refuses a placeholder WhatsApp number (and, as it lands, unresolved legal stand-ins). Real-API builds always refuse localhost URLs |
+| `LAUNCH_BUILD` | unset | build-time only. `true` also refuses a placeholder WhatsApp number and any `PLACEHOLDER(id)` tag still in `src/` (accept one on purpose with `PLACEHOLDERS_ALLOWED=id1,id2`). Real-API builds always refuse localhost URLs |
 | `NEXT_DIST_DIR` | `.next` | the build output folder |
 | `NEXT_OUTPUT` | unset | `standalone` builds a self-contained server bundle, as the test server uses |
 

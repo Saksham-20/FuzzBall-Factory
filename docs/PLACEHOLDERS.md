@@ -8,6 +8,8 @@ Everything below is stand-in content. It is tagged three ways so nothing slips t
 
 Sample products additionally show a dashed **Sample** badge on their card.
 
+**Launch gate.** A build with `LAUNCH_BUILD=true` (and `NEXT_PUBLIC_USE_MOCK=false`, real URLs and WhatsApp number) scans `web/src` for `PLACEHOLDER(id)` tags and fails, listing each one, until they are resolved. To ship with a stand-in on purpose, name it: `PLACEHOLDERS_ALLOWED=instagram,size-chart`. Resolving a placeholder means removing its tag from the code along with the stand-in. (`web/src/lib/placeholders-scan.ts`, wired in `web/next.config.ts`.)
+
 | id | Where | What it is | Replace with |
 |---|---|---|---|
 | `catalogue` | `web/src/lib/mock/catalog.ts` | 15 sample products, 8 categories, prices, lead times, fibers, sizes | Real products via admin / API |

@@ -37,6 +37,7 @@ export default function AboutPage() {
               priority
             />
           </div>
+          {/* PLACEHOLDER(sample-photo): openly licensed stand-in, replace with the maker's own photo (docs/PLACEHOLDERS.md) */}
           <figcaption className="font-stencil mt-2 text-[12px] text-brown-soft">Sample photo. The maker&apos;s own pictures go here.</figcaption>
         </figure>
       }

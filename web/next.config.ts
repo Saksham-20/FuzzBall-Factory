@@ -1,6 +1,8 @@
+import { join } from "node:path";
 import type { NextConfig } from "next";
 import { PHASE_PRODUCTION_BUILD } from "next/constants";
 import { assertBuildEnv } from "./src/lib/build-env";
+import { assertNoPlaceholders } from "./src/lib/placeholders-scan";
 
 // Images uploaded through the real API (POST /uploads) are served from the API origin (local disk driver) or Cloudinary.
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
@@ -28,6 +30,10 @@ const nextConfig: NextConfig = {
 
 export default function config(phase: string): NextConfig {
   // Stop a production build that would ship the demo storefront or localhost links by accident (see build-env.ts).
-  if (phase === PHASE_PRODUCTION_BUILD) assertBuildEnv(process.env);
+  if (phase === PHASE_PRODUCTION_BUILD) {
+    assertBuildEnv(process.env);
+    // A launch build also refuses stand-in content that is still tagged (registry: docs/PLACEHOLDERS.md).
+    if (process.env.LAUNCH_BUILD === "true") assertNoPlaceholders(join(process.cwd(), "src"), process.env.PLACEHOLDERS_ALLOWED);
+  }
   return nextConfig;
 }

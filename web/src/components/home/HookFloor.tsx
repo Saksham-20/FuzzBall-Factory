@@ -137,6 +137,7 @@ export function HookFloor() {
                 className="object-cover"
               />
             </div>
+            {/* PLACEHOLDER(sample-photo): openly licensed stand-in, replace with the maker's own photo (docs/PLACEHOLDERS.md) */}
             <p className="px-1 pt-3 pb-1 text-sm text-brown">Sample photo. Your stitches go here.</p>
           </Ticket>
         </Reveal>

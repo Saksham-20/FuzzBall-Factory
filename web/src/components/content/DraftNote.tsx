@@ -1,12 +1,11 @@
 import { PenLine } from "lucide-react";
-import { SITE } from "@/lib/site";
 
 /**
- * PLACEHOLDER(policy-draft): this note only renders while the site runs on sample data
- * (NEXT_PUBLIC_USE_MOCK is not "false"). The policy text underneath still needs legal review.
+ * PLACEHOLDER(policy-draft): renders in every build (a real-API staging site must not look finished while the policy
+ * text is unreviewed). Resolving the tag means deleting this note once a lawyer has checked the pages; a launch build
+ * refuses to ship while the tag is still in the source (see placeholders-scan.ts).
  */
 export function DraftNote() {
-  if (!SITE.useMock) return null;
   return (
     <p
       data-placeholder="policy-draft"

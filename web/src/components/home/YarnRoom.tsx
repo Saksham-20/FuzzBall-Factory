@@ -34,6 +34,7 @@ export function YarnRoom() {
                 className="object-cover"
               />
             </div>
+            {/* PLACEHOLDER(sample-photo): openly licensed stand-in, replace with the maker's own photo (docs/PLACEHOLDERS.md) */}
             <p className="px-1 pt-3 pb-1 text-sm text-brown">Sample photo. Real yarn shots coming.</p>
           </Ticket>
         </Reveal>
