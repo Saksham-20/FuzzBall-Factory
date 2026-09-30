@@ -40,6 +40,9 @@ export interface PaidEvent {
   razorpayPaymentId: string;
 }
 
+/** Runs after the transaction that marked the Payment PAID has committed. */
+export type PaidListener = (event: PaidEvent) => Promise<void>;
+
 /** Runs inside the same DB transaction that marks the Payment PAID. Must be idempotent. */
 export type PaidHandler = (event: PaidEvent, tx: Prisma.TransactionClient) => Promise<void>;
 
@@ -53,6 +56,10 @@ export type PaidHandler = (event: PaidEvent, tx: Prisma.TransactionClient) => Pr
 export interface PaymentsPort {
   createPayment(input: CreatePaymentInput): Promise<CheckoutPayment>;
   registerPaidHandler(purpose: PaymentPurpose, handler: PaidHandler): void;
+  /** Post-commit hook (emails, automatic refunds). Errors are logged, never thrown. */
+  registerPaidListener(purpose: PaymentPurpose, listener: PaidListener): void;
+  /** `refunded` = rupees Razorpay confirmed, `pending` = rupees queued for retry. Throws when it can't even be attempted. */
+  refundPayment(paymentId: string, opts: { amount?: number; reason: string }): Promise<{ refunded: number; pending: number }>;
 }
 
 export const PAYMENTS_PORT = Symbol('PAYMENTS_PORT');

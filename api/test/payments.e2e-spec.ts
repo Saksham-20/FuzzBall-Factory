@@ -352,8 +352,13 @@ describe('Razorpay live mode (e2e, fake gateway)', () => {
     it('a second payment for an already-paid order is refunded, and the order stays paid', async () => {
       const agent = guest(t);
       const placed = (await agent.post('/orders').send(orderBody(`${TAG}-dup`, [{ productId: fx.productId, variantId: fx.variantId }])).expect(201)).body as { number: string; payment: { paymentId: string; razorpayOrderId: string; amountPaise: number } };
-      // Customer retried: a second Razorpay order exists for the same order (only possible while it was still unpaid).
-      const retry = (await agent.post(`/orders/${placed.number}/pay`).expect(200)).body as { paymentId: string; razorpayOrderId: string; amountPaise: number };
+      // Pressing "pay" again resumes the SAME Razorpay order (no stacking), so a duplicate can only come from outside:
+      // simulate a second, separate payment row for the same order.
+      const resumed = (await agent.post(`/orders/${placed.number}/pay`).expect(200)).body as { paymentId: string; razorpayOrderId: string };
+      expect(resumed).toMatchObject({ paymentId: placed.payment.paymentId, razorpayOrderId: placed.payment.razorpayOrderId });
+      const first = await paymentRow(placed.payment.paymentId);
+      const second = await t.prisma.payment.create({ data: { purpose: 'ORDER', amount: first.amount, orderId: first.orderId, razorpayOrderId: `order_${TAG}_dup2`, status: 'PENDING', method: 'RAZORPAY' } });
+      const retry = { paymentId: second.id, razorpayOrderId: second.razorpayOrderId!, amountPaise: placed.payment.amountPaise };
       await webhook(captured(placed.payment.razorpayOrderId, 'pay_dup_1', placed.payment.amountPaise)).res.expect(200);
       const before = g.calls.refunds.length;
       await webhook(captured(retry.razorpayOrderId, 'pay_dup_2', retry.amountPaise)).res.expect(200);

@@ -7,7 +7,7 @@ import type { RefundsService } from './refunds.service.js';
 
 const config = (env: Partial<Env>) => ({ get: (k: keyof Env) => env[k] }) as unknown as ConfigService<Env, true>;
 const gateway: RazorpayGateway = { createOrder: () => Promise.resolve({ id: 'order_x' }), refund: () => Promise.resolve({ id: 'rfnd_x', status: 'processed' }), listRefunds: () => Promise.resolve([]) };
-const make = (env: Partial<Env>, gw: RazorpayGateway | null) => new PaymentsService({} as PrismaService, config(env), gw, {} as RefundsService);
+const make = (env: Partial<Env>, gw: RazorpayGateway | null) => new PaymentsService({ payment: { findFirst: () => Promise.resolve(null) } } as unknown as PrismaService, config(env), gw, {} as RefundsService);
 
 describe('PaymentsService mode (the mock switch)', () => {
   it('is mock only when PAYMENTS_MODE=mock', () => {

@@ -40,10 +40,11 @@ export class CustomService implements OnModuleInit {
   onModuleInit(): void {
     this.payments.registerPaidHandler('DEPOSIT', (event, tx) => this.onDepositPaid(event, tx));
     this.payments.registerPaidHandler('BALANCE', (event, tx) => this.onBalancePaid(event, tx));
-    // PaymentsService also offers a post-commit hook: use it to send the email once the payment really committed.
-    const withListener = this.payments as PaymentsPort & { registerPaidListener?: (purpose: 'DEPOSIT' | 'BALANCE', l: (e: PaidEvent) => Promise<void>) => void };
-    this.hasCommitHook = typeof withListener.registerPaidListener === 'function';
-    withListener.registerPaidListener?.('DEPOSIT', (event) => this.flushPending(event));
+    // Post-commit hooks: send the email once the payment really committed, and refund money that can't be used.
+    this.hasCommitHook = true;
+    this.payments.registerPaidListener('DEPOSIT', (event) => this.flushPending(event));
+    this.payments.registerPaidListener('DEPOSIT', (event) => this.refundIfUnusable(event));
+    this.payments.registerPaidListener('BALANCE', (event) => this.refundIfUnusable(event));
   }
 
   /** Notices prepared inside the payments transaction, keyed by payment id, sent by the post-commit listener. */
@@ -287,6 +288,36 @@ export class CustomService implements OnModuleInit {
     if (!notice) return;
     if (this.hasCommitHook) this.pending.set(event.paymentId, notice);
     else this.state.dispatchWhenCommitted(notice);
+  }
+
+  /**
+   * Post-commit: money that arrived for a work order that can't use it is refunded automatically, like unusable order
+   * payments: a second payment of the same kind (a duplicate), or one for a work order that was cancelled, expired or
+   * declined meanwhile. The customer gets a message on the thread; a refund that can't be attempted is logged loudly.
+   */
+  private async refundIfUnusable(event: PaidEvent): Promise<void> {
+    if (!event.customRequestId) return;
+    const row = await this.prisma.customRequest.findUnique({ where: { id: event.customRequestId }, select: { id: true, number: true, status: true } });
+    const paid = await this.prisma.payment.findMany({
+      where: { requestId: event.customRequestId, purpose: event.purpose, status: 'PAID' },
+      orderBy: [{ paidAt: 'asc' }, { id: 'asc' }],
+      select: { id: true },
+    });
+    const duplicate = paid.length > 0 && paid[0].id !== event.paymentId;
+    const closed = !row || ['CANCELLED', 'EXPIRED', 'DECLINED'].includes(row.status);
+    if (!duplicate && !closed) return;
+    const why = duplicate ? 'A second payment arrived for this work order' : `The payment arrived after this work order was ${row!.status.toLowerCase()}`;
+    try {
+      const { refunded, pending } = await this.payments.refundPayment(event.paymentId, { reason: duplicate ? 'Duplicate payment' : `Paid after work order ${row?.status.toLowerCase() ?? 'was removed'}` });
+      this.logger.warn(`Payment ${event.paymentId} on ${row?.number ?? event.customRequestId} was unusable (${duplicate ? 'duplicate' : 'work order closed'}); refunded ₹${refunded} (₹${pending} queued)`);
+      if (row) {
+        await this.prisma.customMessage.create({
+          data: { requestId: row.id, author: 'maker', body: `${why}, so we've refunded it automatically. It reaches your original payment method in about 5-7 working days.` },
+        });
+      }
+    } catch (err) {
+      this.logger.error(`[NEEDS REVIEW] Payment ${event.paymentId} on ${row?.number ?? event.customRequestId} is unusable (${why}) and could not be refunded automatically: ${(err as Error).message}. Refund it from the admin.`);
+    }
   }
 
   private async onBalancePaid(event: PaidEvent, tx: Prisma.TransactionClient): Promise<void> {

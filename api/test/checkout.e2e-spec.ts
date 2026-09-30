@@ -130,7 +130,7 @@ describe('checkout flows (e2e, mock payments)', () => {
   });
 
   describe('failed payment, then retry', () => {
-    it('keeps the order payable: 402 on failure, pending + FAILED, then a fresh payment succeeds', async () => {
+    it('keeps the order payable: 402 on failure, pending + FAILED, then a retry resumes the same payment and succeeds', async () => {
       const agent = http();
       const placed = (await place(agent, 'retry', [{ productId: ready.productId, variantId: ready.variantId }]).expect(201)).body;
 
@@ -141,7 +141,7 @@ describe('checkout flows (e2e, mock payments)', () => {
 
       const retry = (await agent.post(`/orders/${placed.number}/pay`).expect(200)).body;
       expect(retry).toMatchObject({ mock: true, amountPaise: placed.total * 100 });
-      expect(retry.paymentId).not.toBe(placed.payment.paymentId);
+      expect(retry.paymentId).toBe(placed.payment.paymentId); // resumed, not stacked
       expect((await agent.get(`/orders/${placed.number}`)).body.paymentStatus).toBe('PENDING');
 
       await confirm(retry.paymentId, true).expect(200);

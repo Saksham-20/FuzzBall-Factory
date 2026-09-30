@@ -13,6 +13,7 @@ import { AdminCustomersService, type CustomerDetail, type CustomerRow } from './
 import { AdminDashboardService, type DashboardDto } from './admin-dashboard.service.js';
 import { AdminMaterialsService, type MaterialDto } from './admin-materials.service.js';
 import { AdminOrdersService, type AdminOrderDto, type PackingSlipDto } from './admin-orders.service.js';
+import { AdminPaymentsService, type AdminPaymentDto } from './admin-payments.service.js';
 import { AdminProductsService } from './admin-products.service.js';
 import { AdminReviewsService, type ReviewDto } from './admin-reviews.service.js';
 import { AdminSettingsService } from './admin-settings.service.js';
@@ -22,6 +23,7 @@ import { CategoryInputDto } from './dto/category.dto.js';
 import { CouponInputDto } from './dto/coupon.dto.js';
 import { MaterialInputDto, MaterialStockAdjustDto } from './dto/material.dto.js';
 import { OrderNotesDto, OrderStatusDto } from './dto/order.dto.js';
+import { PaymentListQuery, RefundDto } from './dto/payment.dto.js';
 import { ProductInputDto, ProductStatusDto } from './dto/product.dto.js';
 import { CustomerListQuery, CustomListQuery, OrderListQuery, ProductListQuery, ReviewListQuery } from './dto/query.dto.js';
 import { ReviewReplyDto, ReviewStatusDto, SettingsInputDto } from './dto/settings.dto.js';
@@ -319,6 +321,25 @@ export class AdminMaterialsController {
 }
 
 @Roles('admin')
+@Controller('admin/payments')
+export class AdminPaymentsController {
+  constructor(private readonly payments: AdminPaymentsService) {}
+
+  /** Payments (with refund jobs) of one order (`?order=FB-1001`) or work order (`?request=WO-001`). */
+  @Get()
+  list(@Query() q: PaymentListQuery): Promise<AdminPaymentDto[]> {
+    return this.payments.list(q);
+  }
+
+  /** Refund a captured payment by hand (whole remainder unless `amount`). Works for orders and for work-order deposit / balance. */
+  @HttpCode(200)
+  @Post(':id/refund')
+  refund(@CurrentUser() user: RequestUser, @Param('id') id: string, @Body() dto: RefundDto, @ClientIp() ip?: string): Promise<{ refunded: number; pending: number }> {
+    return this.payments.refund(ctx(user, ip), id, dto);
+  }
+}
+
+@Roles('admin')
 @Controller('admin/settings')
 export class AdminSettingsController {
   constructor(private readonly settings: AdminSettingsService) {}
@@ -344,5 +365,6 @@ export const ADMIN_CONTROLLERS = [
   AdminReviewsController,
   AdminCouponsController,
   AdminMaterialsController,
+  AdminPaymentsController,
   AdminSettingsController,
 ];

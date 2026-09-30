@@ -6,7 +6,7 @@ import { PrismaService } from '../prisma/prisma.service.js';
 import type { Prisma } from '../generated/prisma/client.js';
 import type { PaymentStatus } from '../generated/prisma/enums.js';
 import { AppException, badRequest, conflict, ErrorCode, notFound } from '../common/errors.js';
-import type { CheckoutPayment, CreatePaymentInput, PaidEvent, PaidHandler, PaymentPurpose, PaymentsPort } from './payments.types.js';
+import type { CheckoutPayment, CreatePaymentInput, PaidEvent, PaidHandler, PaidListener, PaymentPurpose, PaymentsPort } from './payments.types.js';
 import { RAZORPAY_GATEWAY, type RazorpayGateway } from './razorpay.gateway.js';
 import { verifyPaymentSignature, verifyWebhookSignature } from './razorpay-signature.util.js';
 import { markOrderRefundedIfUnpaid, RefundsService } from './refunds.service.js';
@@ -28,8 +28,6 @@ export interface PaymentResult {
   /** False when this call was the one that captured the payment; true for a replay (verify + webhook both arrived). */
   alreadyProcessed: boolean;
 }
-
-export type PaidListener = (event: PaidEvent) => Promise<void>;
 
 interface WebhookBody {
   event?: string;
@@ -128,6 +126,11 @@ export class PaymentsService implements PaymentsPort {
     const mode = this.mode;
     if (mode === 'disabled') throw new AppException(503, ErrorCode.PAYMENT_FAILED, "Online payments aren't available right now. Please try again later or message us on WhatsApp.");
 
+    // A customer who taps "pay" again (closed the window, retried after a failure) resumes the SAME Razorpay order instead of
+    // stacking up new ones: one Razorpay order can only be captured once, so a duplicate charge is impossible on this path.
+    const open = await this.findOpenPayment(input, mode);
+    if (open) return open;
+
     const receipt = input.receipt.slice(0, 40);
     let razorpayOrderId: string;
     if (mode === 'live') {
@@ -158,6 +161,26 @@ export class PaymentsService implements PaymentsPort {
       },
     });
     return { paymentId: row.id, razorpayOrderId, keyId: mode === 'live' ? (this.keyId as string) : MOCK_KEY_ID, amountPaise: paise(input.amount), currency: 'INR', mock: mode === 'mock' };
+  }
+
+  /** An unpaid (pending or failed) payment for the same owner, purpose and amount, in the current mode. */
+  private async findOpenPayment(input: CreatePaymentInput, mode: PaymentMode): Promise<CheckoutPayment | null> {
+    const row = await this.prisma.payment.findFirst({
+      where: {
+        purpose: input.purpose,
+        status: { in: ['PENDING', 'FAILED'] },
+        amount: input.amount,
+        razorpayOrderId: { not: null },
+        ...(input.purpose === 'ORDER' ? { orderId: input.orderId } : { requestId: input.customRequestId }),
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+    if (!row?.razorpayOrderId) return null;
+    const isMock = row.razorpayOrderId.startsWith(MOCK_ORDER_PREFIX);
+    if (isMock !== (mode === 'mock')) return null; // the mode changed since it was created
+    // Razorpay lets the customer retry on the same order after a failed attempt: a new attempt starts from PENDING again.
+    if (row.status === 'FAILED') await this.prisma.payment.updateMany({ where: { id: row.id, status: 'FAILED' }, data: { status: 'PENDING', failureReason: null } });
+    return { paymentId: row.id, razorpayOrderId: row.razorpayOrderId, keyId: mode === 'live' ? (this.keyId as string) : MOCK_KEY_ID, amountPaise: paise(row.amount), currency: 'INR', mock: mode === 'mock' };
   }
 
   // ───────────── verify (checkout callback) ─────────────
