@@ -7,6 +7,12 @@
 //  - Public identifiers: Order.number ("FB-1001"), CustomRequest.number ("WO-001"),
 //    Product.slug. Internal ids are cuids.
 //  - Numbers come from the Counter table (see src/common/numbering.service.ts).
+//  - Constraints Prisma cannot model live in raw SQL migrations, so `prisma migrate dev` will not show them and a
+//    careless schema edit could drop them. Keep this list in step with migration 20260930140000_integrity_constraints:
+//      CHECK   ProductVariant.stock >= 0, OrderItem.qty > 0, Payment.amount > 0, Payment.refundedAmount <= amount,
+//              Payment.refundReserved <= amount, Quote.price > 0, CustomRequest.budgetMax >= budgetMin, Review.rating 1..5,
+//              Coupon percent <= 100, Order money columns >= 0 (full list in the migration).
+//      UNIQUE  Quote(requestId) WHERE status = 'ACCEPTED': one accepted quote per work order.
 
 generator client {
   provider     = "prisma-client"
@@ -489,6 +495,7 @@ model OrderItem {
 
   @@index([orderId])
   @@index([productId])
+  @@index([variantId])
 }
 
 /// Timeline entry. `status` is a free string so non-status notes can be recorded too.
@@ -553,6 +560,7 @@ model CustomRequest {
 
   @@index([userId, createdAt])
   @@index([status, createdAt])
+  @@index([baseProductId])
 }
 
 /// Customer reference images.
@@ -656,6 +664,7 @@ model Payment {
   @@index([orderId])
   @@index([requestId, purpose])
   @@index([status])
+  @@index([quoteId])
 }
 
 enum RefundStatus {
@@ -778,6 +787,7 @@ model Review {
 
   @@unique([userId, productId])
   @@index([productId, status])
+  @@index([orderId])
 }
 
 model Coupon {
@@ -815,6 +825,7 @@ model CouponRedemption {
   user   User?  @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@unique([couponId, orderId])
+  @@index([orderId])
   @@index([couponId])
   @@index([userId, couponId])
 }
