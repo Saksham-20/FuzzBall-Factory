@@ -42,7 +42,9 @@
     ".next-vps/types/**/*.ts",
     ".next-vps/dev/types/**/*.ts",
     ".next-real/types/**/*.ts",
-    ".next-real/dev/types/**/*.ts"
+    ".next-real/dev/types/**/*.ts",
+    ".next-verify2/types/**/*.ts",
+    ".next-verify2/dev/types/**/*.ts"
   ],
   "exclude": [
     "node_modules"

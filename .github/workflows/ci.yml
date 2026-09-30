@@ -72,6 +72,15 @@ jobs:
         env:
           # Mock-mode build: the storefront's production build must state its mode explicitly.
           NEXT_PUBLIC_USE_MOCK: 'true'
+      - name: real-API build carries no sample logins
+        run: |
+          npx next build
+          npm run check:real-bundle -- .next-real
+        env:
+          NEXT_PUBLIC_USE_MOCK: 'false'
+          NEXT_PUBLIC_API_URL: https://api.example.com
+          NEXT_PUBLIC_SITE_URL: https://shop.example.com
+          NEXT_DIST_DIR: .next-real
 
   security:
     name: security (audit, secret scan)

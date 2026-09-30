@@ -11,7 +11,6 @@ import { Checkbox, Field, Input } from "@/components/ui/Field";
 import { PasswordInput } from "@/components/account/PasswordInput";
 import { FormError, GuestOnly, applyApiError, destinationFor } from "@/components/account/auth/authUtils";
 import { useAuth } from "@/lib/state/AuthContext";
-import { SITE } from "@/lib/site";
 
 const schema = z.object({
   identifier: z.string().trim().min(1, "Enter the email or phone number you signed up with."),
@@ -72,8 +71,9 @@ export function LoginForm({ next }: { next?: string }) {
         </Link>
       </p>
 
-      {/* PLACEHOLDER(mock-logins): dev-only hint, disappears when NEXT_PUBLIC_USE_MOCK=false. */}
-      {SITE.useMock ? (
+      {/* PLACEHOLDER(mock-logins): dev-only hint. It tests the env var directly (not SITE.useMock) so a real-API
+          build folds the condition away and the sample password never reaches the bundle (scripts/check-real-bundle.mjs). */}
+      {process.env.NEXT_PUBLIC_USE_MOCK !== "false" ? (
         <p data-placeholder="mock-logins" className="relative mt-8 rounded-[12px] border border-dashed border-line-strong px-4 py-3 text-sm text-brown">
           Sample logins: <span className="font-semibold">maya@example.com</span> / <span className="font-semibold">admin@fuzzball.test</span>, password <span className="font-semibold">fuzzball123</span>
         </p>
