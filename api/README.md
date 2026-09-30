@@ -54,6 +54,8 @@ Reset the local database completely: `npx prisma migrate reset` (drops, re-migra
 
 ## Operations
 
+- **Install on a server:** `npm ci --omit=dev`. The Prisma CLI is a dev dependency (migrations run from CI or a laptop through a tunnel, never on the box); `scripts/postinstall.mjs` only generates the client where the CLI exists, and the build compiles the client into `dist/`. Two transitive packages of the CLI (`mysql2`, `deepmerge-ts`) are pinned to patched versions through `overrides` in `package.json`.
+
 - **Health:** `GET /health/live` (process up) and `GET /health/ready` (database reachable, every migration finished, 503 once shutdown begins). Point uptime monitors and deploy gates at `ready`.
 - **Logs:** one JSON line per request (pino) with `req.id`; send `x-request-id` from nginx and it is kept, otherwise one is minted and echoed in the response header. Authorization, cookies, the Razorpay signature and query strings are never logged. `LOG_LEVEL` overrides the default.
 - **Errors:** set `SENTRY_DSN` to send unexpected 500s, job crashes, failed or stuck refunds and payment amount mismatches (tag `area`: `http`, `jobs`, `refunds`, `payments`, `boot`). Request bodies, cookies and headers are stripped before sending.
