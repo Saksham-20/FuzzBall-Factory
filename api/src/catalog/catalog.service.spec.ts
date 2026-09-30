@@ -52,7 +52,7 @@ describe('sortProducts', () => {
 describe('toProductDto (web Product shape)', () => {
   it('nests images/swatches/variants, maps the category to its slug, omits null/absent optionals', () => {
     const dto = toProductDto(p('rosie', { tags: ['bear'], sample: true, compareAtPrice: 700 }, [4]));
-    expect(dto).toMatchObject({ id: 'rosie', category: 'plushies', compareAtPrice: 700, sample: true, images: [{ src: '/a.jpg', alt: 'A' }], swatches: [{ name: 'Cream', hex: '#fff' }], variants: [{ id: 'rosie-0', colour: 'Cream', priceDelta: 0, stock: 4 }], createdAt: '2026-01-01T00:00:00.000Z' });
+    expect(dto).toMatchObject({ id: 'rosie', category: 'plushies', compareAtPrice: 700, sample: true, images: [{ src: '/a.jpg', alt: 'A' }], swatches: [{ name: 'Cream', hex: '#fff' }], variants: [{ id: 'rosie-0', colour: 'Cream', priceDelta: 0, stock: 4 }], createdAt: '2026-01-01T00:00:00.000Z', updatedAt: expect.any(String) });
     expect(dto.variants[0]).not.toHaveProperty('size');
     expect(dto).not.toHaveProperty('rating');
     expect(toProductDto(p('plain'))).not.toHaveProperty('compareAtPrice');
@@ -69,6 +69,6 @@ describe('toProductDto (web Product shape)', () => {
   });
 
   it('never leaks internal columns', () => {
-    expect(JSON.stringify(toProductDto(p('x')))).not.toMatch(/sku|seoTitle|updatedAt|ratingAverage|categoryId/);
+    expect(JSON.stringify(toProductDto(p('x')))).not.toMatch(/sku|seoTitle|ratingAverage|categoryId/);
   });
 });

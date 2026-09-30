@@ -58,6 +58,8 @@ export interface Product {
   sample?: boolean;
   rating?: { average: number; count: number };
   createdAt: string;
+  /** Last change by the maker; only the real API sets it (feeds the sitemap). */
+  updatedAt?: string;
 }
 
 export interface CartLine {

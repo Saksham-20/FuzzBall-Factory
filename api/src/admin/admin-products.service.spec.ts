@@ -71,7 +71,7 @@ function harness(existing?: { id: string; slug: string; variants: { id: string; 
     void args;
     return result;
   };
-  const productRow = { id: 'p1', batch: 16, slug: 'rosie-the-bear', name: 'Rosie the Bear', tagline: '', description: '', category: { slug: 'plushies' }, price: 1450, compareAtPrice: null, fulfilment: 'MADE_TO_ORDER', leadTimeDays: 7, fiber: '', sizeCm: '', weightG: 0, care: [], images: [], swatches: [], variants: [], isOneOfAKind: false, customizable: true, giftable: true, occasions: [], tags: [], status: 'DRAFT', sample: false, ratingAverage: 0, ratingCount: 0, createdAt: new Date() };
+  const productRow = { id: 'p1', batch: 16, slug: 'rosie-the-bear', name: 'Rosie the Bear', tagline: '', description: '', category: { slug: 'plushies' }, price: 1450, compareAtPrice: null, fulfilment: 'MADE_TO_ORDER', leadTimeDays: 7, fiber: '', sizeCm: '', weightG: 0, care: [], images: [], swatches: [], variants: [], isOneOfAKind: false, customizable: true, giftable: true, occasions: [], tags: [], status: 'DRAFT', sample: false, ratingAverage: 0, ratingCount: 0, createdAt: new Date(), updatedAt: new Date() };
   const tx = {
     category: { findUnique: rec('category.findUnique', { id: 'c1' }) },
     product: {

@@ -30,6 +30,8 @@ export interface ProductDto {
   sample?: boolean;
   rating?: { average: number; count: number };
   createdAt: string;
+  /** Last time the maker changed the piece (feeds the sitemap's lastmod). */
+  updatedAt: string;
 }
 
 export interface CategoryDto {
@@ -89,6 +91,7 @@ export const toProductDto = (p: ProductRow): ProductDto => ({
   ...(p.sample ? { sample: true } : {}),
   ...(p.ratingCount > 0 ? { rating: { average: Math.round(p.ratingAverage * 10) / 10, count: p.ratingCount } } : {}),
   createdAt: p.createdAt.toISOString(),
+  updatedAt: p.updatedAt.toISOString(),
 });
 
 export const toCategoryDto = (c: Category): CategoryDto => ({ slug: c.slug, name: c.name, word: c.word, blurb: c.blurb, image: c.image });
