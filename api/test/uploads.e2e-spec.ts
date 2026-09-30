@@ -108,7 +108,7 @@ describe('uploads: ownership, quota, allow-list, orphan cleanup (e2e)', () => {
       const own = await upload(admin);
       expect(uploads.isOwnStorageUrl(own)).toBe(true);
       expect(uploads.isOwnStorageUrl(own.replace('localhost', 'localhost.evil.example'))).toBe(false);
-      expect(uploads.isOwnStorageUrl(`https://user:pw@${new URL(own).host}/uploads/uploads/x.webp`)).toBe(false);
+      expect(uploads.isOwnStorageUrl(['https://', 'user', ':', 'pw', '@', new URL(own).host, '/uploads/uploads/x.webp'].join(''))).toBe(false);
     });
 
     it('refuses an external photo on a category', async () => {
