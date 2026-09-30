@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { cn } from "@/lib/cn";
 
 interface Props {
@@ -11,9 +12,12 @@ interface Props {
 /** The maker's own wordmark (public/brand/logo-wordmark*.png): FuzzBall Factory, with the yarn-and-hook heart above it. */
 export function LogoMark({ className, invert, full }: Props) {
   const img = (
-    // eslint-disable-next-line @next/next/no-img-element -- small inline mark used at many fixed sizes; next/image adds no benefit here.
-    <img
+    // The PNGs are 350px wide but shown under 100px: next/image serves a right-sized WebP/AVIF instead.
+    <Image
       src={full ? "/brand/logo-wordmark-full.png" : "/brand/logo-wordmark.png"}
+      width={350}
+      height={full ? 240 : 200}
+      sizes="96px"
       alt="FuzzBall Factory, handmade with love"
       className={cn("w-auto object-contain", full ? "h-16" : "h-12")}
     />
@@ -27,7 +31,13 @@ export function LogoMark({ className, invert, full }: Props) {
 /** The maker's own circular FF mark (public/brand/logo-mark-circle.png), used as the sticker/favicon/small badge. */
 export function FFMonogram({ className }: { className?: string }) {
   return (
-    // eslint-disable-next-line @next/next/no-img-element -- small inline mark used at many fixed sizes; next/image adds no benefit here.
-    <img src="/brand/logo-mark-circle.png" alt="FuzzBall Factory" className={cn("size-9 rounded-full object-contain", className)} />
+    <Image
+      src="/brand/logo-mark-circle.png"
+      width={270}
+      height={255}
+      sizes="72px"
+      alt="FuzzBall Factory"
+      className={cn("size-9 rounded-full object-contain", className)}
+    />
   );
 }

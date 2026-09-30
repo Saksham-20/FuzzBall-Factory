@@ -8,6 +8,7 @@ import { securityHeaders } from "./src/lib/security-headers";
 // Images uploaded through the real API (POST /uploads) are served from the API origin (local disk driver) or Cloudinary.
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 const api = apiUrl ? new URL(apiUrl) : null;
+const cloudinaryCloud = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD;
 const local = !!api && ["localhost", "127.0.0.1"].includes(api.hostname);
 
 // Real-API builds must not carry the sample database (seeded logins and passwords): swap it for a stub at bundle time.
@@ -24,9 +25,16 @@ const nextConfig: NextConfig = {
   ...(process.env.NEXT_OUTPUT === "standalone" ? { output: "standalone" as const } : {}),
   ...(realApiBuild ? { turbopack: { resolveAlias: { "@/lib/mock/db": "./src/lib/mock/db.real.ts" } } } : {}),
   images: {
+    // Cloudinary pictures are transformed by Cloudinary (see image-loader.ts); the rest go through Next's optimiser.
+    loaderFile: "./src/lib/image-loader.ts",
+    formats: ["image/avif", "image/webp"],
+    // Optimised copies are kept a day, not a minute: the source images change rarely and re-encoding costs CPU.
+    minimumCacheTTL: 86_400,
     remotePatterns: [
       ...(api ? [{ protocol: api.protocol.replace(":", "") as "http" | "https", hostname: api.hostname, port: api.port }] : []),
-      { protocol: "https", hostname: "res.cloudinary.com" },
+      // Only the maker's own cloud when its name is known (NEXT_PUBLIC_CLOUDINARY_CLOUD), so the optimiser cannot be
+      // pointed at anyone else's account.
+      { protocol: "https", hostname: "res.cloudinary.com", ...(cloudinaryCloud ? { pathname: `/${cloudinaryCloud}/**` } : {}) },
     ],
     // Next refuses to optimise images from a loopback host unless told otherwise; only do it for a local dev API.
     ...(local ? { dangerouslyAllowLocalIP: true } : {}),
