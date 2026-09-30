@@ -8,6 +8,7 @@ import { addDays, depositAmount, priceFromBreakdown, rupees, scaleBreakdown } fr
 import type { QuoteInputDto } from '../custom/dto/custom.dto.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { SettingsService } from '../settings/settings.service.js';
+import { UploadsService } from '../uploads/uploads.service.js';
 import { AuditService } from './audit.service.js';
 import type { AdminMessageDto, ApprovalRequestDto, DeclineCustomDto, ProgressDto, ShipCustomDto } from './dto/admin-custom.dto.js';
 
@@ -26,6 +27,7 @@ export class AdminCustomService {
     private readonly state: CustomStateService,
     private readonly settings: SettingsService,
     private readonly audit: AuditService,
+    private readonly uploads: UploadsService,
   ) {}
 
   async list(status?: string): Promise<CustomRequestDto[]> {
@@ -124,6 +126,7 @@ export class AdminCustomService {
   }
 
   async message(ctx: AdminCtx, number: string, dto: AdminMessageDto): Promise<CustomRequestDto> {
+    this.uploads.assertOwnStorage(dto.attachments ?? [], 'attachments');
     const row = await this.load(number);
     await this.prisma.$transaction(async (tx) => {
       await tx.customMessage.create({ data: { requestId: row.id, author: 'maker', body: dto.body, attachments: dto.attachments ?? [] } });
@@ -134,6 +137,7 @@ export class AdminCustomService {
 
   /** A progress note/photo on the timeline. Only once the deposit is in; the first one starts the work. */
   async addProgress(ctx: AdminCtx, number: string, dto: ProgressDto): Promise<CustomRequestDto> {
+    this.uploads.assertOwnStorage([dto.photo], 'photo');
     const row = await this.load(number);
     if (row.status !== 'IN_QUEUE' && row.status !== 'IN_PROGRESS') throw badRequest('Progress can be added once the deposit has been paid.');
     await this.state.withTransaction(async (tx, collect) => {
@@ -148,6 +152,7 @@ export class AdminCustomService {
   }
 
   async requestApproval(ctx: AdminCtx, number: string, dto: ApprovalRequestDto): Promise<CustomRequestDto> {
+    this.uploads.assertOwnStorage([dto.photo], 'photo');
     const row = await this.load(number);
     if (row.status !== 'IN_PROGRESS') throw badRequest('Only pieces in progress can be sent for approval.');
     await this.state.withTransaction(async (tx, collect) => {

@@ -6,6 +6,7 @@ import { IdempotencyService } from '../common/idempotency/idempotency.service.js
 import { OrdersService } from '../orders/orders.service.js';
 import { RefundsService } from '../payments/refunds.service.js';
 import { JobRunner } from './job-runner.service.js';
+import { UploadsService } from '../uploads/uploads.service.js';
 import { RetentionService } from './retention.service.js';
 
 /** Every recurring job in one place. Each tick goes through `JobRunner` (one at a time, logged, never throws). */
@@ -19,6 +20,7 @@ export class ScheduledJobs {
     private readonly quotes: QuoteExpiryService,
     private readonly retention: RetentionService,
     private readonly emails: EmailOutboxService,
+    private readonly uploads: UploadsService,
   ) {}
 
   /** Releases stock held by online orders nobody paid within the payment window. */
@@ -79,5 +81,11 @@ export class ScheduledJobs {
   @Cron('35 3 * * *')
   purgeAuthThrottle() {
     return this.runner.run('auth.purge-throttle', () => this.retention.purgeAuthThrottle());
+  }
+
+  /** Deletes uploaded images nobody attached to anything within a week (file and record). */
+  @Cron('20 4 * * *')
+  purgeOrphanUploads() {
+    return this.runner.run('uploads.purge-orphans', () => this.uploads.purgeOrphans());
   }
 }

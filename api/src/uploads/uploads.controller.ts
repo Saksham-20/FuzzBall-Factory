@@ -3,7 +3,9 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { SkipThrottle, Throttle } from '@nestjs/throttler';
 import type { Response } from 'express';
 import { join } from 'node:path';
+import { CurrentUser } from '../common/decorators/current-user.decorator.js';
 import { Public } from '../common/decorators/public.decorator.js';
+import type { RequestUser } from '../common/types/auth.types.js';
 import { badRequest, ErrorCode } from '../common/errors.js';
 import { MAX_UPLOAD_BYTES } from './image.pipeline.js';
 import type { LocalDiskDriver } from './storage/local.driver.js';
@@ -43,9 +45,12 @@ export class UploadsController {
       },
     }),
   )
-  async upload(@UploadedFile() file: UploadedImage | undefined): Promise<UploadResult> {
+  async upload(@CurrentUser() user: RequestUser, @UploadedFile() file: UploadedImage | undefined): Promise<UploadResult> {
     if (!file) throw badRequest('Choose an image to upload.', { file: 'Required' });
-    return this.uploads.uploadImage(file, { folder: 'uploads' });
+    await this.uploads.assertQuota(user);
+    const stored = await this.uploads.uploadImage(file, { folder: 'uploads' });
+    await this.uploads.record(user, stored);
+    return { url: stored.url };
   }
 
   /**

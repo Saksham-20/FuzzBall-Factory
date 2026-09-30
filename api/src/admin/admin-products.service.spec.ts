@@ -96,7 +96,7 @@ function harness(existing?: { id: string; slug: string; variants: { id: string; 
     },
   };
   const audit = { log: async (entry: unknown, db: unknown) => { calls.push(db === tx ? 'audit(tx)' : 'audit(ROOT)'); void entry; } };
-  const svc = new AdminProductsService(prisma as never, audit as never);
+  const svc = new AdminProductsService(prisma as never, audit as never, { assertOwnStorage: () => undefined } as never);
   return { svc, calls, tx, transactions: () => transactions };
 }
 

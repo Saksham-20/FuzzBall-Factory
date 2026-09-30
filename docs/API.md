@@ -408,3 +408,11 @@ Counters older than a day are deleted by the scheduler.
 
 - Access and refresh JWTs are HS256 only, carry issuer `fuzzball-api` and audience `fuzzball-access` / `fuzzball-refresh`, and are verified against all three, so a token of one kind (or minted elsewhere, or unsigned) is refused by the other. Deploying this signs everyone out once.
 - Every `POST`/`PUT`/`PATCH`/`DELETE` that carries an `Origin` header must name one of `WEB_ORIGIN`, else `403 FORBIDDEN`. Requests without an `Origin` (the Razorpay webhook, curl, monitors) pass; reads are never checked.
+
+## Uploads
+
+`POST /uploads` records each image (`Upload`: who, url, storage key). A customer may upload 40 images a day (429 after that); the maker is not limited and their uploads count as in use.
+
+- **Work orders:** `references` (on create) and message `attachments` must be images the same customer uploaded, else 400 with `fields.references` / `fields.attachments`. Using an image marks it attached.
+- **Maker fields** (product and category photos, progress and approval photos, message attachments) must point into our own storage: `/uploads/...`, the configured `API_PUBLIC_URL`'s `/uploads/`, or our Cloudinary cloud (development also allows `/samples/` and `/brand/`). Anything else is 400.
+- **Orphans:** a customer image nobody attached within 7 days is deleted (file and record) by the scheduler.

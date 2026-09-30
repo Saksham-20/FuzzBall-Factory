@@ -1,3 +1,4 @@
+import { UploadsService } from '../uploads/uploads.service.js';
 import { Injectable } from '@nestjs/common';
 import { conflict, notFound, validationFailed } from '../common/errors.js';
 import { toCategoryDto, type CategoryDto } from '../catalog/product.mapper.js';
@@ -11,6 +12,7 @@ export class AdminCategoriesService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly audit: AuditService,
+    private readonly uploads: UploadsService,
   ) {}
 
   async list(): Promise<CategoryDto[]> {
@@ -20,6 +22,7 @@ export class AdminCategoriesService {
 
   /** Strict create: 409 when the slug is taken. */
   async create(ctx: AdminCtx, dto: CategoryInputDto): Promise<CategoryDto> {
+    this.uploads.assertOwnStorage([dto.image], 'image');
     return this.prisma.$transaction(async (tx) => {
       if (await tx.category.findUnique({ where: { slug: dto.slug }, select: { id: true } })) throw conflict('A category with that slug already exists.', { slug: 'Already used' });
       const last = await tx.category.aggregate({ _max: { sortOrder: true } });
@@ -57,6 +60,7 @@ export class AdminCategoriesService {
   }
 
   private data(dto: CategoryInputDto) {
+    this.uploads.assertOwnStorage([dto.image], 'image');
     return { name: dto.name, word: dto.word, blurb: dto.blurb, image: dto.image };
   }
 }

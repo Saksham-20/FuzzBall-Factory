@@ -3,6 +3,7 @@ import { CustomModule } from '../custom/custom.module.js';
 import { OrdersModule } from '../orders/orders.module.js';
 import { PaymentsModule } from '../payments/payments.module.js';
 import { SettingsModule } from '../settings/settings.module.js';
+import { UploadsModule } from '../uploads/uploads.module.js';
 import { AdminAuditService } from './admin-audit.service.js';
 import { AdminCategoriesService } from './admin-categories.service.js';
 import { AdminCouponsService } from './admin-coupons.service.js';
@@ -21,7 +22,7 @@ import { AuditService } from './audit.service.js';
 
 /** Thin admin API over the domain services. Every route is `@Roles('admin')` and every write is audited. */
 @Module({
-  imports: [CustomModule, OrdersModule, PaymentsModule, SettingsModule],
+  imports: [CustomModule, OrdersModule, PaymentsModule, SettingsModule, UploadsModule],
   controllers: ADMIN_CONTROLLERS,
   providers: [
     AuditService,

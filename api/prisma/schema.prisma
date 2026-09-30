@@ -142,6 +142,7 @@ model User {
   refreshTokens     RefreshToken[]
   passwordResets    PasswordResetToken[]
   emailTokens       EmailToken[]
+  uploads           Upload[]
   addresses         Address[]
   cart              Cart?
   wishlist          WishlistItem[]
@@ -187,6 +188,26 @@ model PasswordResetToken {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+}
+
+/// One row per image we stored. Ties a file to who uploaded it (so a customer can only attach their own photos to a
+/// work order), rate-limits uploading, and lets the scheduler delete files nobody ever used.
+model Upload {
+  id         String    @id @default(cuid())
+  /// Kept (as null) when the uploader's account goes away: attached files stay, the rest are swept.
+  userId     String?
+  /// Absolute URL as returned to the browser.
+  url        String    @unique
+  /// Driver key (Cloudinary public id, or the relative path on disk); what deletion needs.
+  key        String
+  /// Set when the file is used (a work-order reference or message, or an admin upload). Never set = an orphan.
+  attachedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
+  @@index([attachedAt, createdAt])
 }
 
 /// Persistent guess counters (per account login, per order tracked), kept in Postgres so a restart cannot reset them.

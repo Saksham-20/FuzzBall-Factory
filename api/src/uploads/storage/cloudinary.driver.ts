@@ -12,6 +12,10 @@ export class CloudinaryDriver implements StorageDriver {
     cloudinary.config({ cloud_name: u.hostname, api_key: decodeURIComponent(u.username), api_secret: decodeURIComponent(u.password), secure: true, timeout: 30_000 });
   }
 
+  async remove(key: string): Promise<void> {
+    await cloudinary.uploader.destroy(key, { resource_type: 'image' });
+  }
+
   save(input: { buffer: Buffer; contentType: string; extension: string; folder: string }): Promise<StoredFile> {
     if (!FOLDER_PATTERN.test(input.folder)) return Promise.reject(new Error(`Invalid upload folder "${input.folder}"`));
     return new Promise((resolve, reject) => {

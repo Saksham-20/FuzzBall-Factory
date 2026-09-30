@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, rm, writeFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { FOLDER_PATTERN, type StorageDriver, type StoredFile } from './storage.driver.js';
 
@@ -22,5 +22,11 @@ export class LocalDiskDriver implements StorageDriver {
     await mkdir(join(this.dir, input.folder), { recursive: true });
     await writeFile(join(this.dir, key), input.buffer, { flag: 'wx' });
     return { key, url: `${this.publicBaseUrl.replace(/\/$/, '')}/uploads/${key}` };
+  }
+
+  async remove(key: string): Promise<void> {
+    // Keys come from our own table, but never trust a path: only `<folder>/<uuid>.<ext>` inside the uploads dir.
+    if (!/^[a-z0-9][a-z0-9-]{0,39}\/[a-f0-9-]{36}\.[a-z0-9]+$/.test(key)) return;
+    await rm(join(this.dir, key), { force: true });
   }
 }

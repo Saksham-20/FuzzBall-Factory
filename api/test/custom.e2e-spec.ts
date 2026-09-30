@@ -57,6 +57,8 @@ describe('custom work orders (e2e)', () => {
     app = t.app;
     category = (await t.prisma.category.findFirstOrThrow()).slug;
     [maya, other, admin] = [await makeUser(t, 'customer', 'maya'), await makeUser(t, 'customer', 'other'), await makeUser(t, 'admin', 'admin')];
+    // References must be photos the customer uploaded through the app.
+    await t.prisma.upload.upsert({ where: { url: '/uploads/ref-1.jpg' }, create: { userId: maya.id, url: '/uploads/ref-1.jpg', key: 'uploads/ref-1.jpg' }, update: { userId: maya.id, attachedAt: null } });
   });
 
   afterAll(async () => {

@@ -1,3 +1,4 @@
+import { UploadsService } from '../uploads/uploads.service.js';
 import { Inject, Injectable, Logger, type OnModuleInit } from '@nestjs/common';
 import { AppException, badRequest, notFound, validationFailed } from '../common/errors.js';
 import type { RequestUser } from '../common/types/auth.types.js';
@@ -34,6 +35,7 @@ export class CustomService implements OnModuleInit {
     private readonly expiry: QuoteExpiryService,
     private readonly numbering: NumberingService,
     private readonly notifications: NotificationsService,
+    private readonly uploads: UploadsService,
     @Inject(PAYMENTS_PORT) private readonly payments: PaymentsPort,
   ) {}
 
@@ -105,6 +107,7 @@ export class CustomService implements OnModuleInit {
       fields.baseProductSlug = 'Only used when customising a piece from the shelf.';
     }
     if (Object.keys(fields).length > 0) throw validationFailed(fields);
+    await this.uploads.assertOwned(account.id, dto.references, 'references');
 
     const now = new Date();
     const created = await this.prisma.$transaction(async (tx) => {
@@ -145,6 +148,7 @@ export class CustomService implements OnModuleInit {
       title: created.title,
       url: this.state.webUrl(`/account/custom/${created.number}`),
     });
+    await this.uploads.markAttached(dto.references);
     return toCustomRequestDto(created);
   }
 
@@ -152,6 +156,8 @@ export class CustomService implements OnModuleInit {
 
   async addMessage(user: RequestUser, number: string, dto: MessageDto): Promise<CustomRequestDto> {
     const row = await this.load(number, user);
+    await this.uploads.assertOwned(user.userId, dto.attachments ?? [], 'attachments');
+    await this.uploads.markAttached(dto.attachments ?? []);
     await this.prisma.customMessage.create({ data: { requestId: row.id, author: 'customer', body: dto.body, attachments: dto.attachments ?? [] } });
     return this.reload(row.id);
   }

@@ -1,3 +1,4 @@
+import { UploadsService } from '../uploads/uploads.service.js';
 import { Injectable } from '@nestjs/common';
 import { conflict, notFound, validationFailed, type FieldErrors } from '../common/errors.js';
 import type { Prisma } from '../generated/prisma/client.js';
@@ -46,6 +47,7 @@ export class AdminProductsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly audit: AuditService,
+    private readonly uploads: UploadsService,
   ) {}
 
   async list(q?: string, status?: string): Promise<ProductDto[]> {
@@ -70,6 +72,7 @@ export class AdminProductsService {
   }
 
   async create(ctx: AdminCtx, dto: ProductInputDto): Promise<ProductDto> {
+    this.uploads.assertOwnStorage(dto.images.map((i) => i.src), 'images');
     const fields = checkProductInput(dto);
     const slug = dto.slug ?? slugify(dto.name);
     if (!slug) fields.name = 'Use letters or numbers in the name';
@@ -97,6 +100,7 @@ export class AdminProductsService {
   }
 
   async update(ctx: AdminCtx, id: string, dto: ProductInputDto): Promise<ProductDto> {
+    this.uploads.assertOwnStorage(dto.images.map((i) => i.src), 'images');
     const fields = checkProductInput(dto);
     if (Object.keys(fields).length > 0) throw validationFailed(fields);
 

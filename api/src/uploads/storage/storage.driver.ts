@@ -11,6 +11,8 @@ export interface StoredFile {
 
 export interface StorageDriver {
   readonly name: 'cloudinary' | 'local';
+  /** Deletes a stored file by its driver key. Missing files are not an error. */
+  remove(key: string): Promise<void>;
   save(input: { buffer: Buffer; contentType: string; extension: string; folder: string }): Promise<StoredFile>;
 }
 
