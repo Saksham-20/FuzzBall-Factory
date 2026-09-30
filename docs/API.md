@@ -394,3 +394,12 @@ Signup sends a confirm link (`auth.verify_email`, 24 h). Unverified accounts can
 An unverified account with no orders, work orders, reviews or addresses does not block its address: the next signup with that email takes it over (new name, password and phone, every old session revoked). A verified account, or one with history, answers `EMAIL_TAKEN`; its owner logs in or resets the password. Guest orders are never linked to an account by email.
 
 `PATCH /account/profile` no longer accepts a different `email`; a phone change needs `currentPassword` and a verified email.
+
+## Guess limits
+
+On top of the per-IP request limiter (5 per minute on credential routes), wrong guesses are counted per target in Postgres (`AuthThrottle`), so they survive restarts and cannot be spread across many IPs:
+
+- **Login:** five wrong passwords against one email or phone inside 15 minutes lock that login for 15 minutes (`429 RATE_LIMITED`, even for the right password). Unknown accounts lock the same way, so the lock reveals nothing. A successful login, or a password reset, clears it.
+- **Order tracking:** ten wrong phone/email guesses against one order number lock that number's lookup for 15 minutes.
+
+Counters older than a day are deleted by the scheduler.

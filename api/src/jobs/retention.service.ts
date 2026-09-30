@@ -49,4 +49,10 @@ export class RetentionService {
     const { count } = await this.prisma.auditLog.updateMany({ where: { ip: { not: null }, createdAt: { lt: new Date(now.getTime() - AUDIT_IP_KEEP_DAYS * DAY_MS) } }, data: { ip: null } });
     return count;
   }
+
+  /** Guess counters older than a day no longer matter (their windows and locks are minutes long). */
+  async purgeAuthThrottle(now: Date = new Date()): Promise<number> {
+    const { count } = await this.prisma.authThrottle.deleteMany({ where: { updatedAt: { lt: new Date(now.getTime() - DAY_MS) } } });
+    return count;
+  }
 }

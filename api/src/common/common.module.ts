@@ -2,6 +2,7 @@ import { Global, Module } from '@nestjs/common';
 import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { JwtModule } from '@nestjs/jwt';
 import { ThrottlerGuard } from '@nestjs/throttler';
+import { AuthThrottleService } from './auth-throttle.service.js';
 import { AllExceptionsFilter } from './filters/all-exceptions.filter.js';
 import { JwtAuthGuard } from './guards/jwt-auth.guard.js';
 import { RolesGuard } from './guards/roles.guard.js';
@@ -20,11 +21,12 @@ import { NumberingService } from './numbering.service.js';
     HashingService,
     NumberingService,
     IdempotencyService,
+    AuthThrottleService,
     { provide: APP_FILTER, useClass: AllExceptionsFilter },
     { provide: APP_GUARD, useClass: ThrottlerGuard },
     { provide: APP_GUARD, useClass: JwtAuthGuard },
     { provide: APP_GUARD, useClass: RolesGuard },
   ],
-  exports: [JwtModule, HashingService, NumberingService, IdempotencyService],
+  exports: [JwtModule, HashingService, NumberingService, IdempotencyService, AuthThrottleService],
 })
 export class CommonModule {}

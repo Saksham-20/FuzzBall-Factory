@@ -74,4 +74,10 @@ export class ScheduledJobs {
   scrubAuditIps() {
     return this.runner.run('audit.scrub-ips', () => this.retention.scrubAuditIps());
   }
+
+  /** Drops stale login/track guess counters. */
+  @Cron('35 3 * * *')
+  purgeAuthThrottle() {
+    return this.runner.run('auth.purge-throttle', () => this.retention.purgeAuthThrottle());
+  }
 }

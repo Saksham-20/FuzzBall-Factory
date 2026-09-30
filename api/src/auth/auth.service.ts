@@ -3,6 +3,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { Env } from '../config/env.js';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { AuthThrottleService, LOGIN_POLICY } from '../common/auth-throttle.service.js';
 import { HashingService, sha256Hex } from '../common/hashing.service.js';
 import { conflict, ErrorCode, badRequest, notFound, unauthorized } from '../common/errors.js';
 import { normalizePhone } from '../common/phone.js';
@@ -13,6 +14,8 @@ import { TokenService, type IssuedTokens, type SessionMeta } from './token.servi
 import type { SignupDto } from './dto/auth.dto.js';
 
 const RESET_TTL_MINUTES = 60;
+/** Throttle key for password guesses against one typed account (lowercased email or normalised phone). */
+export const loginKey = (account: string) => `login:${account.slice(0, 120)}`;
 const INVALID_CREDENTIALS = "That email/phone and password don't match. Try again or reset your password.";
 
 export interface AuthResult {
@@ -31,6 +34,7 @@ export class AuthService {
     private readonly notifications: NotificationsService,
     private readonly config: ConfigService<Env, true>,
     private readonly emailTokens: EmailTokenService,
+    private readonly throttle: AuthThrottleService,
   ) {}
 
   async signup(dto: SignupDto, meta: SessionMeta): Promise<AuthResult> {
@@ -113,13 +117,23 @@ export class AuthService {
 
   async login(identifier: string, password: string, meta: SessionMeta): Promise<AuthResult> {
     const id = identifier.trim();
-    const where = id.includes('@') ? { email: id.toLowerCase() } : { phone: normalizePhone(id) ?? '\u0000' };
+    const phone = id.includes('@') ? null : normalizePhone(id);
+    const where = id.includes('@') ? { email: id.toLowerCase() } : { phone: phone ?? '\u0000' };
+    // One counter per typed account (known or not, so a lock never reveals whether the account exists).
+    const key = loginKey(id.includes('@') ? id.toLowerCase() : (phone ?? id));
+    await this.throttle.assertOpen(key);
+
     const user = await this.prisma.user.findUnique({ where });
     if (!user) {
       await this.hashing.burn(password);
+      await this.throttle.recordFailure(key, LOGIN_POLICY);
       throw unauthorized(INVALID_CREDENTIALS, ErrorCode.INVALID_CREDENTIALS);
     }
-    if (!(await this.hashing.verify(user.passwordHash, password))) throw unauthorized(INVALID_CREDENTIALS, ErrorCode.INVALID_CREDENTIALS);
+    if (!(await this.hashing.verify(user.passwordHash, password))) {
+      await this.throttle.recordFailure(key, LOGIN_POLICY);
+      throw unauthorized(INVALID_CREDENTIALS, ErrorCode.INVALID_CREDENTIALS);
+    }
+    await this.throttle.reset(key);
 
     if (this.hashing.needsRehash(user.passwordHash)) {
       await this.prisma.user.update({ where: { id: user.id }, data: { passwordHash: await this.hashing.hash(password) } });
@@ -180,6 +194,9 @@ export class AuthService {
       await tx.user.update({ where: { id: row.userId }, data: { passwordHash, emailVerified: true, tokenVersion: { increment: 1 } } });
       await tx.refreshToken.updateMany({ where: { userId: row.userId, revokedAt: null }, data: { revokedAt: now } });
     });
+    // Proving the inbox also lifts a guessing lockout on this account.
+    const owner = await this.prisma.user.findUnique({ where: { id: row.userId }, select: { email: true, phone: true } });
+    if (owner) await Promise.all([this.throttle.reset(loginKey(owner.email)), ...(owner.phone ? [this.throttle.reset(loginKey(owner.phone))] : [])]);
     this.logger.log(`Password reset for user ${row.userId}`);
   }
 }

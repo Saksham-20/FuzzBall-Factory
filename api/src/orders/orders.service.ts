@@ -4,6 +4,7 @@ import type { Env } from '../config/env.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import type { Prisma } from '../generated/prisma/client.js';
 import { AppException, badRequest, ErrorCode, notFound, validationFailed } from '../common/errors.js';
+import { AuthThrottleService, TRACK_POLICY } from '../common/auth-throttle.service.js';
 import { NumberingService } from '../common/numbering.service.js';
 import type { RequestUser } from '../common/types/auth.types.js';
 import { PAYMENTS_PORT, type CheckoutPayment, type PaymentsPort } from '../payments/payments.types.js';
@@ -42,6 +43,7 @@ export class OrdersService {
     private readonly state: OrderStateService,
     private readonly notifier: OrderNotifier,
     @Inject(PAYMENTS_PORT) private readonly payments: PaymentsPort,
+    private readonly throttle: AuthThrottleService,
   ) {}
 
   // ───────────── place ─────────────
@@ -222,14 +224,22 @@ export class OrdersService {
   /** Public tracking: number + phone or email. A wrong pair and an unknown number are indistinguishable. */
   async track(number: string, contact: string): Promise<OrderDto> {
     const miss = () => notFound("We couldn't find that order. Check the number on your confirmation and the phone or email you used.");
-    const o = await this.prisma.order.findUnique({ where: { number: number.trim().toUpperCase() }, include: ORDER_INCLUDE });
+    const orderNumber = number.trim().toUpperCase();
+    // Guessing the phone/email behind one order number is capped per order (unknown numbers count too, so the lock
+    // says nothing about which orders exist).
+    const key = `track:${orderNumber.slice(0, 40)}`;
+    await this.throttle.assertOpen(key);
+    const o = await this.prisma.order.findUnique({ where: { number: orderNumber }, include: ORDER_INCLUDE });
     const c = contact.trim().toLowerCase();
-    if (!o) throw miss();
-    const emailMatch = c.includes('@') && o.contactEmail.toLowerCase() === c;
+    const emailMatch = !!o && c.includes('@') && o.contactEmail.toLowerCase() === c;
     // Phones match on the last 10 digits (so +91 / 0 prefixes don't matter); fewer than 10 digits never match.
     const d = digits(c);
-    const phoneMatch = !c.includes('@') && d.length >= 10 && digits(o.contactPhone).endsWith(d.slice(-10));
-    if (!emailMatch && !phoneMatch) throw miss();
+    const phoneMatch = !!o && !c.includes('@') && d.length >= 10 && digits(o.contactPhone).endsWith(d.slice(-10));
+    if (!o || (!emailMatch && !phoneMatch)) {
+      await this.throttle.recordFailure(key, TRACK_POLICY);
+      throw miss();
+    }
+    await this.throttle.reset(key);
     return toOrderDto(o);
   }
 

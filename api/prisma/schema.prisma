@@ -189,6 +189,18 @@ model PasswordResetToken {
   @@index([userId])
 }
 
+/// Persistent guess counters (per account login, per order tracked), kept in Postgres so a restart cannot reset them.
+/// Written only through `AuthThrottleService` (an atomic upsert); rows expire on their own.
+model AuthThrottle {
+  key         String    @id
+  failures    Int       @default(0)
+  windowStart DateTime  @default(now())
+  lockedUntil DateTime?
+  updatedAt   DateTime  @updatedAt
+
+  @@index([updatedAt])
+}
+
 enum EmailTokenPurpose {
   /// Proves the account's own address (signup).
   VERIFY

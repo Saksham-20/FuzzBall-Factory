@@ -21,7 +21,7 @@ const order = (over: Row = {}): Row => ({
 
 function service(rows: Row[]) {
   const prisma = { order: { findUnique: ({ where }: { where: { number: string } }) => Promise.resolve(rows.find((r) => r.number === where.number) ?? null) } };
-  return new OrdersService(prisma as unknown as PrismaService, undefined as never, undefined as never, undefined as never, undefined as never, undefined as never, undefined as never, undefined as never);
+  return new OrdersService(prisma as unknown as PrismaService, undefined as never, undefined as never, undefined as never, undefined as never, undefined as never, undefined as never, undefined as never, undefined as never);
 }
 
 const rejection = (p: Promise<unknown>) =>
