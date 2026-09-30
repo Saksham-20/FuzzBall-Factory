@@ -20,6 +20,9 @@ else
   echo "(skipping api e2e: set TEST_DATABASE_URL to a *_test database to include it)"
 fi
 
+step "ops: release switching"
+ops/test/activate-test.sh
+
 step "web: lint, unit"
 (cd web && npm run lint && npm test)
 

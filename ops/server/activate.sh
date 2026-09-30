@@ -30,11 +30,14 @@ current_id() { [ -L "$ROOT/current" ] && basename "$(readlink "$ROOT/current")" 
 point() {
   local link="$1" id="$2"
   ln -sfn "$ROOT/releases/$id" "$ROOT/$link.tmp"
-  mv -Tf "$ROOT/$link.tmp" "$ROOT/$link"
+  # GNU mv (the server) has -T; BSD mv (a Mac running the tests) has -h for the same thing.
+  mv -Tf "$ROOT/$link.tmp" "$ROOT/$link" 2>/dev/null || mv -fh "$ROOT/$link.tmp" "$ROOT/$link"
 }
 
+# Overridable so the script can be tested without systemd (ops/test/activate-test.sh).
+RESTART_CMD="${FUZZBALL_RESTART_CMD:-sudo -n /usr/bin/systemctl restart fuzzball-api fuzzball-web}"
 restart() {
-  sudo -n /usr/bin/systemctl restart fuzzball-api fuzzball-web
+  bash -c "$RESTART_CMD"
 }
 
 healthy() {
@@ -73,6 +76,7 @@ rm -rf "$dir/web/.next/cache"
 ln -sfn "$ROOT/shared/next-cache" "$dir/web/.next/cache"
 
 old="$(current_id)"
+old_prev="$([ -L "$ROOT/previous" ] && basename "$(readlink "$ROOT/previous")" || true)"
 [ "$old" = "$id" ] && log "release $id is already live; restarting it"
 [ -n "$old" ] && [ "$old" != "$id" ] && point previous "$old"
 point current "$id"
@@ -86,6 +90,8 @@ else
   if [ -n "$old" ] && [ "$old" != "$id" ] && [ -d "$ROOT/releases/$old" ]; then
     log "switching back to $old"
     point current "$old"
+    # The failed release never really became live: `previous` goes back to what it was, so a rollback still works.
+    if [ -n "$old_prev" ] && [ -d "$ROOT/releases/$old_prev" ]; then point previous "$old_prev"; else rm -f "$ROOT/previous"; fi
     restart
     healthy && log "back on $old" || log "WARNING: $old is not healthy either; investigate now"
   fi

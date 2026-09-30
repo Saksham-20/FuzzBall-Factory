@@ -83,6 +83,20 @@ jobs:
           NEXT_PUBLIC_SITE_URL: https://shop.example.com
           NEXT_DIST_DIR: .next-real
 
+  ops:
+    name: ops (script syntax, release switching)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: shellcheck and syntax
+        run: |
+          sudo apt-get install -y -qq shellcheck
+          for f in ops/*.sh ops/*/*.sh ops/server/fuzzball-dump scripts/verify.sh; do bash -n "$f"; done
+          shellcheck --severity=warning ops/*.sh ops/*/*.sh ops/server/fuzzball-dump scripts/verify.sh
+      - name: release switching, rollback and pruning
+        run: ops/test/activate-test.sh
+
   web-e2e:
     name: web (browser tests)
     runs-on: ubuntu-latest
