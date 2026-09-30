@@ -5,11 +5,13 @@ import type { RequestUser } from '../common/types/auth.types.js';
 import type { CategoryDto, ProductDto } from '../catalog/product.mapper.js';
 import type { CustomRequestDto } from '../custom/custom.mapper.js';
 import { QuoteInputDto } from '../custom/dto/custom.dto.js';
+import type { OutboxRow } from '../notifications/email-outbox.service.js';
 import type { StoreSettings } from '../settings/settings.types.js';
 import { AdminCategoriesService } from './admin-categories.service.js';
 import { AdminCouponsService, type CouponDto } from './admin-coupons.service.js';
 import { AdminCustomService, type AdminCtx } from './admin-custom.service.js';
 import { AdminCustomersService, type CustomerDetail, type CustomerRow } from './admin-customers.service.js';
+import { AdminEmailService } from './admin-email.service.js';
 import { AdminDashboardService, type DashboardDto } from './admin-dashboard.service.js';
 import { AdminMaterialsService, type MaterialDto } from './admin-materials.service.js';
 import { AdminOrdersService, type AdminOrderDto, type PackingSlipDto } from './admin-orders.service.js';
@@ -21,6 +23,7 @@ import { ClientIp } from './audit.service.js';
 import { AdminMessageDto, ApprovalRequestDto, DeclineCustomDto, ProgressDto, ShipCustomDto } from './dto/admin-custom.dto.js';
 import { CategoryInputDto } from './dto/category.dto.js';
 import { CouponInputDto } from './dto/coupon.dto.js';
+import { EmailListQuery } from './dto/email.dto.js';
 import { MaterialInputDto, MaterialStockAdjustDto } from './dto/material.dto.js';
 import { OrderNotesDto, OrderStatusDto } from './dto/order.dto.js';
 import { PaymentListQuery, RefundDto } from './dto/payment.dto.js';
@@ -340,6 +343,25 @@ export class AdminPaymentsController {
 }
 
 @Roles('admin')
+@Controller('admin/email')
+export class AdminEmailController {
+  constructor(private readonly email: AdminEmailService) {}
+
+  /** The outbox, newest first. `?status=FAILED` is the list of emails that gave up. */
+  @Get()
+  list(@Query() q: EmailListQuery): Promise<OutboxRow[]> {
+    return this.email.list(q);
+  }
+
+  /** Resend an email that gave up. */
+  @HttpCode(200)
+  @Post(':id/retry')
+  retry(@CurrentUser() user: RequestUser, @Param('id') id: string, @ClientIp() ip?: string): Promise<OutboxRow> {
+    return this.email.retry(ctx(user, ip), id);
+  }
+}
+
+@Roles('admin')
 @Controller('admin/settings')
 export class AdminSettingsController {
   constructor(private readonly settings: AdminSettingsService) {}
@@ -366,5 +388,6 @@ export const ADMIN_CONTROLLERS = [
   AdminCouponsController,
   AdminMaterialsController,
   AdminPaymentsController,
+  AdminEmailController,
   AdminSettingsController,
 ];

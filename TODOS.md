@@ -38,6 +38,20 @@
 **Priority:** P2
 **Depends on:** None
 
+## Reliability
+
+### Work-order emails still poll for their transaction to commit
+
+**What:** Write the email outbox row inside the same database transaction as the state change, so `CustomStateService.dispatchWhenCommitted` (a chain of `setTimeout` checks for the timeline event) can go.
+
+**Why:** The outbox makes delivery durable once a message is queued, but the work-order paid handler still queues it only after polling for the commit. A crash in that window loses the email.
+
+**Context:** `api/src/custom/custom-state.service.ts` (`dispatchWhenCommitted`), `api/src/notifications/email-outbox.service.ts`. Needs `enqueue(tx, ...)` and the payments module to hand its transaction to paid listeners.
+
+**Effort:** M
+**Priority:** P2
+**Depends on:** None
+
 ## Storefront (web)
 
 ### Parts of the storefront read the mock catalogue even in real-API mode

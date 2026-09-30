@@ -227,6 +227,8 @@ Counters, messages, change requests, new requests and payments are throttled to 
 | `saveCoupon(c)` | `PUT /admin/coupons/:code` (upsert) or `POST /admin/coupons` | `Coupon` → `Coupon` (`uses` is never overwritten). Optional `maxUses` (total redemptions) and `perUserLimit` (per account, or per email for guests): leave a key out to keep the stored value, send `null` to clear it. Both are enforced while the order is placed, under the coupon's row lock, so concurrent orders can't exceed them |
 | `listPayments({ order? \| request? })` | `GET /admin/payments?order=FB-1001` or `?request=WO-001` | → `AdminPayment[]`: each payment with `refundedAmount`, `refundable` (rupees still refundable now) and its `refunds` jobs (`PENDING`/`PROCESSING`/`DONE`/`FAILED`, `attempts`, `lastError`) |
 | `refundPayment(id, { amount?, reason })` | `POST /admin/payments/:id/refund` (200) | Manual refund of a captured payment (order, deposit or balance), whole remainder unless `amount`. `reason` 3-200 chars (audited as `payment.refund`). → `{ refunded, pending }` rupees. 400 over the refundable amount, 409 not captured |
+| _(outbox)_ | `GET /admin/email?status=&limit=` | Email outbox, newest first: `{ id, event, to, status (PENDING/SENDING/SENT/FAILED), attempts, lastError, createdAt, sentAt, resendable }`. `status=FAILED` lists emails that gave up |
+| _(outbox)_ | `POST /admin/email/:id/retry` (200) | Resend a `FAILED` email (audited as `email.retry`). 400 if it is not failed or its content was cleared (password-reset emails forget their link), 404 unknown |
 | `deleteCoupon(code)` | `DELETE /admin/coupons/:code` (204) | |
 | `listMaterials()` | `GET /admin/materials` | → `Material[]` (non-archived only) |
 | `saveMaterial(input)` create | `POST /admin/materials` (201) | `MaterialInput` → `Material` |
@@ -376,3 +378,7 @@ cd web && NEXT_PUBLIC_USE_MOCK=false NEXT_PUBLIC_API_URL=http://localhost:4000 n
 - Uploads: `ImageUploader` calls `uploadImage()` (`lib/api/uploads.ts`): data URL in mock, `POST /uploads` otherwise. `next.config.ts` allows images from the API origin (set `NEXT_PUBLIC_API_URL` at build time).
 - The admin settings form reads `GET /admin/settings` (the public `GET /settings` is `Cache-Control: max-age=30`, which would show stale values right after a save).
 - Login is throttled to 5/min per IP: scripted logins should reuse sessions.
+
+## Email delivery
+
+Every email is written to `EmailOutbox` first and sent straight away. If the provider fails, the scheduler retries it (1, 5, 15, 60 and 240 minutes; a password-reset email tries twice). After the last attempt it is `FAILED`, logged as `[EMAIL FAILED]`, sent to Sentry (`area=email`) and shown in `GET /admin/email?status=FAILED`. The stored payload is emptied once the email is sent (and for a password-reset email once it gives up), so order details and reset links do not sit in the table. Sent rows are deleted after 30 days, failed ones after 90. `NotificationsService.send` never throws.

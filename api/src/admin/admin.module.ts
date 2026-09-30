@@ -8,6 +8,7 @@ import { AdminCouponsService } from './admin-coupons.service.js';
 import { AdminCustomService } from './admin-custom.service.js';
 import { AdminCustomersService } from './admin-customers.service.js';
 import { AdminDashboardService } from './admin-dashboard.service.js';
+import { AdminEmailService } from './admin-email.service.js';
 import { AdminMaterialsService } from './admin-materials.service.js';
 import { AdminOrdersService } from './admin-orders.service.js';
 import { AdminPaymentsService } from './admin-payments.service.js';
@@ -33,6 +34,7 @@ import { AuditService } from './audit.service.js';
     AdminCouponsService,
     AdminMaterialsService,
     AdminPaymentsService,
+    AdminEmailService,
     AdminSettingsService,
   ],
 })

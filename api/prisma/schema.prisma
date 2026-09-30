@@ -629,6 +629,36 @@ model RefundJob {
   @@index([paymentId])
 }
 
+enum EmailStatus {
+  PENDING
+  SENDING
+  SENT
+  FAILED
+}
+
+/// Every customer/admin email is written here first, then sent; the scheduler retries what did not go out.
+/// `payload` is the typed notification payload (rendered at send time). It is emptied once the email is sent (or
+/// has given up) so order details and reset links do not sit in the table.
+model EmailOutbox {
+  id            String      @id @default(cuid())
+  event         String
+  toEmail       String
+  payload       Json
+  status        EmailStatus @default(PENDING)
+  attempts      Int         @default(0)
+  nextAttemptAt DateTime    @default(now())
+  /// Lease while SENDING: a crashed process's row becomes claimable again once this passes.
+  lockedUntil   DateTime?
+  lastError     String?
+  providerId    String?
+  sentAt        DateTime?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@index([status, nextAttemptAt])
+  @@index([createdAt])
+}
+
 /// Provider webhook deliveries, deduped by the provider's event id.
 model WebhookEvent {
   id          String    @id @default(cuid())

@@ -7,6 +7,10 @@ const TOKEN_GRACE_DAYS = 7;
 /** Webhook deliveries are kept for support and reconciliation, then dropped. */
 const WEBHOOK_KEEP_DAYS = 90;
 
+/** Sent emails are only a delivery log; dead letters stay longer so they can be investigated. */
+const EMAIL_SENT_KEEP_DAYS = 30;
+const EMAIL_FAILED_KEEP_DAYS = 90;
+
 /** Deletes rows that only exist to be looked at briefly. Each method returns how many rows it removed. */
 @Injectable()
 export class RetentionService {
@@ -26,5 +30,13 @@ export class RetentionService {
     const cutoff = new Date(now.getTime() - WEBHOOK_KEEP_DAYS * DAY_MS);
     const { count } = await this.prisma.webhookEvent.deleteMany({ where: { receivedAt: { lt: cutoff }, processedAt: { not: null }, error: null } });
     return count;
+  }
+
+  async purgeEmailOutbox(now: Date = new Date()): Promise<number> {
+    const [sent, failed] = await Promise.all([
+      this.prisma.emailOutbox.deleteMany({ where: { status: 'SENT', createdAt: { lt: new Date(now.getTime() - EMAIL_SENT_KEEP_DAYS * DAY_MS) } } }),
+      this.prisma.emailOutbox.deleteMany({ where: { status: 'FAILED', createdAt: { lt: new Date(now.getTime() - EMAIL_FAILED_KEEP_DAYS * DAY_MS) } } }),
+    ]);
+    return sent.count + failed.count;
   }
 }

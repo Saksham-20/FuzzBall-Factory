@@ -1,38 +1,28 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import type { Env } from '../config/env.js';
-import type { NotificationEvent, NotificationEventMap, TemplateContext } from './events.js';
-import { EmailProvider } from './email.provider.js';
-import { renderTemplate } from './templates/registry.js';
+import type { NotificationEvent, NotificationEventMap } from './events.js';
+import { EmailOutboxService } from './email-outbox.service.js';
 
 /**
  * Single entry point for customer/admin messages. State services call
  * `notifications.send('order.shipped', payload)` after a transition commits.
  *
- * `send` never throws: a mail outage must not fail (or roll back) an order. Failures are logged.
- * Email only for now; a WhatsApp channel can be added behind this same method.
+ * The message is written to the email outbox first and then sent straight away; a failure leaves it queued for the
+ * scheduler to retry (see `EmailOutboxService`). `send` never throws: a mail outage must not fail (or roll back) an
+ * order. Email only for now; a WhatsApp channel can be added behind this same method.
  */
 @Injectable()
 export class NotificationsService {
   private readonly logger = new Logger(NotificationsService.name);
 
-  constructor(
-    private readonly email: EmailProvider,
-    private readonly config: ConfigService<Env, true>,
-  ) {}
+  constructor(private readonly outbox: EmailOutboxService) {}
 
   async send<E extends NotificationEvent>(event: E, payload: NotificationEventMap[E]): Promise<void> {
     try {
-      const rendered = renderTemplate(event, payload, this.context());
-      await this.email.send({ to: payload.to, ...rendered });
+      const id = await this.outbox.enqueue(event, payload);
+      await this.outbox.deliver(id);
     } catch (err) {
-      this.logger.error(`Failed to send "${event}" to ${payload.to}: ${(err as Error).message}`);
+      // Could not even reach the outbox (database down): nothing more to do than say so.
+      this.logger.error(`Failed to queue "${event}" to ${payload.to}: ${(err as Error).message}`);
     }
-  }
-
-  private context(): TemplateContext {
-    const from = this.config.get('MAIL_FROM', { infer: true });
-    const supportEmail = /<([^>]+)>/.exec(from)?.[1];
-    return { brandName: 'FuzzBall Factory', supportEmail, whatsappNumber: this.config.get('WHATSAPP_NUMBER', { infer: true }) };
   }
 }

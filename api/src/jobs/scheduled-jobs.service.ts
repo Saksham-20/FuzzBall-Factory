@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { QuoteExpiryService } from '../custom/quote-expiry.service.js';
+import { EmailOutboxService } from '../notifications/email-outbox.service.js';
 import { IdempotencyService } from '../common/idempotency/idempotency.service.js';
 import { OrdersService } from '../orders/orders.service.js';
 import { RefundsService } from '../payments/refunds.service.js';
@@ -17,6 +18,7 @@ export class ScheduledJobs {
     private readonly refunds: RefundsService,
     private readonly quotes: QuoteExpiryService,
     private readonly retention: RetentionService,
+    private readonly emails: EmailOutboxService,
   ) {}
 
   /** Releases stock held by online orders nobody paid within the payment window. */
@@ -53,5 +55,17 @@ export class ScheduledJobs {
   @Cron('45 3 * * *')
   purgeWebhookEvents() {
     return this.runner.run('webhooks.purge', () => this.retention.purgeWebhookEvents());
+  }
+
+  /** Sends emails that failed the first time (or whose sender died mid-way), with backoff. */
+  @Cron(CronExpression.EVERY_MINUTE)
+  processEmails() {
+    return this.runner.run('email.process', () => this.emails.processDue());
+  }
+
+  /** Drops old sent and dead-lettered outbox rows. */
+  @Cron('50 3 * * *')
+  purgeEmailOutbox() {
+    return this.runner.run('email.purge', () => this.retention.purgeEmailOutbox());
   }
 }
