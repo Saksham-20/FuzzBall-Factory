@@ -1,7 +1,8 @@
 node_modules
 dist
 .env
-uploads
+# Runtime upload directory only (not src/uploads, the module's source)
+/uploads
 src/generated
 coverage
 *.log
