@@ -69,4 +69,11 @@ describe('email templates', () => {
     expect(r.html).not.toContain('<img');
     expect(r.html).toContain('&lt;img');
   });
+  it('overseas orders get the customs reminder, domestic ones do not', () => {
+    const base = { to: 'a@b.co', name: 'Maya', orderNumber: 'FB-1001', url: 'http://x/o', total: 1900 };
+    for (const event of ['order.confirmed', 'order.shipped'] as const) {
+      expect(renderTemplate(event, { ...base, international: true }, ctx).text).toMatch(/duties/i);
+      expect(renderTemplate(event, base, ctx).text).not.toMatch(/duties/i);
+    }
+  });
 });

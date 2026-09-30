@@ -8,3 +8,9 @@ export const INDIAN_STATES = [
 
 /** 6 digits, first digit 1-9 (India Post PIN format). */
 export const INDIA_PINCODE = /^[1-9][0-9]{5}$/;
+
+/**
+ * Countries we do not ship to or take payment from (sanctions and payment-provider rules): North Korea, Iran, Syria,
+ * Cuba. Same list as web/src/lib/countries.ts `BLOCKED_COUNTRIES`.
+ */
+export const SHIPPING_BLOCKED_COUNTRIES: readonly string[] = ['CU', 'IR', 'KP', 'SY'];

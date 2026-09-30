@@ -73,3 +73,32 @@ test("the work order form opens for a signed-in customer", async ({ page }) => {
   await page.goto("/custom");
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
 });
+
+test("an overseas order: zone rate, duties note, no cash on delivery, a postal code in the right shape, then paid online", async ({ page }) => {
+  await page.goto("/p/pocket-penguins");
+  await page.getByRole("button", { name: "Add to cart" }).first().click();
+  await page.goto("/checkout");
+  await page.getByLabel("Full name").fill("Test Shopper");
+  await page.getByLabel("Email", { exact: true }).fill("shopper@example.com");
+  await page.getByLabel("Phone or WhatsApp").fill("+44 7700 900123");
+  await page.getByLabel("Recipient name").fill("Test Shopper");
+  await page.getByLabel("Country").selectOption("GB");
+  await page.getByLabel("House number and street").fill("5 Rosebery Road");
+  await page.getByLabel("City or town").fill("London");
+
+  // The zone rate and the customs note show up; cash on delivery is not offered.
+  await expect(page.getByText("International: UK & Europe").first()).toBeVisible();
+  await expect(page.getByText(/Import duties, VAT and courier fees/)).toBeVisible();
+  await expect(page.getByLabel("Cash on delivery")).toBeDisabled();
+
+  // A US-shaped code is wrong for the UK: the field says so before anything is charged.
+  await page.getByLabel("Postal code").fill("94103");
+  await page.getByLabel(/read the/i).check();
+  await page.getByRole("button", { name: /^Pay/ }).click();
+  await expect(page.getByText(/looks like N10 2LE/)).toBeVisible();
+
+  await page.getByLabel("Postal code").fill("N10 2LE");
+  await page.getByRole("button", { name: /^Pay/ }).click();
+  await page.getByRole("button", { name: "Pay successfully" }).click(); // the mock payment window
+  await expect(page).toHaveURL(/\/order\/FB-\d+/);
+});

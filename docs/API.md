@@ -439,3 +439,11 @@ Signed-in only; the user is always the session's, never a request value. Signed 
 | merge | `POST /wishlist/merge` `{ productIds: string[] }` (max 100) | Adds the valid published ids that are not saved yet (up to the cap, unknown ids skipped), returns the whole list. 10/min |
 
 The privacy export lists saved pieces and erasure deletes them (`account-export.service.ts`, `erasure.service.ts`).
+
+## International addresses
+
+- **Country**: ISO 3166-1 alpha-2 code (uppercased); the legacy `OTHER` is still accepted for old orders. The storefront offers the full ISO list (`web/src/lib/countries.ts`) minus uninhabited territories and **CU, IR, KP, SY**, which the API also refuses (`SHIPPING_BLOCKED_COUNTRIES`: `fields["address.country"]` on orders and addresses, `serviceable: false` on the delivery check).
+- **Zones**: countries named in `intlZones` use that zone's rate and transit window; everything else falls into the `*` zone. International shipping is never free (free shipping is an India-only rule) and **cash on delivery is refused outside India** (`COD_NOT_AVAILABLE`).
+- **Postal codes** (`api/src/shipping/postal.ts`, mirrored in `web/src/lib/postal.ts`): 17 countries are checked by shape (US, CA, GB, IE, AU, NZ, SG, MY, DE, FR, IT, ES, NL, NP, LK, BD, SA); any other country accepts 3 to 12 letters, digits, spaces or hyphens ("000" where a country has no codes). A bad one is a 400 with `fields["address.postalCode"]`.
+- **Emails**: `order.confirmed` and `order.shipped` carry the customs and duties reminder when the address is abroad.
+

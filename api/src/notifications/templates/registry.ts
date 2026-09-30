@@ -38,6 +38,8 @@ function workOrderEmail(subject: string, heading: string, lines: (p: WorkOrderPa
 }
 
 const note = (n?: string) => (n ? [n] : []);
+/** Overseas parcels: duties are the buyer's and are collected by the courier or customs, so say so before it arrives. */
+const customsNote = (p: OrderPayload, text: string) => (p.international ? [text] : []);
 const itemLines = (p: OrderPayload) => (p.items?.length ? [p.items.map((i) => `${i.qty} x ${i.name}`).join(', ')] : []);
 
 export const templates: Registry = {
@@ -133,12 +135,14 @@ export const templates: Registry = {
     `${p.paymentMethod === 'RAZORPAY' ? 'Payment received, thank you! ' : ''}Order ${p.orderNumber} is confirmed and in the queue.`,
     ...itemLines(p),
     ...(p.estimatedDispatch ? [`Estimated dispatch: ${p.estimatedDispatch}. Made-to-order pieces are crocheted after you order, so we'll keep you posted as it moves.`] : []),
+    ...customsNote(p, "This order is going abroad. Import duties, taxes and courier fees in your country are not included in what you paid: the courier or customs collects them on delivery, and they are the buyer's responsibility. Delivery takes longer than within India; your shipping estimate is on the order page."),
     ...note(p.note),
   ]),
   'order.shipped': orderEmail('Order {n} is on its way', 'Shipped', (p) => [
     `Order ${p.orderNumber} has been handed to the courier.`,
     ...(p.courier || p.awb ? [`${p.courier ?? 'Courier'}${p.awb ? `, tracking number ${p.awb}` : ''}.`] : []),
     ...(p.paymentMethod === 'COD' && p.total != null ? [`Please keep ${formatRupees(p.total)} ready for the courier.`] : []),
+    ...customsNote(p, 'Customs in your country may ask for duties or taxes before the parcel is released. Keep your phone on and reply to the courier quickly so it is not held or sent back.'),
     ...note(p.note),
   ], 'Track your order'),
   'order.delivered': orderEmail('Order {n} was delivered', 'Delivered', (p) => [

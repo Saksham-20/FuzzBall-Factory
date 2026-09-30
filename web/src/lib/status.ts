@@ -78,17 +78,8 @@ export function customFlowIndex(s: CustomStatus): number {
 
 export const OCCASIONS = ["Birthday", "Anniversary", "Valentine's", "Baby shower", "Rakhi", "Graduation", "Just because"] as const;
 
-/** ISO country → intl zone is resolved in pricing.ts via settings.intlZones. */
-export const COUNTRIES: { code: string; name: string }[] = [
-  { code: "IN", name: "India" },
-  { code: "US", name: "United States" }, { code: "CA", name: "Canada" }, { code: "GB", name: "United Kingdom" },
-  { code: "AU", name: "Australia" }, { code: "AE", name: "United Arab Emirates" }, { code: "SG", name: "Singapore" },
-  { code: "DE", name: "Germany" }, { code: "FR", name: "France" }, { code: "NL", name: "Netherlands" },
-  { code: "IT", name: "Italy" }, { code: "ES", name: "Spain" }, { code: "IE", name: "Ireland" },
-  { code: "NZ", name: "New Zealand" }, { code: "NP", name: "Nepal" }, { code: "LK", name: "Sri Lanka" },
-  { code: "BD", name: "Bangladesh" }, { code: "SA", name: "Saudi Arabia" }, { code: "QA", name: "Qatar" },
-  { code: "MY", name: "Malaysia" }, { code: "OTHER", name: "Other country" },
-];
+/** The checkout's country list lives in countries.ts (full ISO list; zones are resolved in pricing.ts via settings.intlZones). */
+export { COUNTRIES } from "@/lib/countries";
 
 export const INDIAN_STATES = [
   "Andhra Pradesh","Arunachal Pradesh","Assam","Bihar","Chhattisgarh","Goa","Gujarat","Haryana","Himachal Pradesh","Jharkhand",

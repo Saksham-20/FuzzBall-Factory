@@ -23,6 +23,8 @@ export interface OrderPayload extends Recipient {
   awb?: string;
   estimatedDispatch?: string;
   paymentMethod?: 'RAZORPAY' | 'COD';
+  /** True when the parcel ships outside India: the emails add the customs and duties reminder. */
+  international?: boolean;
   /** Short receipt lines (name and quantity), when relevant. */
   items?: { name: string; qty: number }[];
 }

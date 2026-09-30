@@ -1,4 +1,6 @@
 import { z } from "zod";
+import { BLOCKED_COUNTRIES } from "@/lib/countries";
+import { postalFieldError } from "@/lib/postal";
 import { INDIAN_STATES } from "@/lib/status";
 import { phoneField } from "@/lib/schemas/custom";
 
@@ -31,8 +33,10 @@ export const checkoutSchema = z
     if (v.country === "IN") {
       if (!/^[1-9][0-9]{5}$/.test(v.postalCode)) ctx.addIssue({ code: "custom", path: ["postalCode"], message: "Enter a valid 6-digit pincode." });
       if (!INDIAN_STATES.includes(v.state)) ctx.addIssue({ code: "custom", path: ["state"], message: "Pick your state." });
-    } else if (v.postalCode.length < 3) {
-      ctx.addIssue({ code: "custom", path: ["postalCode"], message: "Enter your postal code." });
+    } else {
+      if ((BLOCKED_COUNTRIES as readonly string[]).includes(v.country)) ctx.addIssue({ code: "custom", path: ["country"], message: "We can't ship to that country." });
+      const postal = postalFieldError(v.country, v.postalCode);
+      if (postal) ctx.addIssue({ code: "custom", path: ["postalCode"], message: postal });
     }
   });
 

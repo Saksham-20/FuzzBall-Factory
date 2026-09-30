@@ -22,6 +22,7 @@ import { confirmPayment, paymentMode, placeOrder, type PlaceOrderInput } from "@
 import { checkShipping } from "@/lib/api/shipping";
 import { getSettings } from "@/lib/api/settings";
 import { useApi } from "@/lib/api/useApi";
+import { postalFieldError } from "@/lib/postal";
 import { CHECKOUT_DEFAULTS, GIFT_NOTE_MAX, checkoutSchema, type CheckoutValues } from "@/lib/schemas/checkout";
 import { SITE } from "@/lib/site";
 import { useAuth } from "@/lib/state/AuthContext";
@@ -29,7 +30,7 @@ import { formatDate, formatINR } from "@/lib/format";
 import { COUNTRIES, INDIAN_STATES } from "@/lib/status";
 import type { Address } from "@/lib/types";
 
-const pinOk = (country: string, postal: string) => country !== "IN" || /^[1-9][0-9]{5}$/.test(postal);
+const pinOk = (country: string, postal: string) => (country === "IN" ? /^[1-9][0-9]{5}$/.test(postal) : !postalFieldError(country, postal));
 
 export function CheckoutClient() {
   const router = useRouter();
@@ -395,7 +396,7 @@ export function CheckoutClient() {
                   {(p) => <Input {...p} autoComplete="address-level1" {...register("state")} />}
                 </Field>
               )}
-              <Field label={isIndia ? "Pincode" : "Postal code"} error={err("postalCode")} hint={isIndia ? "6 digits. We'll check delivery to it." : undefined}>
+              <Field label={isIndia ? "Pincode" : "Postal code"} error={err("postalCode")} hint={isIndia ? "6 digits. We'll check delivery to it." : "If your country has no postal codes, enter 000."}>
                 {(p) => (
                   <Input
                     {...p}
@@ -428,8 +429,10 @@ export function CheckoutClient() {
                     Dispatch by <strong className="font-semibold text-cocoa">{formatDate(q.estimatedDispatch)}</strong>, then {q.transitDays} in transit.
                   </p>
                   <p className="mt-1 text-sm text-brown" aria-live="polite">
-                    {isIndia && !pinOk(country, postalCode)
-                      ? "Enter your 6-digit pincode for a delivery estimate."
+                    {!pinOk(country, postalCode)
+                      ? isIndia
+                        ? "Enter your 6-digit pincode for a delivery estimate."
+                        : "Enter your postal code for a delivery estimate."
                       : ship
                         ? ship.serviceable
                           ? `${ship.message}${ship.deliverBy ? ` Estimated delivery by ${formatDate(ship.deliverBy)}.` : ""}`
@@ -444,7 +447,21 @@ export function CheckoutClient() {
                 <ErrorNote>We couldn&apos;t work out delivery for this address. Check your details and try again.</ErrorNote>
               </div>
             ) : null}
-            {!isIndia ? <p className="mt-3 text-sm text-brown">Prices are in INR. Your card may add currency conversion or import duties at delivery.</p> : null}
+            {!isIndia ? (
+              <div className="mt-3 space-y-1.5 rounded-[12px] bg-cream px-4 py-3 text-sm text-brown">
+                <p>
+                  <strong className="font-semibold text-cocoa">Prices are in Indian rupees (INR).</strong> Your bank may convert them to your currency.
+                </p>
+                <p>
+                  Import duties, VAT and courier fees in your country are not included. The courier or customs collects them on delivery, and they are your
+                  responsibility. International orders are paid online, not on delivery. See the{" "}
+                  <Link href="/policies/shipping#international" target="_blank" className="font-semibold text-cocoa underline">
+                    international shipping policy
+                  </Link>
+                  .
+                </p>
+              </div>
+            ) : null}
           </CheckoutSection>
 
           <CheckoutSection n={4} title="Gift">

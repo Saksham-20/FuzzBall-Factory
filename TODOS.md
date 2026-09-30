@@ -66,6 +66,30 @@
 **Priority:** P2
 **Depends on:** Maker confirms return window and shipping rates
 
+### Overseas orders have no export invoice or GST treatment
+
+**What:** Orders to addresses outside India are priced, taken online and shipped, but no invoice is produced, and nothing records the export treatment (zero-rated under a Letter of Undertaking, or IGST paid with a refund claim). The courier also needs a commercial invoice and customs declaration with the parcel.
+
+**Why:** If the maker is GST-registered, exports need a proper tax invoice and LUT filing; customs abroad hold parcels without a correct declaration. This is a legal and accounting question, not a code one, so it waits for the maker's CA.
+
+**Context:** Get the answers first (GST registration, LUT, HSN code for crochet goods, who fills the courier's export form). Then add an invoice PDF per order (`docs/PLAN.md` leaves room for a GST invoice model) with the declared value matching the order. Until then, overseas orders are handled by hand, and the shipping policy already tells buyers that duties are theirs.
+
+**Effort:** M
+**Priority:** P1 if GST-registered, else P2
+**Depends on:** Maker's CA; GSTIN status
+
+### International launch depends on the maker's Razorpay account
+
+**What:** Overseas cards only work once Razorpay's international payments are enabled on the maker's account (an application on top of KYC), and the test order with an international card is listed in `docs/DEPLOY_PROD.md`.
+
+**Why:** Without it, overseas customers fail at the payment step even though checkout accepts their address.
+
+**Context:** Ask Razorpay for international payments when applying for live access; shipping zone rates and transit windows in settings are sample numbers (`docs/PLACEHOLDERS.md`, `shipping-rates`) to confirm with the courier's real quotes per zone.
+
+**Effort:** S (waiting time, not work)
+**Priority:** P1 (blocks international at launch)
+**Depends on:** Razorpay approval; real courier rate card
+
 ### Content-Security-Policy still allows inline scripts
 
 **What:** `web/src/lib/security-headers.ts` sends `script-src 'self' 'unsafe-inline' https://checkout.razorpay.com`. Inline scripts are allowed because Next's bootstrap scripts need it without a per-request nonce.

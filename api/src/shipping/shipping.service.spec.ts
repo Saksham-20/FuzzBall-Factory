@@ -42,13 +42,24 @@ describe('ShippingService.check', () => {
   });
 });
 
+describe('international shipping check', () => {
+  it('refuses blocked countries and malformed postal codes, accepts the rest', async () => {
+    expect(await svc().check({ country: 'IR', postalCode: '' }, NOW)).toMatchObject({ serviceable: false, message: "We can't ship to that country." });
+    expect(await svc().check({ country: 'US', postalCode: '9410' }, NOW)).toMatchObject({ serviceable: false });
+    expect(await svc().check({ country: 'US', postalCode: '94103' }, NOW)).toMatchObject({ serviceable: true, codAvailable: false });
+  });
+});
+
 describe('addressFieldErrors', () => {
   it('Indian addresses need a valid pincode and a known state', () => {
     expect(addressFieldErrors({ country: 'IN', postalCode: '12', state: 'Nowhere' })).toEqual({ postalCode: 'Enter a valid 6-digit pincode.', state: 'Pick your state.' });
     expect(addressFieldErrors({ country: 'IN', postalCode: '560038', state: 'Karnataka' })).toEqual({});
   });
-  it('other countries need only a postal code of 3+ characters; prefix is applied', () => {
-    expect(addressFieldErrors({ country: 'GB', postalCode: 'N1', state: '' }, 'address.')).toEqual({ 'address.postalCode': 'Enter your postal code.' });
+  it('other countries need a postal code in their own shape; the prefix is applied', () => {
+    expect(addressFieldErrors({ country: 'GB', postalCode: 'N1', state: '' }, 'address.')['address.postalCode']).toMatch(/looks like N10 2LE/);
     expect(addressFieldErrors({ country: 'GB', postalCode: 'N10 2LE', state: 'England' })).toEqual({});
+  });
+  it('refuses the countries we do not ship to', () => {
+    expect(addressFieldErrors({ country: 'KP', postalCode: '12345', state: '' })).toEqual({ country: "We can't ship to that country." });
   });
 });

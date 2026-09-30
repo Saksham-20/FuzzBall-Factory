@@ -13,6 +13,12 @@ const EVENT_FOR_STATUS: Partial<Record<OrderStatus, 'order.confirmed' | 'order.s
   CANCELLED: 'order.cancelled',
 };
 
+/** True only when the address names a country other than India (an order with no country is left alone). */
+const isAbroad = (order: Pick<OrderRow, 'address'>) => {
+  const country = ((order.address ?? {}) as { country?: string }).country;
+  return !!country && country !== 'IN';
+};
+
 const dispatchFormat = new Intl.DateTimeFormat('en-IN', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'Asia/Kolkata' });
 
 /** Builds order emails and hands them to NotificationsService. Always call AFTER the transaction commits. */
@@ -38,6 +44,7 @@ export class OrderNotifier {
       url: this.orderUrl(order),
       total: order.total,
       paymentMethod: order.paymentMethod,
+      ...(isAbroad(order) ? { international: true } : {}),
       items: order.items.map((i) => ({ name: i.name, qty: i.qty })),
       estimatedDispatch: dispatchFormat.format(order.estimatedDispatch),
       ...(order.courier ? { courier: order.courier } : {}),

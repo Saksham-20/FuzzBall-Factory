@@ -5,33 +5,9 @@ import { CircleAlert, CircleCheck } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Field, Input, Select } from "@/components/ui/Field";
 import { checkShipping, type ShippingCheck } from "@/lib/api/shipping";
+import { COUNTRIES } from "@/lib/countries";
 import { formatDate } from "@/lib/format";
 import type { Product } from "@/lib/types";
-
-// Country codes match the zone table in the settings; "OTHER" falls into "Rest of world".
-const COUNTRIES = [
-  ["IN", "India"],
-  ["US", "United States"],
-  ["GB", "United Kingdom"],
-  ["CA", "Canada"],
-  ["AU", "Australia"],
-  ["AE", "United Arab Emirates"],
-  ["SG", "Singapore"],
-  ["DE", "Germany"],
-  ["FR", "France"],
-  ["NL", "Netherlands"],
-  ["IT", "Italy"],
-  ["ES", "Spain"],
-  ["IE", "Ireland"],
-  ["NZ", "New Zealand"],
-  ["MY", "Malaysia"],
-  ["NP", "Nepal"],
-  ["LK", "Sri Lanka"],
-  ["BD", "Bangladesh"],
-  ["SA", "Saudi Arabia"],
-  ["QA", "Qatar"],
-  ["OTHER", "Somewhere else"],
-] as const;
 
 type State = { status: "idle" } | { status: "loading" } | { status: "error"; message: string } | { status: "done"; result: ShippingCheck; country: string };
 
@@ -95,7 +71,7 @@ export function DeliveryCheck({ product, onResult }: Props) {
                 reset();
               }}
             >
-              {COUNTRIES.map(([code, name]) => (
+              {COUNTRIES.map(({ code, name }) => (
                 <option key={code} value={code}>
                   {name}
                 </option>

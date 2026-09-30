@@ -2,7 +2,8 @@ import { Inject, Injectable } from '@nestjs/common';
 import { addBusinessDays } from '../pricing/business-days.js';
 import { zoneFor } from '../pricing/pricing.engine.js';
 import { SettingsService } from '../settings/settings.service.js';
-import { INDIA_PINCODE } from './shipping.constants.js';
+import { postalFieldError } from './postal.js';
+import { INDIA_PINCODE, SHIPPING_BLOCKED_COUNTRIES } from './shipping.constants.js';
 import { SHIPPING_PROVIDER, type ShippingProvider } from './shipping.provider.js';
 
 /** Wire shape: web `ShippingCheck` (web/src/lib/api/shipping.ts). */
@@ -47,6 +48,12 @@ export class ShippingService {
         codAvailable: !!input.ready && s.codEnabled,
       };
     }
+
+    if (SHIPPING_BLOCKED_COUNTRIES.includes(input.country)) {
+      return { serviceable: false, message: "We can't ship to that country.", transitDays: '', codAvailable: false };
+    }
+    const postalError = input.postalCode.trim() ? postalFieldError(input.country, input.postalCode) : undefined;
+    if (postalError) return { serviceable: false, message: postalError, transitDays: '', codAvailable: false };
 
     const zone = zoneFor(input.country, s);
     return {
