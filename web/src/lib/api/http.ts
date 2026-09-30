@@ -66,10 +66,23 @@ async function send(path: string, opts: HttpOptions): Promise<Response> {
 
 let refreshing: Promise<boolean> | null = null;
 
+/**
+ * Another tab refreshed at the same moment (409): it won, and the browser already holds its newer cookies, so wait a
+ * beat and go again; if it is still busy the session is fine, so let the caller's retry find out.
+ */
+async function refreshOnce(): Promise<boolean> {
+  let res = await send("/auth/refresh", { method: "POST" });
+  if (res.status === 409) {
+    await new Promise((r) => setTimeout(r, 250));
+    res = await send("/auth/refresh", { method: "POST" });
+    return res.ok || res.status === 409;
+  }
+  return res.ok;
+}
+
 /** Rotates the session cookies. Concurrent callers share one request. Resolves false when the session is gone. */
 export function refreshSession(): Promise<boolean> {
-  refreshing ??= send("/auth/refresh", { method: "POST" })
-    .then((r) => r.ok)
+  refreshing ??= refreshOnce()
     .catch(() => false)
     .finally(() => {
       refreshing = null;
