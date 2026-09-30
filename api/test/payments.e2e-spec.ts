@@ -1,6 +1,8 @@
 import { createHmac } from 'node:crypto';
 import request from 'supertest';
+import { TimeoutError } from '../src/common/timeout.js';
 import { PaymentsService } from '../src/payments/payments.service.js';
+import { RefundsService } from '../src/payments/refunds.service.js';
 import type { RazorpayGateway } from '../src/payments/razorpay.gateway.js';
 import { bootCommerce, cleanupCommerce, guest, makeProduct, MOCK_PAYMENT_ENV, orderBody, stockOf, type CommerceApp, type Fixture } from './helpers/commerce.js';
 
@@ -15,22 +17,28 @@ const KEY_SECRET = 'e2e_key_secret';
 const WEBHOOK_SECRET = 'e2e_webhook_secret';
 const sign = (body: string | Buffer, secret = WEBHOOK_SECRET) => createHmac('sha256', secret).update(body).digest('hex');
 
+/** How the fake refund endpoint behaves: fine, down (retryable), refusing (permanent 400), or "went through but the answer never arrived". */
+type RefundMode = 'ok' | 'down' | 'refuse' | 'timeout-after-success';
+
 function fakeGateway() {
-  const calls = { orders: [] as { amountPaise: number; receipt: string }[], refunds: [] as { paymentId: string; amountPaise: number }[] };
+  const calls = { orders: [] as { amountPaise: number; receipt: string }[], refunds: [] as { paymentId: string; amountPaise: number; receipt?: string }[] };
   let n = 0;
-  let failRefunds = false;
+  let mode: RefundMode = 'ok';
   const gateway: RazorpayGateway = {
     createOrder: (args) => {
       calls.orders.push({ amountPaise: args.amountPaise, receipt: args.receipt });
       return Promise.resolve({ id: `order_${TAG}_${++n}` });
     },
     refund: (paymentId, args) => {
-      if (failRefunds) return Promise.reject(new Error('Razorpay is down'));
-      calls.refunds.push({ paymentId, amountPaise: args.amountPaise });
-      return Promise.resolve({ id: `rfnd_${n}`, status: 'processed' });
+      if (mode === 'down') return Promise.reject(new Error('Razorpay is down'));
+      if (mode === 'refuse') return Promise.reject({ statusCode: 400, error: { code: 'BAD_REQUEST_ERROR', description: 'The refund amount is more than the payment amount' } });
+      calls.refunds.push({ paymentId, amountPaise: args.amountPaise, receipt: args.receipt });
+      if (mode === 'timeout-after-success') return Promise.reject(new TimeoutError('Razorpay refund', 15_000));
+      return Promise.resolve({ id: `rfnd_${calls.refunds.length}_${TAG}`, status: 'processed' });
     },
+    listRefunds: (paymentId) => Promise.resolve(calls.refunds.filter((r) => r.paymentId === paymentId).map((r, i) => ({ id: `rfnd_listed_${i}_${TAG}`, receipt: r.receipt, amountPaise: r.amountPaise }))),
   };
-  return { gateway, calls, failRefunds: (v: boolean) => (failRefunds = v) };
+  return { gateway, calls, refundMode: (m: RefundMode) => (mode = m) };
 }
 
 describe('Razorpay live mode (e2e, fake gateway)', () => {
@@ -243,7 +251,7 @@ describe('Razorpay live mode (e2e, fake gateway)', () => {
         await verify(p.payment.razorpayOrderId, 'pay_rf_2').expect(200);
         const cancelled = await agent.post(`/orders/${p.number}/cancel`).send({ reason: 'Nope' }).expect(200);
         expect(cancelled.body).toMatchObject({ status: 'CANCELLED', paymentStatus: 'REFUNDED' });
-        expect(g.calls.refunds.slice(before)).toEqual([{ paymentId: 'pay_rf_2', amountPaise: p.total * 100 }]);
+        expect(g.calls.refunds.slice(before)).toEqual([{ paymentId: 'pay_rf_2', amountPaise: p.total * 100, receipt: expect.stringMatching(/^rf-/) }]);
         expect(await paymentRow(p.payment.paymentId)).toMatchObject({ status: 'REFUNDED', refundedAmount: p.total });
         await agent.post(`/orders/${p.number}/cancel`).send({}).expect(409);
         expect(g.calls.refunds.slice(before)).toHaveLength(1);
@@ -251,20 +259,81 @@ describe('Razorpay live mode (e2e, fake gateway)', () => {
       expect(await stockOf(t.prisma, fx.variantId)).toBe(stock0 - 3); // the first order (3 pieces) still holds its stock
     });
 
-    it('if Razorpay refuses the refund the cancellation still succeeds and the order says a manual refund is needed', async () => {
+    const placePaid = async (name: string, rzpPaymentId: string) => {
       const agent = guest(t);
-      const placed = (await agent.post('/orders').send(orderBody(`${TAG}-rffail`, [{ productId: fx.productId, variantId: fx.variantId }])).expect(201)).body as { number: string; total: number; payment: { paymentId: string; razorpayOrderId: string } };
-      await verify(placed.payment.razorpayOrderId, 'pay_rf_fail').expect(200);
-      g.failRefunds(true);
+      const placed = (await agent.post('/orders').send(orderBody(`${TAG}-${name}`, [{ productId: fx.productId, variantId: fx.variantId }])).expect(201)).body as { number: string; total: number; payment: { paymentId: string; razorpayOrderId: string } };
+      await verify(placed.payment.razorpayOrderId, rzpPaymentId).expect(200);
+      return { agent, placed };
+    };
+    const jobs = (paymentId: string) => t.prisma.refundJob.findMany({ where: { paymentId }, orderBy: { createdAt: 'asc' } });
+    const makeDue = (paymentId: string) => t.prisma.refundJob.updateMany({ where: { paymentId, status: 'PENDING' }, data: { nextAttemptAt: new Date(Date.now() - 1000) } });
+
+    it('if Razorpay is down the cancellation still succeeds, the refund is queued, and the worker completes it once Razorpay is back', async () => {
+      const { agent, placed } = await placePaid('rffail', 'pay_rf_fail');
+      g.refundMode('down');
       try {
         const res = await agent.post(`/orders/${placed.number}/cancel`).send({}).expect(200);
         expect(res.body.status).toBe('CANCELLED');
         expect(res.body.paymentStatus).toBe('PAID'); // money not returned yet
-        expect(res.body.events.at(-1).note).toContain("couldn't send the refund automatically");
-        expect(await paymentRow(placed.payment.paymentId)).toMatchObject({ status: 'PAID', refundedAmount: 0 });
+        expect(res.body.events.at(-1).note).toContain('retry automatically');
+        expect(await paymentRow(placed.payment.paymentId)).toMatchObject({ status: 'PAID', refundedAmount: 0, refundReserved: placed.total });
+        const [job] = await jobs(placed.payment.paymentId);
+        expect(job).toMatchObject({ status: 'PENDING', attempts: 1, amount: placed.total });
+        expect(job.lastError).toContain('Razorpay is down');
+        expect((await t.app.get(RefundsService).processDue()).done).toBe(0); // backing off: not due yet
       } finally {
-        g.failRefunds(false);
+        g.refundMode('ok');
       }
+      await makeDue(placed.payment.paymentId);
+      expect(await t.app.get(RefundsService).processDue()).toMatchObject({ done: 1 });
+      expect(await paymentRow(placed.payment.paymentId)).toMatchObject({ status: 'REFUNDED', refundedAmount: placed.total, refundReserved: placed.total });
+      expect((await orderRow(placed.number)).paymentStatus).toBe('REFUNDED');
+      expect((await jobs(placed.payment.paymentId))[0]).toMatchObject({ status: 'DONE' });
+    });
+
+    it('a refund that reached Razorpay but timed out is adopted on retry, never sent twice', async () => {
+      const { agent, placed } = await placePaid('rftimeout', 'pay_rf_timeout');
+      const before = g.calls.refunds.length;
+      g.refundMode('timeout-after-success');
+      try {
+        await agent.post(`/orders/${placed.number}/cancel`).send({}).expect(200);
+        expect(g.calls.refunds.slice(before)).toHaveLength(1); // Razorpay has it, our side saw a timeout
+        expect((await jobs(placed.payment.paymentId))[0]).toMatchObject({ status: 'PENDING' });
+      } finally {
+        g.refundMode('ok');
+      }
+      await makeDue(placed.payment.paymentId);
+      await t.app.get(RefundsService).processDue();
+      expect(g.calls.refunds.slice(before)).toHaveLength(1); // still exactly one refund at Razorpay
+      const [job] = await jobs(placed.payment.paymentId);
+      expect(job).toMatchObject({ status: 'DONE', attempts: 2 });
+      expect(job.razorpayRefundId).toContain('rfnd_listed_');
+      expect(await paymentRow(placed.payment.paymentId)).toMatchObject({ status: 'REFUNDED', refundedAmount: placed.total });
+    });
+
+    it('a refund Razorpay refuses for good fails at once, frees the reservation and tells the customer it will be done by hand', async () => {
+      const { agent, placed } = await placePaid('rfrefuse', 'pay_rf_refuse');
+      g.refundMode('refuse');
+      try {
+        const res = await agent.post(`/orders/${placed.number}/cancel`).send({}).expect(200);
+        expect(res.body.events.at(-1).note).toContain('by hand');
+      } finally {
+        g.refundMode('ok');
+      }
+      const [job] = await jobs(placed.payment.paymentId);
+      expect(job).toMatchObject({ status: 'FAILED', attempts: 1 });
+      expect(await paymentRow(placed.payment.paymentId)).toMatchObject({ status: 'PAID', refundedAmount: 0, refundReserved: 0 });
+      // The admin can still refund it by hand (the reservation was released).
+      expect(await t.app.get(PaymentsService).refundPayment(placed.payment.paymentId, { reason: 'manual' })).toEqual({ refunded: placed.total, pending: 0 });
+    });
+
+    it('two refunds can never overshoot the payment', async () => {
+      const { placed } = await placePaid('rfover', 'pay_rf_over');
+      const svc = t.app.get(PaymentsService);
+      const results = await Promise.allSettled([svc.refundPayment(placed.payment.paymentId, { reason: 'a' }), svc.refundPayment(placed.payment.paymentId, { reason: 'b' })]);
+      expect(results.filter((r) => r.status === 'fulfilled')).toHaveLength(1);
+      expect(g.calls.refunds.filter((r) => r.paymentId === 'pay_rf_over')).toHaveLength(1);
+      expect(await paymentRow(placed.payment.paymentId)).toMatchObject({ status: 'REFUNDED', refundedAmount: placed.total, refundReserved: placed.total });
     });
 
     it('a payment that arrives AFTER the order was cancelled is refunded automatically', async () => {
@@ -273,7 +342,7 @@ describe('Razorpay live mode (e2e, fake gateway)', () => {
       await agent.post(`/orders/${placed.number}/cancel`).send({}).expect(200);
       const before = g.calls.refunds.length;
       await webhook(captured(placed.payment.razorpayOrderId, 'pay_late', placed.payment.amountPaise)).res.expect(200);
-      expect(g.calls.refunds.slice(before)).toEqual([{ paymentId: 'pay_late', amountPaise: placed.payment.amountPaise }]);
+      expect(g.calls.refunds.slice(before)).toEqual([{ paymentId: 'pay_late', amountPaise: placed.payment.amountPaise, receipt: expect.stringMatching(/^rf-/) }]);
       expect(await paymentRow(placed.payment.paymentId)).toMatchObject({ status: 'REFUNDED' });
       const order = await orderRow(placed.number);
       expect(order).toMatchObject({ status: 'CANCELLED', paymentStatus: 'REFUNDED' });
@@ -288,7 +357,7 @@ describe('Razorpay live mode (e2e, fake gateway)', () => {
       await webhook(captured(placed.payment.razorpayOrderId, 'pay_dup_1', placed.payment.amountPaise)).res.expect(200);
       const before = g.calls.refunds.length;
       await webhook(captured(retry.razorpayOrderId, 'pay_dup_2', retry.amountPaise)).res.expect(200);
-      expect(g.calls.refunds.slice(before)).toEqual([{ paymentId: 'pay_dup_2', amountPaise: retry.amountPaise }]);
+      expect(g.calls.refunds.slice(before)).toEqual([{ paymentId: 'pay_dup_2', amountPaise: retry.amountPaise, receipt: expect.stringMatching(/^rf-/) }]);
       expect(await orderRow(placed.number)).toMatchObject({ status: 'CONFIRMED', paymentStatus: 'PAID' });
       expect(await paymentRow(placed.payment.paymentId)).toMatchObject({ status: 'PAID' });
       expect(await paymentRow(retry.paymentId)).toMatchObject({ status: 'REFUNDED' });

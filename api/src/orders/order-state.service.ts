@@ -134,9 +134,11 @@ export class OrderStateService implements OnModuleInit {
     const suffix =
       result.failed > 0
         ? " We couldn't send the refund automatically; we'll process it by hand and let you know."
-        : result.refunded > 0
-          ? ` Refund of ₹${result.refunded} is on its way to your original payment method (usually 5-7 business days).`
-          : '';
+        : result.pending > 0
+          ? ' Your refund has started but is taking longer than usual. We retry automatically until it goes through.'
+          : result.refunded > 0
+            ? ` Refund of ₹${result.refunded} is on its way to your original payment method (usually 5-7 business days).`
+            : '';
     if (!suffix) return;
     const ev = await this.prisma.orderEvent.findUnique({ where: { id: eventId }, select: { note: true } });
     await this.prisma.orderEvent.update({ where: { id: eventId }, data: { note: `${ev?.note ?? ''}${suffix}`.trim() } });
@@ -182,8 +184,9 @@ export class OrderStateService implements OnModuleInit {
     const unusable = order.status === 'CANCELLED' || (paid.length > 0 && paid[0].id !== event.paymentId);
     if (unusable) {
       try {
-        const { refunded } = await this.payments.refundPayment(event.paymentId, { reason: order.status === 'CANCELLED' ? 'Paid after cancellation' : 'Duplicate payment' });
-        await this.prisma.orderEvent.create({ data: { orderId: order.id, status: order.status, note: `Refunded ₹${refunded} automatically.` } });
+        const { refunded, pending } = await this.payments.refundPayment(event.paymentId, { reason: order.status === 'CANCELLED' ? 'Paid after cancellation' : 'Duplicate payment' });
+        const note = refunded > 0 ? `Refunded ₹${refunded} automatically.` : `Refund of ₹${pending} started; it will retry automatically until it goes through.`;
+        await this.prisma.orderEvent.create({ data: { orderId: order.id, status: order.status, note } });
       } catch (err) {
         this.logger.error(`Order ${order.number}: could not auto-refund payment ${event.paymentId}: ${(err as Error).message}`);
       }

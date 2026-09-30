@@ -580,7 +580,10 @@ model Payment {
   razorpayPaymentLinkId String?        @unique
   razorpaySignature     String?
   failureReason         String?
+  /// Rupees actually refunded at Razorpay (RefundJob DONE, or a refund made in the dashboard).
   refundedAmount        Int            @default(0)
+  /// Rupees claimed by refunds that are pending, running or done. Never above `amount`: what stops two refunds overshooting.
+  refundReserved        Int            @default(0)
   paidAt                DateTime?
   createdAt             DateTime       @default(now())
   updatedAt             DateTime       @updatedAt
@@ -588,10 +591,42 @@ model Payment {
   order   Order?         @relation(fields: [orderId], references: [id], onDelete: SetNull)
   request CustomRequest? @relation(fields: [requestId], references: [id], onDelete: SetNull)
   quote   Quote?         @relation(fields: [quoteId], references: [id], onDelete: SetNull)
+  refunds RefundJob[]
 
   @@index([orderId])
   @@index([requestId, purpose])
   @@index([status])
+}
+
+enum RefundStatus {
+  PENDING
+  PROCESSING
+  DONE
+  FAILED
+}
+
+/// One refund to send to Razorpay, retried by the scheduler until it lands (or fails for good).
+/// The Razorpay refund carries `receipt = rf-<id>`, which is how a retry finds out whether an earlier
+/// attempt (one that timed out, or whose process died) already went through.
+model RefundJob {
+  id               String       @id @default(cuid())
+  paymentId        String
+  /// Rupees.
+  amount           Int
+  reason           String
+  status           RefundStatus @default(PENDING)
+  attempts         Int          @default(0)
+  nextAttemptAt    DateTime     @default(now())
+  lastError        String?
+  razorpayRefundId String?      @unique
+  doneAt           DateTime?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  payment Payment @relation(fields: [paymentId], references: [id], onDelete: Restrict)
+
+  @@index([status, nextAttemptAt])
+  @@index([paymentId])
 }
 
 /// Provider webhook deliveries, deduped by the provider's event id.

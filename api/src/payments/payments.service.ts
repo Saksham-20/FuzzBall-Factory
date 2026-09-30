@@ -9,6 +9,7 @@ import { AppException, badRequest, conflict, ErrorCode, notFound } from '../comm
 import type { CheckoutPayment, CreatePaymentInput, PaidEvent, PaidHandler, PaymentPurpose, PaymentsPort } from './payments.types.js';
 import { RAZORPAY_GATEWAY, type RazorpayGateway } from './razorpay.gateway.js';
 import { verifyPaymentSignature, verifyWebhookSignature } from './razorpay-signature.util.js';
+import { markOrderRefundedIfUnpaid, RefundsService } from './refunds.service.js';
 
 /** 'live' = real Razorpay keys; 'mock' = PAYMENTS_MODE=mock ("test payment", never production money); 'disabled' = Razorpay unusable. */
 export type PaymentMode = 'live' | 'mock' | 'disabled';
@@ -35,7 +36,7 @@ interface WebhookBody {
   payload?: {
     payment?: { entity?: { id?: string; order_id?: string; amount?: number; currency?: string; error_description?: string; error_reason?: string } };
     order?: { entity?: { id?: string } };
-    refund?: { entity?: { id?: string; payment_id?: string; amount?: number; status?: string } };
+    refund?: { entity?: { id?: string; payment_id?: string; amount?: number; status?: string; receipt?: string | null } };
   };
 }
 
@@ -88,6 +89,7 @@ export class PaymentsService implements PaymentsPort {
     private readonly prisma: PrismaService,
     private readonly config: ConfigService<Env, true>,
     @Inject(RAZORPAY_GATEWAY) private readonly gateway: RazorpayGateway | null,
+    private readonly refunds: RefundsService,
   ) {}
 
   // ───────────── mode ─────────────
@@ -335,6 +337,8 @@ export class PaymentsService implements PaymentsPort {
       case 'refund.processed': {
         const refund = body.payload?.refund?.entity;
         if (!refund?.payment_id || refund.amount == null) return { handled: false };
+        // Our own refunds (receipt rf-<jobId>) are booked by RefundsService when the job completes; counting them here too would double them.
+        if (refund.receipt?.startsWith('rf-')) return { handled: true };
         await this.recordExternalRefund(refund.payment_id, refund.amount / 100);
         return { handled: true };
       }
@@ -353,68 +357,47 @@ export class PaymentsService implements PaymentsPort {
       if (!p || p.status === 'PENDING') return;
       const refundedAmount = Math.min(p.amount, Math.max(p.refundedAmount, Math.round(rupees)));
       const full = refundedAmount >= p.amount;
-      await tx.payment.update({ where: { id: p.id }, data: { refundedAmount, ...(full ? { status: 'REFUNDED' as const } : {}) } });
-      if (full && p.orderId) await this.markOrderRefundedIfUnpaid(tx, p.orderId);
+      await tx.payment.update({ where: { id: p.id }, data: { refundedAmount, refundReserved: Math.max(p.refundReserved, refundedAmount), ...(full ? { status: 'REFUNDED' as const } : {}) } });
+      if (full && p.orderId) await markOrderRefundedIfUnpaid(tx, p.orderId);
     });
-  }
-
-  /** The order reads REFUNDED only when no captured payment is left on it (a duplicate-payment refund must not flip a paid order). */
-  private async markOrderRefundedIfUnpaid(db: PrismaService | Prisma.TransactionClient, orderId: string): Promise<void> {
-    const stillPaid = await db.payment.count({ where: { orderId, status: 'PAID' } });
-    if (stillPaid === 0) await db.order.updateMany({ where: { id: orderId }, data: { paymentStatus: 'REFUNDED' } });
   }
 
   // ───────────── refunds ─────────────
 
   /**
-   * Refund a captured payment (whole remaining amount by default). Real Razorpay refund when live; in mock
-   * mode only the DB is updated. The refunded amount is claimed with a conditional update BEFORE the API call
-   * (two concurrent refunds can't both go through) and released if the call fails.
+   * Refund a captured payment (whole remaining amount by default). The refund is written down first (RefundsService:
+   * rupees reserved so two refunds can't overshoot), then sent to Razorpay right away. If Razorpay is down or slow the job
+   * stays PENDING and the scheduler retries it, reconciling first so a call that timed out is never sent twice.
+   * `refunded` = rupees Razorpay has confirmed; `pending` = rupees queued for retry. Mock payments only touch the DB.
+   * Throws only when the refund can't even be attempted (not captured, over the remaining amount, payments not configured)
+   * or Razorpay refuses it for good (a person must then refund it by hand).
    */
-  async refundPayment(paymentId: string, opts: { amount?: number; reason: string }): Promise<{ refunded: number }> {
-    const p = await this.prisma.payment.findUnique({ where: { id: paymentId } });
+  async refundPayment(paymentId: string, opts: { amount?: number; reason: string }): Promise<{ refunded: number; pending: number }> {
+    const p = await this.prisma.payment.findUnique({ where: { id: paymentId }, select: { razorpayPaymentId: true } });
     if (!p) throw notFound("We couldn't find that payment.");
-    if (p.status !== 'PAID') throw conflict("That payment hasn't been captured, so there is nothing to refund.");
-    // Mock payments (dev) only exist in the DB. A real payment can only be refunded with live keys: without them we must
-    // not pretend the money went back.
+    // A real payment can only be refunded with live keys: without them we must not pretend the money went back.
     const isMock = p.razorpayPaymentId?.startsWith('pay_mock_') ?? false;
     if (!isMock && this.mode !== 'live') throw new AppException(503, ErrorCode.PAYMENT_FAILED, "Refunds aren't available right now because payments aren't configured.");
-    const remaining = p.amount - p.refundedAmount;
-    const amount = opts.amount ?? remaining;
-    if (!Number.isInteger(amount) || amount < 1 || amount > remaining) throw badRequest(`Refund must be between ₹1 and ₹${remaining}.`);
-    const full = amount === remaining;
-
-    const claimed = await this.prisma.payment.updateMany({
-      where: { id: p.id, status: 'PAID', refundedAmount: p.refundedAmount },
-      data: { refundedAmount: p.refundedAmount + amount, ...(full ? { status: 'REFUNDED' as const } : {}) },
-    });
-    if (claimed.count !== 1) throw conflict('That payment was just changed. Please refresh and try again.');
-
-    try {
-      if (!isMock && p.razorpayPaymentId) {
-        await this.gateway!.refund(p.razorpayPaymentId, { amountPaise: paise(amount), notes: { reason: opts.reason.slice(0, 200) }, receipt: `rf-${p.id}`.slice(0, 40) });
-      }
-    } catch (err) {
-      await this.prisma.payment.updateMany({ where: { id: p.id }, data: { refundedAmount: p.refundedAmount, status: 'PAID' } });
-      this.logger.error(`Refund failed for payment ${p.id}: ${describeGatewayError(err)}`);
-      throw new AppException(502, ErrorCode.PAYMENT_FAILED, "The refund couldn't be issued just now. We'll retry it manually.");
-    }
-    if (full && p.orderId) await this.markOrderRefundedIfUnpaid(this.prisma, p.orderId);
-    return { refunded: amount };
+    const out = await this.refunds.refund(paymentId, opts);
+    if (out.status === 'FAILED') throw new AppException(502, ErrorCode.PAYMENT_FAILED, "The refund couldn't be issued just now. We'll refund it by hand.");
+    return out.status === 'DONE' ? { refunded: out.amount, pending: 0 } : { refunded: 0, pending: out.amount };
   }
 
-  /** Refund every captured payment of an order (cancellation / accepted return). Never throws; reports what failed. */
-  async refundOrder(orderId: string, reason: string): Promise<{ refunded: number; failed: number }> {
+  /** Refund every captured payment of an order (cancellation / accepted return). Never throws; reports what happened. */
+  async refundOrder(orderId: string, reason: string): Promise<{ refunded: number; pending: number; failed: number }> {
     const paid = await this.prisma.payment.findMany({ where: { orderId, status: 'PAID' } });
     let refunded = 0;
+    let pending = 0;
     let failed = 0;
     for (const p of paid) {
       try {
-        refunded += (await this.refundPayment(p.id, { reason })).refunded;
+        const r = await this.refundPayment(p.id, { reason });
+        refunded += r.refunded;
+        pending += r.pending;
       } catch {
         failed += 1;
       }
     }
-    return { refunded, failed };
+    return { refunded, pending, failed };
   }
 }

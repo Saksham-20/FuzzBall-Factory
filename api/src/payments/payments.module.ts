@@ -6,6 +6,7 @@ import { PaymentsController } from './payments.controller.js';
 import { PAYMENTS_PORT } from './payments.types.js';
 import { PaymentsService } from './payments.service.js';
 import { RAZORPAY_GATEWAY, SdkRazorpayGateway } from './razorpay.gateway.js';
+import { RefundsService } from './refunds.service.js';
 
 /**
  * Import this module from any domain module that takes payments, then inject either the class
@@ -15,6 +16,7 @@ import { RAZORPAY_GATEWAY, SdkRazorpayGateway } from './razorpay.gateway.js';
   controllers: [PaymentsController],
   providers: [
     PaymentsService,
+    RefundsService,
     { provide: PAYMENTS_PORT, useExisting: PaymentsService },
     {
       provide: RAZORPAY_GATEWAY,
@@ -29,6 +31,6 @@ import { RAZORPAY_GATEWAY, SdkRazorpayGateway } from './razorpay.gateway.js';
       },
     },
   ],
-  exports: [PaymentsService, PAYMENTS_PORT],
+  exports: [PaymentsService, RefundsService, PAYMENTS_PORT],
 })
 export class PaymentsModule {}

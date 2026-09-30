@@ -3,10 +3,11 @@ import type { Env } from '../config/env.js';
 import type { PrismaService } from '../prisma/prisma.service.js';
 import { PaymentsService, redactWebhookPayload } from './payments.service.js';
 import type { RazorpayGateway } from './razorpay.gateway.js';
+import type { RefundsService } from './refunds.service.js';
 
 const config = (env: Partial<Env>) => ({ get: (k: keyof Env) => env[k] }) as unknown as ConfigService<Env, true>;
-const gateway: RazorpayGateway = { createOrder: () => Promise.resolve({ id: 'order_x' }), refund: () => Promise.resolve({ id: 'rfnd_x', status: 'processed' }) };
-const make = (env: Partial<Env>, gw: RazorpayGateway | null) => new PaymentsService({} as PrismaService, config(env), gw);
+const gateway: RazorpayGateway = { createOrder: () => Promise.resolve({ id: 'order_x' }), refund: () => Promise.resolve({ id: 'rfnd_x', status: 'processed' }), listRefunds: () => Promise.resolve([]) };
+const make = (env: Partial<Env>, gw: RazorpayGateway | null) => new PaymentsService({} as PrismaService, config(env), gw, {} as RefundsService);
 
 describe('PaymentsService mode (the mock switch)', () => {
   it('is mock only when PAYMENTS_MODE=mock', () => {
@@ -83,7 +84,7 @@ describe('describeGatewayError', () => {
 
 describe('createPayment when the gateway rejects', () => {
   it('answers 502 with a friendly message and never leaks the gateway error', async () => {
-    const failing: RazorpayGateway = { createOrder: () => Promise.reject({ statusCode: 500, error: { code: 'SERVER_ERROR', description: 'secret internal detail' } }), refund: () => Promise.resolve({ id: 'r', status: 'processed' }) };
+    const failing: RazorpayGateway = { createOrder: () => Promise.reject({ statusCode: 500, error: { code: 'SERVER_ERROR', description: 'secret internal detail' } }), refund: () => Promise.resolve({ id: 'r', status: 'processed' }), listRefunds: () => Promise.resolve([]) };
     const s = make({ NODE_ENV: 'test', RAZORPAY_KEY_ID: 'k', RAZORPAY_KEY_SECRET: 's' }, failing);
     const err: unknown = await s.createPayment({ purpose: 'ORDER', amount: 500, orderId: 'o1', receipt: 'FB-1' }).then(
       () => undefined,

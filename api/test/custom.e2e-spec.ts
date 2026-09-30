@@ -61,6 +61,7 @@ describe('custom work orders (e2e)', () => {
   afterAll(async () => {
     const requests = await t.prisma.customRequest.findMany({ where: { number: { in: created } }, select: { id: true } });
     const ids = requests.map((r) => r.id);
+    await t.prisma.refundJob.deleteMany({ where: { payment: { requestId: { in: ids } } } });
     await t.prisma.payment.deleteMany({ where: { requestId: { in: ids } } });
     await t.prisma.idempotencyKey.deleteMany({ where: { userId: { in: [maya.id, other.id, admin.id] } } });
     await t.prisma.customRequest.deleteMany({ where: { id: { in: ids } } });

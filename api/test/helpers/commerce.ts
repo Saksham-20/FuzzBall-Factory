@@ -122,6 +122,7 @@ export function orderBody(tag: string, lines: { productId: string; variantId: st
 export async function cleanupCommerce(prisma: PrismaService, opts: { tags: string[]; couponCodes?: string[]; userIds?: string[] }) {
   const orders = await prisma.order.findMany({ where: { OR: opts.tags.map((t) => ({ contactEmail: { startsWith: t } })) }, select: { id: true } });
   const ids = orders.map((o) => o.id);
+  await prisma.refundJob.deleteMany({ where: { payment: { orderId: { in: ids } } } });
   await prisma.payment.deleteMany({ where: { orderId: { in: ids } } });
   await prisma.couponRedemption.deleteMany({ where: { orderId: { in: ids } } });
   await prisma.review.deleteMany({ where: { orderId: { in: ids } } });
