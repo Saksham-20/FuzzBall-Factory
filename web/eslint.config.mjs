@@ -11,6 +11,8 @@ const eslintConfig = defineConfig([
     ".next/**",
     // Alternate dist dirs (NEXT_DIST_DIR=.next-vps, .next-real, ...)
     ".next-*/**",
+    // Hand-assembled test-VPS bundle (local only, git-ignored)
+    ".deploy-vps/**",
     "out/**",
     "build/**",
     "next-env.d.ts",

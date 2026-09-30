@@ -1,2 +1,11 @@
 # Local-only notes with real server details (the public copy is docs/DEPLOY_VPS.md).
 *.local.md
+
+# macOS
+.DS_Store
+
+# Machine-local Claude Code settings (can hold server addresses)
+.claude/settings.local.json
+
+# Hand-assembled test-VPS bundle (contains node_modules and maker photos)
+web/.deploy-vps/
