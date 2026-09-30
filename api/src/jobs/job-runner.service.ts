@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { Env } from '../config/env.js';
+import { reportError } from '../common/error-reporter.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 
 /**
@@ -37,6 +38,7 @@ export class JobRunner {
       );
     } catch (err) {
       this.logger.error(`Job ${name} failed: ${(err as Error).message}`);
+      reportError(err, { area: 'jobs', extra: { job: name } });
       return false;
     } finally {
       this.running.delete(name);

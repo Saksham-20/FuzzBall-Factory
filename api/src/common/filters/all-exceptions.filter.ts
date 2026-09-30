@@ -1,6 +1,7 @@
 import { type ArgumentsHost, Catch, type ExceptionFilter, HttpException, HttpStatus, Logger } from '@nestjs/common';
 import { HttpAdapterHost } from '@nestjs/core';
 import { ErrorCode, type ErrorBody } from '../errors.js';
+import { reportError } from '../error-reporter.js';
 
 const CODE_BY_STATUS: Record<number, string> = {
   400: ErrorCode.BAD_REQUEST,
@@ -80,6 +81,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
     if (log) {
       const e = log as Error;
       this.logger.error(e?.message ?? JSON.stringify(log), e?.stack);
+      reportError(log, { area: 'http' });
     }
     const { httpAdapter } = this.httpAdapterHost;
     httpAdapter.reply(host.switchToHttp().getResponse(), body, status);

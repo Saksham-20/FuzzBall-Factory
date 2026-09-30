@@ -7,6 +7,7 @@ import type { Prisma } from '../generated/prisma/client.js';
 import type { PaymentStatus } from '../generated/prisma/enums.js';
 import { AppException, badRequest, conflict, ErrorCode, notFound } from '../common/errors.js';
 import type { CheckoutPayment, CreatePaymentInput, PaidEvent, PaidHandler, PaidListener, PaymentPurpose, PaymentsPort } from './payments.types.js';
+import { reportError } from '../common/error-reporter.js';
 import { RAZORPAY_GATEWAY, type RazorpayGateway } from './razorpay.gateway.js';
 import { verifyPaymentSignature, verifyWebhookSignature } from './razorpay-signature.util.js';
 import { markOrderRefundedIfUnpaid, RefundsService } from './refunds.service.js';
@@ -268,6 +269,7 @@ export class PaymentsService implements PaymentsPort {
           await listener(outcome.event);
         } catch (err) {
           this.logger.error(`Paid listener failed for ${outcome.event.paymentId}: ${(err as Error).message}`);
+          reportError(err, { area: 'payments', extra: { paymentId: outcome.event.paymentId, purpose: outcome.event.purpose } });
         }
       }
     }
@@ -325,6 +327,7 @@ export class PaymentsService implements PaymentsPort {
     } catch (err) {
       await this.prisma.webhookEvent.update({ where: { eventId }, data: { error: (err as Error).message.slice(0, 500) } }).catch(() => undefined);
       this.logger.error(`Webhook ${type} (${eventId}) failed: ${(err as Error).message}`);
+      reportError(err, { area: 'payments', extra: { webhookType: type, eventId } });
       throw err;
     }
   }
@@ -347,6 +350,7 @@ export class PaymentsService implements PaymentsPort {
           // with the reason on it, and shout so someone reconciles it by hand in the Razorpay dashboard.
           await this.prisma.payment.updateMany({ where: { id: exists.id, status: 'PENDING' }, data: { failureReason: err.message.slice(0, 500) } });
           this.logger.error(`[NEEDS REVIEW] ${err.message} (Razorpay payment ${payment.id})`);
+          reportError(err, { area: 'payments', extra: { paymentId: exists.id, razorpayPaymentId: payment.id } });
           return { handled: true, note: err.message.slice(0, 500) };
         }
         return { handled: true };
@@ -367,6 +371,7 @@ export class PaymentsService implements PaymentsPort {
       }
       case 'refund.failed':
         this.logger.warn(`Razorpay reported a failed refund for payment ${body.payload?.refund?.entity?.payment_id ?? '?'}: process it manually`);
+        reportError(new Error('Razorpay reported a failed refund'), { area: 'refunds', extra: { razorpayPaymentId: body.payload?.refund?.entity?.payment_id } });
         return { handled: true };
       default:
         return { handled: false };

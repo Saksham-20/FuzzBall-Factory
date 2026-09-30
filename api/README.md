@@ -52,6 +52,14 @@ Seeded logins (dev only, password `fuzzball123`): `admin@fuzzball.test` (admin, 
 
 Reset the local database completely: `npx prisma migrate reset` (drops, re-migrates, re-seeds).
 
+## Operations
+
+- **Health:** `GET /health/live` (process up) and `GET /health/ready` (database reachable, every migration finished, 503 once shutdown begins). Point uptime monitors and deploy gates at `ready`.
+- **Logs:** one JSON line per request (pino) with `req.id`; send `x-request-id` from nginx and it is kept, otherwise one is minted and echoed in the response header. Authorization, cookies, the Razorpay signature and query strings are never logged. `LOG_LEVEL` overrides the default.
+- **Errors:** set `SENTRY_DSN` to send unexpected 500s, job crashes, failed or stuck refunds and payment amount mismatches (tag `area`: `http`, `jobs`, `refunds`, `payments`, `boot`). Request bodies, cookies and headers are stripped before sending.
+- **Scheduled jobs** (one instance at a time, Postgres advisory lock): unpaid-order sweep, refund worker, quote expiry, token and webhook purges, idempotency purge. Off under `NODE_ENV=test`.
+- **Database limits:** `DB_POOL_MAX`, `DB_STATEMENT_TIMEOUT_MS`, `DB_IDLE_TX_TIMEOUT_MS` (see `.env.example`).
+
 ## Prisma 7 notes
 
 - The datasource URL lives in `prisma.config.ts` (loaded from `.env`), not in `schema.prisma`.

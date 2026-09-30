@@ -4,6 +4,7 @@ import { retryRead } from '../common/timeout.js';
 import type { Prisma } from '../generated/prisma/client.js';
 import type { RefundStatus } from '../generated/prisma/enums.js';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { reportError } from '../common/error-reporter.js';
 import { RAZORPAY_GATEWAY, type RazorpayGateway } from './razorpay.gateway.js';
 
 /** Pause after failed attempt N (1-based). Attempt 8 that fails is final. */
@@ -130,6 +131,7 @@ export class RefundsService {
     for (const { id } of due) {
       const out = await this.process(id).catch((e: Error) => {
         this.logger.error(`Refund job ${id} crashed: ${e.message}`);
+        reportError(e, { area: 'refunds', extra: { refundJobId: id } });
         return null;
       });
       if (out?.status === 'DONE') done += 1;
@@ -162,6 +164,7 @@ export class RefundsService {
         // Give the rupees back to the payment so a person can refund it by hand from the admin.
         this.prisma.payment.update({ where: { id: job.paymentId }, data: { refundReserved: { decrement: job.amount } } }),
       ]);
+      reportError(new Error(`Refund gave up: ${message}`), { area: 'refunds', extra: { refundJobId: job.id, paymentId: job.paymentId, amount: job.amount, attempts: job.attempts } });
       this.logger.error(`[REFUND FAILED] job ${job.id} (payment ${job.paymentId}, ₹${job.amount}) gave up after ${job.attempts} attempt(s): ${message}. Refund it by hand.`);
       return { jobId: job.id, status: 'FAILED', amount: job.amount, lastError: message };
     }

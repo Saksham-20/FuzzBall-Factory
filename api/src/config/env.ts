@@ -72,6 +72,13 @@ const rawSchema = z.object({
   MAIL_FROM: z.string().min(1).default('FuzzBall Factory <hello@fuzzballfactory.example>'),
 
   WHATSAPP_NUMBER: optional(z.string()),
+
+  /** Error tracking. Unset = off. Failed refunds, payment mismatches, job crashes and unexpected 500s are sent. */
+  SENTRY_DSN: optional(z.string().url()),
+  /** Defaults to NODE_ENV. Set `staging` on a production-mode staging box so it does not page as production. */
+  SENTRY_ENVIRONMENT: optional(z.string()),
+  /** Git sha of the deployed build, set by the deploy script. */
+  SENTRY_RELEASE: optional(z.string()),
 });
 
 type Raw = z.infer<typeof rawSchema>;
