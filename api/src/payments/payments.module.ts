@@ -20,6 +20,7 @@ import { RAZORPAY_GATEWAY, SdkRazorpayGateway } from './razorpay.gateway.js';
       provide: RAZORPAY_GATEWAY,
       inject: [ConfigService],
       useFactory: (config: ConfigService<Env, true>) => {
+        if (config.get('PAYMENTS_MODE', { infer: true }) === 'mock') return null;
         const keyId = config.get('RAZORPAY_KEY_ID', { infer: true });
         const secret = config.get('RAZORPAY_KEY_SECRET', { infer: true });
         if (keyId && secret) return new SdkRazorpayGateway(keyId, secret);

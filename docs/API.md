@@ -314,9 +314,9 @@ and is the single place a payment becomes PAID (`markPaid`): one transaction fli
 
 | Mode | When | Behaviour |
 |---|---|---|
-| live | `RAZORPAY_KEY_ID` + `RAZORPAY_KEY_SECRET` set | Real Razorpay Orders API. `mock` is `false`. `POST /payments/mock/*` answers 404 |
-| mock | no keys and `NODE_ENV !== 'production'` | `mock: true`, `razorpayOrderId` is `order_mock_...`, `keyId` is `rzp_test_mock`. Confirm with `POST /payments/mock/:paymentId/confirm { ok }` |
-| disabled | no keys in production | Online orders/payments are refused with 503 `PAYMENT_FAILED` (the order is cancelled and stock released). COD still works. Mock is impossible |
+| live | `PAYMENTS_MODE=razorpay` (or unset outside production with both keys set), with `RAZORPAY_KEY_ID` + `RAZORPAY_KEY_SECRET` | Real Razorpay Orders API. `mock` is `false`. `POST /payments/mock/*` answers 404 |
+| mock | `PAYMENTS_MODE=mock` (or unset outside production with no keys). Never touches Razorpay even if keys are set | `mock: true`, `razorpayOrderId` is `order_mock_...`, `keyId` is `rzp_test_mock`. Confirm with `POST /payments/mock/:paymentId/confirm { ok }` |
+| disabled | razorpay chosen but unusable (boot validation makes this unreachable) | Online orders/payments are refused with 503 `PAYMENT_FAILED` (the order is cancelled and stock released). COD still works. Mock is impossible |
 
 - `POST /payments/razorpay/verify` `{ razorpay_order_id, razorpay_payment_id, razorpay_signature }` (the three values Checkout hands to `handler`): HMAC-SHA256 check, then mark PAID. 200 `PaymentResult`
   `{ paymentId, status, purpose, orderNumber?, customRequestNumber?, alreadyProcessed }`; bad signature 400 `PAYMENT_FAILED` (never marks the payment failed). Accepts `Idempotency-Key`.

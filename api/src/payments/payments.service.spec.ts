@@ -9,37 +9,42 @@ const gateway: RazorpayGateway = { createOrder: () => Promise.resolve({ id: 'ord
 const make = (env: Partial<Env>, gw: RazorpayGateway | null) => new PaymentsService({} as PrismaService, config(env), gw);
 
 describe('PaymentsService mode (the mock switch)', () => {
-  it('is mock without keys outside production', () => {
-    const s = make({ NODE_ENV: 'development' }, null);
+  it('is mock only when PAYMENTS_MODE=mock', () => {
+    const s = make({ NODE_ENV: 'development', PAYMENTS_MODE: 'mock' }, null);
     expect(s.mode).toBe('mock');
     expect(s.mockEnabled).toBe(true);
-    expect(make({ NODE_ENV: 'test' }, null).mockEnabled).toBe(true);
+    expect(make({ NODE_ENV: 'production', PAYMENTS_MODE: 'mock' }, null).mockEnabled).toBe(true);
   });
 
-  it('is disabled (never mock) without keys in production', () => {
-    const s = make({ NODE_ENV: 'production' }, null);
+  it('mock mode ignores Razorpay keys and a gateway: live money is impossible', () => {
+    const s = make({ NODE_ENV: 'test', PAYMENTS_MODE: 'mock', RAZORPAY_KEY_ID: 'rzp_test_1', RAZORPAY_KEY_SECRET: 'sec' }, gateway);
+    expect(s.mode).toBe('mock');
+  });
+
+  it('is disabled (never mock) when razorpay is chosen but unusable', () => {
+    const s = make({ NODE_ENV: 'production', PAYMENTS_MODE: 'razorpay' }, null);
     expect(s.mode).toBe('disabled');
     expect(s.mockEnabled).toBe(false);
   });
 
-  it('is live when keys exist, in any environment: mock is impossible', () => {
+  it('is live with razorpay mode, keys and a gateway, in any environment: mock is impossible', () => {
     for (const NODE_ENV of ['development', 'test', 'production'] as const) {
-      const s = make({ NODE_ENV, RAZORPAY_KEY_ID: 'rzp_test_1', RAZORPAY_KEY_SECRET: 'sec' }, gateway);
+      const s = make({ NODE_ENV, PAYMENTS_MODE: 'razorpay', RAZORPAY_KEY_ID: 'rzp_test_1', RAZORPAY_KEY_SECRET: 'sec' }, gateway);
       expect(s.mode).toBe('live');
       expect(s.mockEnabled).toBe(false);
     }
   });
 
   it('mockConfirm answers 404 (before touching the database) when mock is not enabled', async () => {
-    const live = make({ NODE_ENV: 'development', RAZORPAY_KEY_ID: 'k', RAZORPAY_KEY_SECRET: 's' }, gateway);
+    const live = make({ NODE_ENV: 'development', PAYMENTS_MODE: 'razorpay', RAZORPAY_KEY_ID: 'k', RAZORPAY_KEY_SECRET: 's' }, gateway);
     await expect(live.mockConfirm('whatever', true)).rejects.toMatchObject({ status: 404 });
-    const prod = make({ NODE_ENV: 'production' }, null);
-    await expect(prod.mockConfirm('whatever', true)).rejects.toMatchObject({ status: 404 });
+    const unusable = make({ NODE_ENV: 'production', PAYMENTS_MODE: 'razorpay' }, null);
+    await expect(unusable.mockConfirm('whatever', true)).rejects.toMatchObject({ status: 404 });
   });
 
-  it('createPayment refuses to run without keys in production', async () => {
-    const prod = make({ NODE_ENV: 'production' }, null);
-    await expect(prod.createPayment({ purpose: 'ORDER', amount: 500, orderId: 'o1', receipt: 'FB-1' })).rejects.toMatchObject({ status: 503 });
+  it('createPayment refuses to run when razorpay is chosen but unusable', async () => {
+    const unusable = make({ NODE_ENV: 'production', PAYMENTS_MODE: 'razorpay' }, null);
+    await expect(unusable.createPayment({ purpose: 'ORDER', amount: 500, orderId: 'o1', receipt: 'FB-1' })).rejects.toMatchObject({ status: 503 });
   });
 
   it('createPayment rejects non-integer or sub-rupee amounts', async () => {

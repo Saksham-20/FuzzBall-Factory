@@ -13,8 +13,8 @@ async function bootstrap() {
   configureApp(app);
 
   const port = app.get<ConfigService<Env, true>>(ConfigService).get('PORT', { infer: true });
-  // HOST=127.0.0.1 keeps the API behind a reverse proxy; unset listens on every interface (dev default).
-  await app.listen(port, process.env.HOST || '0.0.0.0');
+  // HOST defaults to 127.0.0.1 in production (behind a reverse proxy) and 0.0.0.0 elsewhere; see config/env.ts.
+  await app.listen(port, app.get<ConfigService<Env, true>>(ConfigService).get('HOST', { infer: true }));
   new Logger('Bootstrap').log(`API listening on http://localhost:${port}`);
 }
 

@@ -1,7 +1,7 @@
 import { createHash, randomBytes } from 'node:crypto';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { isProduction, type Env } from '../config/env.js';
+import type { Env } from '../config/env.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import type { Prisma } from '../generated/prisma/client.js';
 import type { PaymentStatus } from '../generated/prisma/enums.js';
@@ -10,7 +10,7 @@ import type { CheckoutPayment, CreatePaymentInput, PaidEvent, PaidHandler, Payme
 import { RAZORPAY_GATEWAY, type RazorpayGateway } from './razorpay.gateway.js';
 import { verifyPaymentSignature, verifyWebhookSignature } from './razorpay-signature.util.js';
 
-/** 'live' = real Razorpay keys; 'mock' = no keys outside production (dev "test payment"); 'disabled' = no keys in production. */
+/** 'live' = real Razorpay keys; 'mock' = PAYMENTS_MODE=mock ("test payment", never production money); 'disabled' = Razorpay unusable. */
 export type PaymentMode = 'live' | 'mock' | 'disabled';
 
 export const MOCK_ORDER_PREFIX = 'order_mock_';
@@ -85,8 +85,11 @@ export class PaymentsService implements PaymentsPort {
   // ───────────── mode ─────────────
 
   get mode(): PaymentMode {
+    // PAYMENTS_MODE=mock never touches Razorpay, even if keys are set; env validation makes this choice explicit.
+    if (this.config.get('PAYMENTS_MODE', { infer: true }) === 'mock') return 'mock';
     if (this.gateway && this.keySecret) return 'live';
-    return isProduction({ NODE_ENV: this.config.get('NODE_ENV', { infer: true }) }) ? 'disabled' : 'mock';
+    // Razorpay was chosen but can't be used (validation makes this unreachable at boot): refuse rather than fake it.
+    return 'disabled';
   }
 
   private get keyId() {
@@ -162,7 +165,7 @@ export class PaymentsService implements PaymentsPort {
 
   // ───────────── mock (dev only) ─────────────
 
-  /** True only with no Razorpay keys outside production. The controller answers 404 otherwise. */
+  /** True only when PAYMENTS_MODE resolves to mock. The controller answers 404 otherwise. */
   get mockEnabled(): boolean {
     return this.mode === 'mock';
   }

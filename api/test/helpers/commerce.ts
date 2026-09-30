@@ -22,6 +22,8 @@ export interface CommerceApp extends TestApp {
  * "no Razorpay keys" (mock payments) or "keys present" (live) whatever is in the developer's .env.
  * `config` pins validated settings such as NODE_ENV (Nest's ConfigService validated the env once at import, so
  * changing process.env later does not affect keys that were already set; `env` is enough for optional keys).
+ * PAYMENTS_MODE is pinned the same way validateEnv would resolve it: `razorpay` when `env` sets a key id, else `mock`,
+ * unless `config` says otherwise.
  * `gateway` replaces the Razorpay SDK wrapper with a fake so no test ever calls the network.
  */
 export async function bootCommerce(opts: { env?: Record<string, string | undefined>; config?: Record<string, unknown>; gateway?: RazorpayGateway } = {}): Promise<CommerceApp> {
@@ -45,11 +47,10 @@ export async function bootCommerce(opts: { env?: Record<string, string | undefin
   const moduleRef = await builder.compile();
   const app: INestApplication = moduleRef.createNestApplication({ rawBody: true });
   configureApp(app);
-  if (opts.config) {
-    const cfg = app.get(ConfigService);
-    const original = cfg.get.bind(cfg) as (key: string, ...rest: unknown[]) => unknown;
-    (cfg as unknown as { get: typeof original }).get = (key, ...rest) => (key in opts.config! ? opts.config![key] : original(key, ...rest));
-  }
+  const pinned: Record<string, unknown> = { PAYMENTS_MODE: opts.env?.RAZORPAY_KEY_ID ? 'razorpay' : 'mock', ...opts.config };
+  const cfg = app.get(ConfigService);
+  const original = cfg.get.bind(cfg) as (key: string, ...rest: unknown[]) => unknown;
+  (cfg as unknown as { get: typeof original }).get = (key, ...rest) => (key in pinned ? pinned[key] : original(key, ...rest));
   await app.init();
   return {
     app,

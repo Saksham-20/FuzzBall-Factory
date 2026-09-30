@@ -23,9 +23,13 @@ npm run start:dev                # http://localhost:4000  (watch mode)
 Generate real secrets: `openssl rand -base64 48` for `JWT_ACCESS_SECRET` and `JWT_REFRESH_SECRET`
 (production requires 32+ chars and rejects placeholders). Env is validated with zod at boot
 (`src/config/env.ts`): a bad or missing variable fails fast with one readable message.
-Two variables are read outside that schema: `HOST` sets the listen address (`127.0.0.1` keeps the API
-behind a reverse proxy; unset, it listens on every interface), and `SEED_SAMPLES=true` makes `npm run seed`
-add the sample users, catalogue and coupons even when `NODE_ENV=production`, which skips them by default.
+`NODE_ENV` has no default: the API refuses to boot without it (copy `.env.example`, which sets `development`).
+In production these must also be set on purpose: `PAYMENTS_MODE` (`razorpay` or `mock`), `WEB_ORIGIN` and
+`TRUST_PROXY`; live payments (`razorpay`) additionally require the Razorpay keys and webhook secret,
+`CLOUDINARY_URL` and `RESEND_API_KEY`. `HOST` defaults to `127.0.0.1` in production (behind nginx) and
+`0.0.0.0` elsewhere; `COOKIE_SECURE` defaults to true in production. One variable is read outside the schema:
+`SEED_SAMPLES=true` makes `npm run seed` add the sample users, catalogue and coupons even when
+`NODE_ENV=production`, which skips them by default.
 
 Seeded logins (dev only, password `fuzzball123`): `admin@fuzzball.test` (admin, from `ADMIN_EMAIL` /
 `ADMIN_PASSWORD`), `maya@example.com`, `arjun@example.com`, `sophie@example.com`.
@@ -83,14 +87,14 @@ Without `RESEND_API_KEY`, emails (welcome, password reset…) are printed to the
 | `POST /auth/reset` `{ token, password }` | 204; sets the password and signs out every device |
 
 Cookies: `fbf_at` (access JWT, 15 min, path `/`) and `fbf_rt` (refresh JWT, 30 days, path `/auth`), both
-`HttpOnly; SameSite=Lax`, `Secure` in production. `Authorization: Bearer <access>` is accepted for tooling.
+`HttpOnly; SameSite=Lax`, `Secure` in production (`COOKIE_SECURE` overrides; `false` only for a staging box without HTTPS). `Authorization: Bearer <access>` is accepted for tooling.
 Signup/login/forgot/reset are limited to 5 requests per minute per IP; everything else 100/min.
 
 
 ## Commerce quick start (mock payments)
 
-With no Razorpay keys (the default `.env`) and `NODE_ENV=development`, online payments run in **mock mode**: `POST /orders` returns `payment.mock: true` and you settle it with
-`POST /payments/mock/:paymentId/confirm {"ok": true}`. Add `RAZORPAY_KEY_ID` / `RAZORPAY_KEY_SECRET` / `RAZORPAY_WEBHOOK_SECRET` for real (test-mode) payments; mock then disappears. Details and the full
+With `PAYMENTS_MODE=mock`, or no Razorpay keys outside production (the default `.env`), online payments run in **mock mode**: `POST /orders` returns `payment.mock: true` and you settle it with
+`POST /payments/mock/:paymentId/confirm {"ok": true}`. Mock mode never touches Razorpay, even if keys are set. Set `PAYMENTS_MODE=razorpay` (or just add the keys outside production) with `RAZORPAY_KEY_ID` / `RAZORPAY_KEY_SECRET` / `RAZORPAY_WEBHOOK_SECRET` for real (test-mode) payments; mock then disappears. A production box must choose explicitly: `mock` is for a staging box only. Details and the full
 endpoint table: [`../docs/API.md`](../docs/API.md#commerce-endpoints-catalogue-checkout-orders-payments-account-reviews-uploads).
 
 ```bash

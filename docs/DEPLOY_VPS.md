@@ -14,6 +14,8 @@ Test site only: `http://<vps-ip>` (plain HTTP, no domain yet, `X-Robots-Tag: noi
 
 `NODE_ENV=development` on the API on purpose: auth cookies are `Secure` only in production, and this site is HTTP. It also keeps the mock payment mode on (no Razorpay keys). Switch to production once there is a domain + HTTPS.
 
+The API now refuses to boot without `NODE_ENV`, so keep it set in `/etc/fuzzball/api.env`. Once you want this box out of development mode without HTTPS yet, use `NODE_ENV=production`, `PAYMENTS_MODE=mock`, `COOKIE_SECURE=false`, `TRUST_PROXY=1`, `WEB_ORIGIN=<the site origin>`: production checks (secret strength, no logged reset links) apply while mock payments and HTTP cookies keep working. `COOKIE_SECURE=false` is refused together with live payments.
+
 While it runs in development mode and is reachable from the internet, treat it as open: the mock payment confirm route is public, the JWT secret strength check is skipped, and the seed falls back to the sample admin password unless `ADMIN_PASSWORD` is set. Seed it with a unique `ADMIN_PASSWORD`, use long random JWT secrets that appear nowhere in this repo, and keep real customers off it.
 
 ## Redeploy (build on your machine, never on the VPS)

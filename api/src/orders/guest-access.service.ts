@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import type { Request, Response } from 'express';
-import { isProduction, type Env } from '../config/env.js';
+import type { Env } from '../config/env.js';
 
 export const GUEST_ORDERS_COOKIE = 'fbf_go';
 const MAX_REMEMBERED = 20;
@@ -49,7 +49,7 @@ export class GuestAccessService {
     res.cookie(GUEST_ORDERS_COOKIE, token, {
       httpOnly: true,
       sameSite: 'lax',
-      secure: isProduction({ NODE_ENV: this.config.get('NODE_ENV', { infer: true }) }),
+      secure: this.config.get('COOKIE_SECURE', { infer: true }),
       path: '/orders',
       maxAge: TTL_DAYS * 24 * 60 * 60 * 1000,
       ...(domain ? { domain } : {}),

@@ -28,7 +28,7 @@ export interface CheckoutPayment {
   keyId: string;
   amountPaise: number;
   currency: 'INR';
-  /** True when no Razorpay keys are configured and NODE_ENV is not production: confirm via POST /payments/mock/:paymentId/confirm. */
+  /** True when PAYMENTS_MODE is mock (never with live payments): confirm via POST /payments/mock/:paymentId/confirm. */
   mock: boolean;
 }
 

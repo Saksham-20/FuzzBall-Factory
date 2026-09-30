@@ -2,7 +2,7 @@ import { Body, Controller, Get, HttpCode, Post, Req, Res } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config';
 import { Throttle } from '@nestjs/throttler';
 import type { Request, Response } from 'express';
-import { isProduction, type Env } from '../config/env.js';
+import type { Env } from '../config/env.js';
 import { CurrentUser } from '../common/decorators/current-user.decorator.js';
 import { Public } from '../common/decorators/public.decorator.js';
 import type { RequestUser } from '../common/types/auth.types.js';
@@ -90,7 +90,7 @@ export class AuthController {
 
   private cookieConfig(): CookieConfig {
     return {
-      secure: isProduction({ NODE_ENV: this.config.get('NODE_ENV', { infer: true }) }),
+      secure: this.config.get('COOKIE_SECURE', { infer: true }),
       domain: this.config.get('COOKIE_DOMAIN', { infer: true }),
       accessTtlMs: this.tokens.accessTtlMs,
       refreshTtlMs: this.tokens.refreshTtlMs,

@@ -294,13 +294,13 @@ describe('Razorpay live mode (e2e, fake gateway)', () => {
   });
 });
 
-describe('payments in production without keys (e2e)', () => {
+describe('payments with razorpay chosen but no keys (e2e)', () => {
   let t: CommerceApp;
   const TAG2 = `${TAG}prod`;
   let fx: Fixture;
 
   beforeAll(async () => {
-    t = await bootCommerce({ env: MOCK_PAYMENT_ENV, config: { NODE_ENV: 'production' } });
+    t = await bootCommerce({ env: MOCK_PAYMENT_ENV, config: { NODE_ENV: 'production', PAYMENTS_MODE: 'razorpay' } });
     fx = await makeProduct(t.prisma, TAG2, { stock: 3 });
   });
   afterAll(async () => {

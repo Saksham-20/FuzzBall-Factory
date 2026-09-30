@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Resend } from 'resend';
-import type { Env } from '../config/env.js';
+import { isProduction, type Env } from '../config/env.js';
 
 export interface EmailMessage {
   to: string;
@@ -31,7 +31,12 @@ export class EmailProvider {
   async send(message: EmailMessage): Promise<EmailSendResult> {
     const key = this.config.get('RESEND_API_KEY', { infer: true });
     if (!key) {
-      this.logger.log(`[email:mock] to=${message.to} subject="${message.subject}"\n${message.text}`);
+      // The body carries password-reset and order links: it is only ever printed outside production.
+      if (isProduction({ NODE_ENV: this.config.get('NODE_ENV', { infer: true }) })) {
+        this.logger.warn(`[email:mock] NOT SENT (no RESEND_API_KEY) to=${message.to} subject="${message.subject}"`);
+      } else {
+        this.logger.log(`[email:mock] to=${message.to} subject="${message.subject}"\n${message.text}`);
+      }
       return { mock: true };
     }
     this.client ??= new Resend(key);

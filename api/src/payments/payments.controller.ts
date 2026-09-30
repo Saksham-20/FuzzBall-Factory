@@ -45,8 +45,8 @@ export class PaymentsController {
   }
 
   /**
-   * DEV ONLY. Simulates the Razorpay callback for a `mock: true` payment. Answers 404 when Razorpay keys are
-   * configured or NODE_ENV is production. `ok: false` returns 402 and leaves the order pending for a retry.
+   * MOCK MODE ONLY. Simulates the Razorpay callback for a `mock: true` payment. Answers 404 unless PAYMENTS_MODE
+   * resolves to mock. `ok: false` returns 402 and leaves the order pending for a retry.
    */
   @Public()
   @Throttle({ default: { limit: 30, ttl: 60_000 } })

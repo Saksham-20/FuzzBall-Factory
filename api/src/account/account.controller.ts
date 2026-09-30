@@ -4,7 +4,7 @@ import { Throttle } from '@nestjs/throttler';
 import type { Request, Response } from 'express';
 import { setAuthCookies } from '../auth/cookies.js';
 import { TokenService } from '../auth/token.service.js';
-import { isProduction, type Env } from '../config/env.js';
+import type { Env } from '../config/env.js';
 import { CurrentUser } from '../common/decorators/current-user.decorator.js';
 import type { RequestUser } from '../common/types/auth.types.js';
 import type { UserDto } from '../users/user.mapper.js';
@@ -38,7 +38,7 @@ export class AccountController {
   async changePassword(@CurrentUser() user: RequestUser, @Body() dto: ChangePasswordDto, @Req() req: Request, @Res({ passthrough: true }) res: Response): Promise<void> {
     const tokens = await this.account.changePassword(user.userId, dto, { userAgent: req.headers['user-agent'], ip: req.ip });
     setAuthCookies(res, tokens, {
-      secure: isProduction({ NODE_ENV: this.config.get('NODE_ENV', { infer: true }) }),
+      secure: this.config.get('COOKIE_SECURE', { infer: true }),
       domain: this.config.get('COOKIE_DOMAIN', { infer: true }),
       accessTtlMs: this.tokens.accessTtlMs,
       refreshTtlMs: this.tokens.refreshTtlMs,
