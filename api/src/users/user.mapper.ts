@@ -6,6 +6,8 @@ export interface UserDto {
   name: string;
   email: string;
   phone?: string;
+  /** The inbox has been proven (signup link, password reset, or a confirmed email change). */
+  emailVerified: boolean;
   role: Role;
   createdAt: string;
 }
@@ -15,6 +17,7 @@ export interface UserRow {
   name: string;
   email: string;
   phone: string | null;
+  emailVerified: boolean;
   role: Role;
   createdAt: Date;
 }
@@ -24,6 +27,7 @@ export const toUserDto = (u: UserRow): UserDto => ({
   name: u.name,
   email: u.email,
   ...(u.phone ? { phone: u.phone } : {}),
+  emailVerified: u.emailVerified,
   role: u.role,
   createdAt: u.createdAt.toISOString(),
 });

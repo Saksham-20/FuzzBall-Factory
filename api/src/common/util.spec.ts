@@ -44,7 +44,7 @@ describe('email templates', () => {
     const order = { to: 'a@b.co', name: 'Maya Iyer', orderNumber: 'FB-1001', url: 'http://x/o', total: 1450 };
     const wo = { to: 'a@b.co', name: 'Maya Iyer', workOrderNumber: 'WO-001', title: 'Panda', url: 'http://x/w', amount: 1850 };
     for (const event of Object.keys(templates) as NotificationEvent[]) {
-      const payload = event.startsWith('order.') ? order : event.startsWith('workorder.') ? wo : { ...order, resetUrl: 'http://x/r', expiresInMinutes: 60 };
+      const payload = event.startsWith('order.') ? order : event.startsWith('workorder.') ? wo : { ...order, resetUrl: 'http://x/r', verifyUrl: 'http://x/v', confirmUrl: 'http://x/c', newEmail: 'new@b.co', expiresInMinutes: 60 };
       const r = renderTemplate(event, payload as never, ctx);
       expect(r.subject.length).toBeGreaterThan(3);
       expect(r.html).toContain('<!doctype html>');

@@ -64,6 +64,40 @@ export const templates: Registry = {
       footnote: "If you didn't ask for this, you can ignore this email. Your password stays the same.",
     }),
 
+  'auth.verify_email': (p, ctx) =>
+    renderEmail({
+      ...base(ctx),
+      subject: `Confirm your ${ctx.brandName} email`,
+      preheader: 'One click to confirm this is your address.',
+      heading: 'Confirm your email',
+      paragraphs: [`Hi ${first(p.name)}, please confirm this is your email address. The link works for ${Math.round(p.expiresInMinutes / 60)} hours.`],
+      cta: { label: 'Confirm email', url: p.verifyUrl },
+      footnote: "If you didn't create an account, you can ignore this email.",
+    }),
+
+  'auth.confirm_email_change': (p, ctx) =>
+    renderEmail({
+      ...base(ctx),
+      subject: `Confirm your new ${ctx.brandName} email`,
+      preheader: 'Use this link to switch your account to this address.',
+      heading: 'Confirm your new email',
+      paragraphs: [`Hi ${first(p.name)}, someone asked to move your account to this address. The link works for ${p.expiresInMinutes} minutes.`],
+      cta: { label: 'Confirm new email', url: p.confirmUrl },
+      footnote: "If this wasn't you, ignore this email. Nothing changes until you click.",
+    }),
+
+  'auth.email_change_notice': (p, ctx) =>
+    renderEmail({
+      ...base(ctx),
+      subject: `Your ${ctx.brandName} email is being changed`,
+      preheader: 'Someone asked to move your account to a new address.',
+      heading: 'Email change requested',
+      paragraphs: [
+        `Hi ${first(p.name)}, a request was made to change your account email to ${p.newEmail}. It only happens if that address confirms.`,
+        "If this wasn't you, change your password now and reply to this email.",
+      ],
+    }),
+
   'order.placed': orderEmail('We got your order {n}', 'Order received', (p) => [
     `Thank you! Order ${p.orderNumber} is in.${p.total != null ? ` Total: ${formatRupees(p.total)}${p.paymentMethod === 'COD' ? ' (cash on delivery)' : ''}.` : ''}`,
     ...itemLines(p),

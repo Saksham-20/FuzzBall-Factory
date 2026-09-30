@@ -25,7 +25,8 @@ export class RetentionService {
       this.prisma.refreshToken.deleteMany({ where: { expiresAt: { lt: cutoff } } }),
       this.prisma.passwordResetToken.deleteMany({ where: { expiresAt: { lt: cutoff } } }),
     ]);
-    return { refresh: refresh.count, reset: reset.count };
+    const verify = await this.prisma.emailToken.deleteMany({ where: { expiresAt: { lt: cutoff } } });
+    return { refresh: refresh.count, reset: reset.count + verify.count };
   }
 
   /** Only processed deliveries: an unprocessed or errored one is evidence somebody still needs to see. */

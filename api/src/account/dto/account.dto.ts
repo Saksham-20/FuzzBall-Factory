@@ -10,6 +10,7 @@ export class UpdateProfileDto {
   @TrimmedString(1, 80)
   name?: string;
 
+  /** Not changeable here: use `POST /account/email-change`. Accepted only when it equals the current address. */
   @IsOptional()
   @NormalizedEmail()
   email?: string;
@@ -21,6 +22,23 @@ export class UpdateProfileDto {
   })
   @Matches(/^\+\d{8,15}$/, { message: 'Enter a valid phone number' })
   phone?: string | null;
+
+  /** Required to change or remove the phone number. */
+  @IsOptional()
+  @IsString()
+  @MaxLength(128)
+  currentPassword?: string;
+}
+
+/** `POST /account/email-change`: the new address gets a confirm link; nothing changes until it is clicked. */
+export class ChangeEmailDto {
+  @NormalizedEmail()
+  email!: string;
+
+  @IsString()
+  @MinLength(1, { message: 'Required' })
+  @MaxLength(128)
+  password!: string;
 }
 
 export class ChangePasswordDto {

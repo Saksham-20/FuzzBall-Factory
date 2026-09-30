@@ -1,12 +1,14 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { EmailTokenService } from '../auth/email-token.service.js';
+import { NotificationsService } from '../notifications/notifications.service.js';
 import { TokenService, type IssuedTokens, type SessionMeta } from '../auth/token.service.js';
 import { badRequest, conflict, ErrorCode, notFound, validationFailed } from '../common/errors.js';
 import { HashingService } from '../common/hashing.service.js';
 import { toUserDto, type UserDto } from '../users/user.mapper.js';
 import { addressFieldErrors } from '../shipping/address-validation.js';
 import { toAddressDto, type AddressDto } from './address.mapper.js';
-import type { ChangePasswordDto, SaveAddressDto, UpdateProfileDto } from './dto/account.dto.js';
+import type { ChangeEmailDto, ChangePasswordDto, SaveAddressDto, UpdateProfileDto } from './dto/account.dto.js';
 
 const MAX_ADDRESSES = 20;
 
@@ -18,6 +20,8 @@ export class AccountService {
     private readonly prisma: PrismaService,
     private readonly hashing: HashingService,
     private readonly tokens: TokenService,
+    private readonly emailTokens: EmailTokenService,
+    private readonly notifications: NotificationsService,
   ) {}
 
   // ───────────── profile ─────────────
@@ -32,28 +36,53 @@ export class AccountService {
     const current = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!current) throw notFound('Account not found.');
 
-    const email = dto.email && dto.email !== current.email ? dto.email : undefined;
+    if (dto.email && dto.email !== current.email) {
+      throw validationFailed({ email: 'To change your email, use "Change email": we confirm the new address first' });
+    }
     const phone = dto.phone === undefined ? undefined : dto.phone; // null clears it
     const phoneChanged = phone !== undefined && phone !== current.phone;
 
-    if (email) {
-      const taken = await this.prisma.user.findUnique({ where: { email }, select: { id: true } });
-      if (taken) throw conflict('An account with this email already exists.', { email: 'Already registered' }, ErrorCode.EMAIL_TAKEN);
-    }
-    if (phoneChanged && phone) {
-      const taken = await this.prisma.user.findUnique({ where: { phone }, select: { id: true } });
-      if (taken) throw conflict('An account with this phone number already exists.', { phone: 'Already registered' }, ErrorCode.PHONE_TAKEN);
+    if (phoneChanged) {
+      // The phone number is a login and a contact for shipping: moving it needs proof it is really the owner.
+      if (!current.emailVerified) throw badRequest('Confirm your email address first, then you can change your phone number.', undefined, ErrorCode.EMAIL_NOT_VERIFIED);
+      if (!dto.currentPassword || !(await this.hashing.verify(current.passwordHash, dto.currentPassword))) {
+        throw badRequest('Enter your current password to change your phone number.', { currentPassword: 'Incorrect' }, ErrorCode.INVALID_CREDENTIALS);
+      }
+      if (phone) {
+        const taken = await this.prisma.user.findUnique({ where: { phone }, select: { id: true } });
+        if (taken) throw conflict('An account with this phone number already exists.', { phone: 'Already registered' }, ErrorCode.PHONE_TAKEN);
+      }
     }
 
     const updated = await this.prisma.user.update({
       where: { id: userId },
-      data: {
-        ...(dto.name ? { name: dto.name } : {}),
-        ...(email ? { email, emailVerified: false } : {}),
-        ...(phoneChanged ? { phone, phoneVerified: false } : {}),
-      },
+      data: { ...(dto.name ? { name: dto.name } : {}), ...(phoneChanged ? { phone, phoneVerified: false } : {}) },
     });
+    if (phoneChanged) {
+      await this.prisma.auditLog.create({ data: { actorId: userId, action: 'account.phone_change', entity: 'User', entityId: userId } });
+    }
     return toUserDto(updated);
+  }
+
+  /**
+   * Starts an email change: needs the password and an already verified current address. The confirm link goes to the
+   * NEW address and a notice goes to the old one; the account only moves when the new address's owner clicks.
+   */
+  async requestEmailChange(userId: string, dto: ChangeEmailDto): Promise<void> {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw notFound('Account not found.');
+    if (!(await this.hashing.verify(user.passwordHash, dto.password))) {
+      throw badRequest("That password isn't right.", { password: 'Incorrect' }, ErrorCode.INVALID_CREDENTIALS);
+    }
+    if (!user.emailVerified) throw badRequest('Confirm your current email address first, then you can change it.', undefined, ErrorCode.EMAIL_NOT_VERIFIED);
+    if (dto.email === user.email) throw validationFailed({ email: 'That is already your email' });
+    const taken = await this.prisma.user.findUnique({ where: { email: dto.email }, select: { id: true } });
+    if (taken) throw conflict('An account with this email already exists.', { email: 'Already registered' }, ErrorCode.EMAIL_TAKEN);
+
+    const { token, expiresInMinutes } = await this.emailTokens.issue(userId, 'CHANGE', dto.email);
+    await this.notifications.send('auth.confirm_email_change', { to: dto.email, name: user.name, confirmUrl: this.emailTokens.link('/verify-email', token), expiresInMinutes });
+    await this.notifications.send('auth.email_change_notice', { to: user.email, name: user.name, newEmail: dto.email });
+    await this.prisma.auditLog.create({ data: { actorId: userId, action: 'account.email_change_request', entity: 'User', entityId: userId } });
   }
 
   /**

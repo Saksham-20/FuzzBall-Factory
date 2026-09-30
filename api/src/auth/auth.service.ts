@@ -8,6 +8,7 @@ import { conflict, ErrorCode, badRequest, notFound, unauthorized } from '../comm
 import { normalizePhone } from '../common/phone.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 import { toUserDto, type UserDto } from '../users/user.mapper.js';
+import { EmailTokenService } from './email-token.service.js';
 import { TokenService, type IssuedTokens, type SessionMeta } from './token.service.js';
 import type { SignupDto } from './dto/auth.dto.js';
 
@@ -29,23 +30,85 @@ export class AuthService {
     private readonly tokens: TokenService,
     private readonly notifications: NotificationsService,
     private readonly config: ConfigService<Env, true>,
+    private readonly emailTokens: EmailTokenService,
   ) {}
 
   async signup(dto: SignupDto, meta: SessionMeta): Promise<AuthResult> {
     const phone = dto.phone ? normalizePhone(dto.phone) : null;
-    const [emailTaken, phoneTaken] = await Promise.all([
-      this.prisma.user.findUnique({ where: { email: dto.email }, select: { id: true } }),
+    const [existing, phoneTaken] = await Promise.all([
+      this.prisma.user.findUnique({ where: { email: dto.email } }),
       phone ? this.prisma.user.findUnique({ where: { phone }, select: { id: true } }) : null,
     ]);
-    if (emailTaken) throw conflict('An account with this email already exists. Try logging in.', { email: 'Already registered' }, ErrorCode.EMAIL_TAKEN);
-    if (phoneTaken) throw conflict('An account with this phone number already exists. Try logging in.', { phone: 'Already registered' }, ErrorCode.PHONE_TAKEN);
+    // An unverified, empty account cannot hold an address hostage: whoever signs up with it next takes it over (the
+    // real owner proves themselves with the emailed link). Anything with history is only reachable by login or reset.
+    const takeover = existing && (await this.isAbandoned(existing)) ? existing : null;
+    if (existing && !takeover) throw conflict('An account with this email already exists. Try logging in.', { email: 'Already registered' }, ErrorCode.EMAIL_TAKEN);
+    if (phoneTaken && phoneTaken.id !== takeover?.id) throw conflict('An account with this phone number already exists. Try logging in.', { phone: 'Already registered' }, ErrorCode.PHONE_TAKEN);
 
     const passwordHash = await this.hashing.hash(dto.password);
-    // Role is never taken from the request: public signup always creates a customer.
-    const user = await this.prisma.user.create({ data: { name: dto.name, email: dto.email, phone, passwordHash, role: 'customer' } });
+    let user;
+    if (takeover) {
+      user = await this.prisma.user.update({ where: { id: takeover.id }, data: { name: dto.name, phone, passwordHash } });
+      await this.tokens.revokeAllForUser(user.id); // whoever held the old password is signed out
+      user = await this.prisma.user.findUniqueOrThrow({ where: { id: user.id } });
+    } else {
+      // Role is never taken from the request: public signup always creates a customer.
+      user = await this.prisma.user.create({ data: { name: dto.name, email: dto.email, phone, passwordHash, role: 'customer' } });
+    }
     const tokens = await this.tokens.startSession(user, meta);
     void this.notifications.send('auth.welcome', { to: user.email, name: user.name });
+    await this.sendVerification(user);
     return { user: toUserDto(user), tokens };
+  }
+
+  /** Unverified customer account nobody has used for anything. */
+  private async isAbandoned(user: { id: string; role: string; emailVerified: boolean }): Promise<boolean> {
+    if (user.emailVerified || user.role !== 'customer') return false;
+    const [orders, requests, reviews, addresses] = await Promise.all([
+      this.prisma.order.count({ where: { userId: user.id } }),
+      this.prisma.customRequest.count({ where: { userId: user.id } }),
+      this.prisma.review.count({ where: { userId: user.id } }),
+      this.prisma.address.count({ where: { userId: user.id } }),
+    ]);
+    return orders + requests + reviews + addresses === 0;
+  }
+
+  private async sendVerification(user: { id: string; email: string; name: string }): Promise<void> {
+    const { token, expiresInMinutes } = await this.emailTokens.issue(user.id, 'VERIFY', user.email);
+    void this.notifications.send('auth.verify_email', { to: user.email, name: user.name, verifyUrl: this.emailTokens.link('/verify-email', token), expiresInMinutes });
+  }
+
+  /** Re-sends the signup link. Quietly does nothing for an already verified account. */
+  async resendVerification(userId: string): Promise<void> {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user || user.emailVerified) return;
+    await this.sendVerification(user);
+  }
+
+  /**
+   * Consumes a link from `auth.verify_email` (marks the address verified) or `auth.confirm_email_change` (moves the
+   * account to the new address and signs every device out). The link is the proof: no session is needed.
+   */
+  async verifyEmail(token: string): Promise<{ purpose: 'VERIFY' | 'CHANGE' }> {
+    const invalid = () => badRequest('This link is invalid or has expired. Request a new one from your account.', undefined, ErrorCode.INVALID_EMAIL_TOKEN);
+    const claimed = await this.emailTokens.claim(token);
+    if (!claimed) throw invalid();
+    const user = await this.prisma.user.findUnique({ where: { id: claimed.userId }, select: { id: true, email: true } });
+    if (!user) throw invalid();
+
+    if (claimed.purpose === 'VERIFY') {
+      if (user.email !== claimed.email) throw invalid(); // the address changed since this link was sent
+      await this.prisma.user.update({ where: { id: user.id }, data: { emailVerified: true } });
+      return { purpose: 'VERIFY' };
+    }
+    try {
+      await this.prisma.user.update({ where: { id: user.id }, data: { email: claimed.email, emailVerified: true } });
+    } catch (err) {
+      if ((err as { code?: string }).code === 'P2002') throw conflict('That email now belongs to another account.', { email: 'Already registered' }, ErrorCode.EMAIL_TAKEN);
+      throw err;
+    }
+    await this.tokens.revokeAllForUser(user.id);
+    return { purpose: 'CHANGE' };
   }
 
   async login(identifier: string, password: string, meta: SessionMeta): Promise<AuthResult> {
@@ -113,7 +176,8 @@ export class AuthService {
     await this.prisma.$transaction(async (tx) => {
       const claimed = await tx.passwordResetToken.updateMany({ where: { id: row.id, usedAt: null }, data: { usedAt: now } });
       if (claimed.count !== 1) throw badRequest('This reset link is invalid or has expired. Please request a new one.', undefined, ErrorCode.INVALID_RESET_TOKEN);
-      await tx.user.update({ where: { id: row.userId }, data: { passwordHash, tokenVersion: { increment: 1 } } });
+      // Clicking the reset link proves the inbox belongs to whoever did it, so the address counts as verified.
+      await tx.user.update({ where: { id: row.userId }, data: { passwordHash, emailVerified: true, tokenVersion: { increment: 1 } } });
       await tx.refreshToken.updateMany({ where: { userId: row.userId, revokedAt: null }, data: { revokedAt: now } });
     });
     this.logger.log(`Password reset for user ${row.userId}`);

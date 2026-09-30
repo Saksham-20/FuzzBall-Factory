@@ -39,9 +39,9 @@ describe('account and uploads (e2e)', () => {
       expect(me.body).not.toHaveProperty('passwordHash');
       expect(me.body).not.toHaveProperty('tokenVersion');
 
-      const updated = await u.agent.patch('/account/profile').send({ name: '  New Name ', phone: '98111 22244' }).expect(200);
-      expect(updated.body).toMatchObject({ name: 'New Name', phone: '+919811122244', email: u.email });
-      await u.agent.patch('/account/profile').send({ phone: '' }).expect(200).expect((r) => expect(r.body).not.toHaveProperty('phone'));
+      const updated = await u.agent.patch('/account/profile').send({ name: '  New Name ', phone: '98111 22244', currentPassword: PASSWORD }).expect(200);
+      expect(updated.body).toMatchObject({ name: 'New Name', phone: '+919811122244', email: u.email, emailVerified: true });
+      await u.agent.patch('/account/profile').send({ phone: '', currentPassword: PASSWORD }).expect(200).expect((r) => expect(r.body).not.toHaveProperty('phone'));
       await u.agent.patch('/account/profile').send({ phone: 'abc' }).expect(400);
       await u.agent.patch('/account/profile').send({ email: 'not-an-email' }).expect(400);
       await u.agent.patch('/account/profile').send({ role: 'admin' }).expect(400); // no privilege escalation
@@ -53,11 +53,11 @@ describe('account and uploads (e2e)', () => {
       const a = await newUser('dup-a');
       const b = await newUser('dup-b');
       await t.prisma.user.update({ where: { id: a.id }, data: { phone: '+919800055501' } });
-      const e = await b.agent.patch('/account/profile').send({ email: a.email.toUpperCase() }).expect(409);
+      const e = await b.agent.post('/account/email-change').send({ email: a.email.toUpperCase(), password: PASSWORD }).expect(409);
       expect(e.body).toMatchObject({ code: 'EMAIL_TAKEN', fields: { email: 'Already registered' } });
-      const p = await b.agent.patch('/account/profile').send({ phone: '9800055501' }).expect(409);
+      const p = await b.agent.patch('/account/profile').send({ phone: '9800055501', currentPassword: PASSWORD }).expect(409);
       expect(p.body).toMatchObject({ code: 'PHONE_TAKEN' });
-      // changing to your own current values is fine
+      // sending your own current values is fine
       await a.agent.patch('/account/profile').send({ email: a.email, phone: '9800055501' }).expect(200);
     });
   });

@@ -284,6 +284,9 @@ fields are omitted rather than `null`. Errors use the shape above. "Guest ok" = 
 | `account.updateProfile(input)` | `PATCH /account/profile` | `{ name?, email?, phone? }` (`phone: ""` removes it) | `User`. 409 `EMAIL_TAKEN` / `PHONE_TAKEN` |
 | (read profile) | `GET /account/profile` | | `User` |
 | `account.changePassword(current, next)` | `POST /account/password` | `{ current, next }` | 204. Wrong current -> 400 `fields.current`. Signs out **other** devices (tokenVersion bump); this device gets fresh cookies |
+| `auth.verifyEmail(token)` | `POST /auth/verify-email` | `{ token }` | Public, throttled. Consumes a signup link (`{ purpose: 'VERIFY' }`, sets `emailVerified`) or an email-change link (`{ purpose: 'CHANGE' }`, moves the account to the new address, signs every device out and clears cookies). Bad, used or expired -> 400 `INVALID_EMAIL_TOKEN`; new address taken meanwhile -> 409 `EMAIL_TAKEN` |
+| `auth.resendVerification()` | `POST /auth/resend-verification` | none | 204, signed in. Replaces the outstanding link; no-op when already verified |
+| `account.changeEmail(email, password)` | `POST /account/email-change` | `{ email, password }` | 204. Wrong password -> 400 `fields.password`; unverified current email -> 400 `EMAIL_NOT_VERIFIED`; taken -> 409. Sends a confirm link to the NEW address and a notice to the old one; nothing changes until the link is used |
 | `account.listAddresses()` | `GET /account/addresses` | | `Address[]` (default first) |
 | `account.saveAddress(a)` (no id) | `POST /account/addresses` | `Omit<Address,"id">` (do not send `id`: unknown keys are a 400) | 201 `Address` |
 | `account.saveAddress(a)` (with id) | `PUT /account/addresses/:id` | `Omit<Address,"id">` | `Address`. Setting `isDefault` clears the others |
@@ -383,3 +386,11 @@ cd web && NEXT_PUBLIC_USE_MOCK=false NEXT_PUBLIC_API_URL=http://localhost:4000 n
 ## Email delivery
 
 Every email is written to `EmailOutbox` first and sent straight away. If the provider fails, the scheduler retries it (1, 5, 15, 60 and 240 minutes; a password-reset email tries twice). After the last attempt it is `FAILED`, logged as `[EMAIL FAILED]`, sent to Sentry (`area=email`) and shown in `GET /admin/email?status=FAILED`. The stored payload is emptied once the email is sent (and for a password-reset email once it gives up), so order details and reset links do not sit in the table. Sent rows are deleted after 30 days, failed ones after 90. `NotificationsService.send` never throws.
+
+## Email verification and account protection
+
+Signup sends a confirm link (`auth.verify_email`, 24 h). Unverified accounts can still shop and check out, but cannot change their phone or email. A password reset also verifies the address (the link proves the inbox). `User.emailVerified` is on the user DTO.
+
+An unverified account with no orders, work orders, reviews or addresses does not block its address: the next signup with that email takes it over (new name, password and phone, every old session revoked). A verified account, or one with history, answers `EMAIL_TAKEN`; its owner logs in or resets the password. Guest orders are never linked to an account by email.
+
+`PATCH /account/profile` no longer accepts a different `email`; a phone change needs `currentPassword` and a verified email.

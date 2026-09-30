@@ -9,7 +9,7 @@ import type { RequestUser } from '../common/types/auth.types.js';
 import type { UserDto } from '../users/user.mapper.js';
 import { AuthService, type AuthResult } from './auth.service.js';
 import { clearAuthCookies, REFRESH_COOKIE, setAuthCookies, type CookieConfig } from './cookies.js';
-import { ForgotPasswordDto, LoginDto, ResetPasswordDto, SignupDto } from './dto/auth.dto.js';
+import { ForgotPasswordDto, LoginDto, ResetPasswordDto, SignupDto, VerifyEmailDto } from './dto/auth.dto.js';
 import { TokenService } from './token.service.js';
 
 /** 5 requests per minute per IP for credential-guessing surfaces. */
@@ -81,6 +81,24 @@ export class AuthController {
   async reset(@Body() dto: ResetPasswordDto, @Res({ passthrough: true }) res: Response): Promise<void> {
     await this.auth.reset(dto.token, dto.password);
     clearAuthCookies(res, this.cookieConfig());
+  }
+
+  /** Consumes an emailed link: verifies the address, or completes an email change (then every device is signed out). */
+  @Public()
+  @Throttle(STRICT)
+  @HttpCode(200)
+  @Post('verify-email')
+  async verifyEmail(@Body() dto: VerifyEmailDto, @Res({ passthrough: true }) res: Response): Promise<{ purpose: 'VERIFY' | 'CHANGE' }> {
+    const result = await this.auth.verifyEmail(dto.token);
+    if (result.purpose === 'CHANGE') clearAuthCookies(res, this.cookieConfig());
+    return result;
+  }
+
+  @Throttle(STRICT)
+  @HttpCode(204)
+  @Post('resend-verification')
+  async resendVerification(@CurrentUser() user: RequestUser): Promise<void> {
+    await this.auth.resendVerification(user.userId);
   }
 
   private respond(res: Response, result: AuthResult): UserDto {

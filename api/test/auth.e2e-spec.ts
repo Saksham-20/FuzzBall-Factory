@@ -68,6 +68,8 @@ describe('health + auth round trip (e2e)', () => {
     expect(cookies.some((c) => c.startsWith('fbf_at=') && /HttpOnly/i.test(c) && /SameSite=Lax/i.test(c))).toBe(true);
     expect(cookies.some((c) => c.startsWith('fbf_rt=') && /Path=\/auth/.test(c) && /HttpOnly/i.test(c))).toBe(true);
 
+    // An unverified, unused account is taken over by the next signup (see email-verification.e2e-spec); a verified one is not.
+    await prisma.user.update({ where: { email }, data: { emailVerified: true } });
     await agent.post('/auth/signup').send({ name: 'Dup', email, password }).expect(409).expect((r) => expect(r.body.code).toBe('EMAIL_TAKEN'));
 
     const me = await agent.get('/auth/me').expect(200);

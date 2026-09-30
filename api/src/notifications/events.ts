@@ -43,6 +43,11 @@ export interface NotificationEventMap {
   // Accounts
   'auth.welcome': Recipient;
   'auth.password_reset': Recipient & { resetUrl: string; expiresInMinutes: number };
+  'auth.verify_email': Recipient & { verifyUrl: string; expiresInMinutes: number };
+  /** Sent to the NEW address: the switch only happens when its owner clicks. */
+  'auth.confirm_email_change': Recipient & { confirmUrl: string; expiresInMinutes: number };
+  /** Sent to the OLD address so a hijacked session cannot quietly move the account. */
+  'auth.email_change_notice': Recipient & { newEmail: string };
 
   // Orders
   'order.placed': OrderPayload;

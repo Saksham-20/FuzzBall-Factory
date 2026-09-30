@@ -141,6 +141,7 @@ model User {
 
   refreshTokens     RefreshToken[]
   passwordResets    PasswordResetToken[]
+  emailTokens       EmailToken[]
   addresses         Address[]
   cart              Cart?
   wishlist          WishlistItem[]
@@ -186,6 +187,32 @@ model PasswordResetToken {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+}
+
+enum EmailTokenPurpose {
+  /// Proves the account's own address (signup).
+  VERIFY
+  /// Confirms a new address before it replaces the old one.
+  CHANGE
+}
+
+/// Emailed one-time links. `email` is the address the link was sent to: a VERIFY token only counts while it is still
+/// the account's address, a CHANGE token carries the address to switch to.
+model EmailToken {
+  id        String            @id @default(cuid())
+  userId    String
+  purpose   EmailTokenPurpose
+  email     String
+  /// SHA-256 of the emailed token.
+  tokenHash String            @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime          @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, purpose])
+  @@index([expiresAt])
 }
 
 model Address {

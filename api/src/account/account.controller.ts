@@ -10,7 +10,7 @@ import type { RequestUser } from '../common/types/auth.types.js';
 import type { UserDto } from '../users/user.mapper.js';
 import { AccountService } from './account.service.js';
 import type { AddressDto } from './address.mapper.js';
-import { ChangePasswordDto, SaveAddressDto, UpdateProfileDto } from './dto/account.dto.js';
+import { ChangeEmailDto, ChangePasswordDto, SaveAddressDto, UpdateProfileDto } from './dto/account.dto.js';
 
 /** Every route here is for the signed-in customer (the global guard requires it) and only ever touches their own rows. */
 @Controller('account')
@@ -29,6 +29,14 @@ export class AccountController {
   @Patch('profile')
   updateProfile(@CurrentUser() user: RequestUser, @Body() dto: UpdateProfileDto): Promise<UserDto> {
     return this.account.updateProfile(user.userId, dto);
+  }
+
+  /** Sends a confirm link to the new address (and a notice to the old one). Needs the password and a verified email. */
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
+  @HttpCode(204)
+  @Post('email-change')
+  requestEmailChange(@CurrentUser() user: RequestUser, @Body() dto: ChangeEmailDto): Promise<void> {
+    return this.account.requestEmailChange(user.userId, dto);
   }
 
   /** Signs out every other device; this one keeps a fresh session (new cookies are set on the response). */

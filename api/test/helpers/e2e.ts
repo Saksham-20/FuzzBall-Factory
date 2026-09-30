@@ -51,10 +51,11 @@ export interface TestUser {
 }
 
 /** Creates a user straight in the DB (no signup throttle) and logs in through the real endpoint. */
-export async function makeUser(t: TestApp, role: Role, label: string): Promise<TestUser> {
+/** Test accounts start with a verified email (most tests are not about verification); pass `{ verified: false }` for the signup state. */
+export async function makeUser(t: TestApp, role: Role, label: string, opts: { verified?: boolean } = {}): Promise<TestUser> {
   const email = `e2e-${label}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}@example.com`;
   const user = await t.prisma.user.create({
-    data: { name: `E2E ${label}`, email, phone: null, passwordHash: await hashPassword(PASSWORD), role },
+    data: { name: `E2E ${label}`, email, phone: null, passwordHash: await hashPassword(PASSWORD), role, emailVerified: opts.verified ?? true },
   });
   const agent = request.agent(t.app.getHttpServer());
   await agent.post('/auth/login').send({ identifier: email, password: PASSWORD }).expect(200);

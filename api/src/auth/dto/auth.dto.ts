@@ -45,3 +45,10 @@ export class ResetPasswordDto {
   @MaxLength(128, { message: 'Use at most 128 characters' })
   password!: string;
 }
+
+export class VerifyEmailDto {
+  @IsString()
+  @MinLength(20)
+  @MaxLength(256)
+  token!: string;
+}
