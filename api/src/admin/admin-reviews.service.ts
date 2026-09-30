@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { notFound, validationFailed } from '../common/errors.js';
 import type { Review } from '../generated/prisma/client.js';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { recomputeProductRating } from '../reviews/rating.js';
 import type { AdminCtx } from './admin-custom.service.js';
 import { AuditService } from './audit.service.js';
 
@@ -60,8 +61,7 @@ export class AdminReviewsService {
       const before = await tx.review.findUnique({ where: { id }, select: { id: true, status: true, productId: true } });
       if (!before) throw notFound('Review not found.');
       const row = await tx.review.update({ where: { id }, data: status === 'DISPUTED' ? { status, disputeReason: disputeReason!.trim() } : { status } });
-      const agg = await tx.review.aggregate({ where: { productId: before.productId, status: 'PUBLISHED' }, _avg: { rating: true }, _count: { _all: true } });
-      await tx.product.update({ where: { id: before.productId }, data: { ratingAverage: agg._avg.rating ?? 0, ratingCount: agg._count._all } });
+      await recomputeProductRating(tx, before.productId);
       await this.audit.log(
         { actorId: ctx.actorId, action: 'review.moderate', entity: 'Review', entityId: id, meta: { from: before.status, to: status, ...(status === 'DISPUTED' ? { disputeReason: disputeReason!.trim() } : {}) }, ip: ctx.ip },
         tx,

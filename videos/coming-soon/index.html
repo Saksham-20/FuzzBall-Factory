@@ -188,6 +188,10 @@
         isolation: isolate;
         background: var(--rose);
       }
+      #ball-rock {
+        position: absolute;
+        inset: 0;
+      }
       #ball-wraps {
         position: absolute;
         inset: 0;
@@ -238,8 +242,8 @@
 
       /* end card */
       #stamp {
-        left: 0;
-        width: 1080px;
+        left: 250px;
+        width: 780px;
         top: 4820px;
         display: flex;
         justify-content: center;
@@ -288,8 +292,9 @@
         flex: none;
       }
       #handle {
-        left: 230px;
-        width: 800px;
+        left: 250px;
+        width: 780px;
+        text-align: center;
         top: 5980px;
         font-size: 50px;
         font-weight: 700;
@@ -300,20 +305,21 @@
   </head>
   <body>
     <div id="root" data-composition-id="main" data-start="0" data-duration="12" data-width="1080" data-height="1920">
+      <audio id="score" src="assets/audio/score.wav" data-start="0" data-duration="12" data-track-index="1" data-volume="1"></audio>
       <div id="world">
         <!-- the one live thing: rose yarn thread + the hook that leads it -->
         <svg id="thread" viewBox="0 0 1080 7000" fill="none" stroke-linecap="round" stroke-linejoin="round">
-          <g stroke-dasharray="1 2" stroke-dashoffset="1">
-            <path id="thread-shadow" pathLength="1" stroke="#a95f62" stroke-width="18" opacity="0.4" transform="translate(3 5)" />
-            <path id="thread-path" pathLength="1" stroke="#c98586" stroke-width="18" />
-            <path id="thread-sheen" pathLength="1" stroke="#e2acab" stroke-width="4" transform="translate(-3 -3)" opacity="0.85" />
+          <g>
+            <path id="thread-shadow" stroke="#a95f62" stroke-width="18" opacity="0.4" transform="translate(3 5)" />
+            <path id="thread-path" stroke="#c98586" stroke-width="18" />
+            <path id="thread-sheen" stroke="#e2acab" stroke-width="4" transform="translate(-3 -3)" opacity="0.85" />
           </g>
         </svg>
 
         <!-- hero -->
-        <h1 id="hero-h1" class="abs display">
-          <span class="line" id="l1">Yarn</span>
-          <span class="line" id="l2">in.</span>
+        <h1 id="hero-h1" class="abs display" data-layout-allow-overlap>
+          <span class="line" id="l1" data-layout-allow-overlap>Yarn</span>
+          <span class="line" id="l2" data-layout-allow-overlap>in.</span>
         </h1>
 
         <!-- stations -->
@@ -331,7 +337,7 @@
         <div class="abs" id="s2-text" style="left: 226px; top: 2396px">
           <div class="stencil st-label">Hook</div>
         </div>
-        <div id="ticket" class="abs">
+        <div id="ticket" class="abs" data-layout-allow-overlap>
           <div class="head stencil"><span>Batch #001</span><span>One of one</span></div>
           <div class="body">Made by one pair of hands.</div>
         </div>
@@ -345,13 +351,13 @@
         </div>
 
         <!-- the ball -->
-        <div id="ball" class="abs"><div id="ball-face"><svg id="ball-wraps" viewBox="10 10 380 380" fill="none" stroke-linecap="round"><path d="M89.5 45.4A69.8 23.3 -45 0 0 45.4 89.5M166.1 13.1A120.1 40 -45 0 0 13.1 166.1M212.9 10.4A149.1 49.7 -45 0 0 10.4 212.9M250.6 16.9A168.2 56.1 -45 0 0 16.9 250.6M282.7 28.9A180.6 60.2 -45 0 0 28.9 282.7M310.4 45.4A187.7 62.6 -45 0 0 45.4 310.4M334.4 65.6A190 63.3 -45 0 0 65.6 334.4M354.6 89.6A187.7 62.6 -45 1 0 89.6 354.6M371.1 117.3A180.6 60.2 -45 1 0 117.3 371.1M383.1 149.4A168.2 56.1 -45 1 0 149.4 383.1M389.6 187.1A149.1 49.7 -45 1 0 187.1 389.6M386.9 233.9A120.1 40 -45 1 0 233.9 386.9M354.6 310.5A69.8 23.3 -45 1 0 310.5 354.6" stroke="#a95f62" stroke-width="7"/><path d="M114.7 30.2A84.8 28.3 -45 0 0 30.2 114.7" stroke="#e2acab" stroke-width="3.5" opacity="0.9"/><path d="M177.8 11.3A127.8 42.6 -45 0 0 11.3 177.8" stroke="#e2acab" stroke-width="3.5" opacity="0.9"/><path d="M222 11.3A154.1 51.4 -45 0 0 11.3 222" stroke="#e2acab" stroke-width="3.5" opacity="0.9"/><path d="M258.3 19.2A171.5 57.2 -45 0 0 19.2 258.3" stroke="#e2acab" stroke-width="3.5" opacity="0.9"/><path d="M289.3 32.3A182.7 60.9 -45 0 0 32.3 289.3" stroke="#e2acab" stroke-width="3.5" opacity="0.9"/><path d="M316.2 49.6A188.6 62.9 -45 0 0 49.6 316.2" stroke="#e2acab" stroke-width="3.5" opacity="0.9"/><path d="M339.2 70.7A189.9 63.3 -45 1 0 70.7 339.2" stroke="#e2acab" stroke-width="3.5" opacity="0.9"/><path d="M358.7 95.5A186.5 62.2 -45 1 0 95.5 358.7" stroke="#e2acab" stroke-width="3.5" opacity="0.9"/><path d="M374.2 124.1A178.3 59.4 -45 1 0 124.1 374.2" stroke="#e2acab" stroke-width="3.5" opacity="0.9"/><path d="M385.2 157.3A164.5 54.8 -45 1 0 157.3 385.2" stroke="#e2acab" stroke-width="3.5" opacity="0.9"/><path d="M390 196.7A143.6 47.9 -45 1 0 196.7 390" stroke="#e2acab" stroke-width="3.5" opacity="0.9"/><path d="M384.2 246.7A111.4 37.1 -45 1 0 246.7 384.2" stroke="#e2acab" stroke-width="3.5" opacity="0.9"/><path d="M357.5 287A49.8 16.6 -45 1 0 287 357.5A49.8 16.6 -45 1 0 357.5 287Z" stroke="#e2acab" stroke-width="3.5" opacity="0.9"/><path d="M10.2 191.7A184.4 70.3 167.5 1 0 368.4 112A190 190 0 0 1 389.8 208.3A184.4 70.3 167.5 0 1 31.6 288A190 190 0 0 1 10.2 191.7Z" fill="#a95f62" opacity="0.3"/><path d="M10 200.1A186.2 70.9 167.5 1 0 372.2 119.6A190 190 0 0 1 390 199.9A186.2 70.9 167.5 0 1 27.8 280.4A190 190 0 0 1 10 200.1Z" fill="#c98586"/><path d="M24.1 271.7A187.7 71.5 167.5 0 0 389.8 190.5M14.5 241.2A190 72.4 167.5 0 0 385.5 158.8M10.2 209.5A187.7 71.5 167.5 1 0 375.9 128.3" stroke="#a95f62" stroke-width="7"/><path d="M21.4 264.9A188.6 71.9 167.5 0 0 389.3 183.2" stroke="#e2acab" stroke-width="3.5" opacity="0.9"/><path d="M13.1 234.2A189.9 72.4 167.5 1 0 383.8 151.8" stroke="#e2acab" stroke-width="3.5" opacity="0.9"/><path d="M10 202.2A186.5 71.1 167.5 1 0 373 121.5" stroke="#e2acab" stroke-width="3.5" opacity="0.9"/><path d="M138.6 20.2A172.4 52.3 -135 1 0 379.8 261.4A190 190 0 0 1 261.4 379.8A172.4 52.3 -135 0 1 20.2 138.6A190 190 0 0 1 138.6 20.2Z" fill="#a95f62" opacity="0.3"/><path d="M130.4 23.2A175.7 53.3 -135 1 0 376.8 269.6A190 190 0 0 1 269.6 376.8A175.7 53.3 -135 0 1 23.2 130.4A190 190 0 0 1 130.4 23.2Z" fill="#c98586"/><path d="M27 121.5A179 54.3 -135 0 0 278.5 373M40.3 97A186.1 56.4 -135 0 0 303 359.7M56.5 75.4A189.6 57.5 -135 0 0 324.6 343.5M75.4 56.5A189.6 57.5 -135 1 0 343.5 324.6M97 40.3A186.1 56.4 -135 1 0 359.7 303M121.5 27A179 54.3 -135 1 0 373 278.5" stroke="#a95f62" stroke-width="7"/><path d="M30.2 114.8A181.2 55 -135 0 0 285.2 369.8" stroke="#e2acab" stroke-width="3.5" opacity="0.9"/><path d="M44.3 91.1A187.4 56.8 -135 0 0 308.9 355.7" stroke="#e2acab" stroke-width="3.5" opacity="0.9"/><path d="M61.2 70.2A189.9 57.6 -135 0 0 329.8 338.8" stroke="#e2acab" stroke-width="3.5" opacity="0.9"/><path d="M80.8 52A189 57.3 -135 1 0 348 319.2" stroke="#e2acab" stroke-width="3.5" opacity="0.9"/><path d="M103.1 36.6A184.6 56 -135 1 0 363.4 296.9" stroke="#e2acab" stroke-width="3.5" opacity="0.9"/><path d="M128.4 24A176.5 53.5 -135 1 0 376 271.6" stroke="#e2acab" stroke-width="3.5" opacity="0.9"/></svg></div>
+        <div id="ball" class="abs"><div id="ball-face"><div id="ball-rock" data-layout-allow-overflow><svg id="ball-wraps" viewBox="10 10 380 380" fill="none" stroke-linecap="round"><path d="M89.5 45.4A69.8 23.3 -45 0 0 45.4 89.5M166.1 13.1A120.1 40 -45 0 0 13.1 166.1M212.9 10.4A149.1 49.7 -45 0 0 10.4 212.9M250.6 16.9A168.2 56.1 -45 0 0 16.9 250.6M282.7 28.9A180.6 60.2 -45 0 0 28.9 282.7M310.4 45.4A187.7 62.6 -45 0 0 45.4 310.4M334.4 65.6A190 63.3 -45 0 0 65.6 334.4M354.6 89.6A187.7 62.6 -45 1 0 89.6 354.6M371.1 117.3A180.6 60.2 -45 1 0 117.3 371.1M383.1 149.4A168.2 56.1 -45 1 0 149.4 383.1M389.6 187.1A149.1 49.7 -45 1 0 187.1 389.6M386.9 233.9A120.1 40 -45 1 0 233.9 386.9M354.6 310.5A69.8 23.3 -45 1 0 310.5 354.6" stroke="#a95f62" stroke-width="7"/><path d="M114.7 30.2A84.8 28.3 -45 0 0 30.2 114.7" stroke="#e2acab" stroke-width="3.5" opacity="0.9"/><path d="M177.8 11.3A127.8 42.6 -45 0 0 11.3 177.8" stroke="#e2acab" stroke-width="3.5" opacity="0.9"/><path d="M222 11.3A154.1 51.4 -45 0 0 11.3 222" stroke="#e2acab" stroke-width="3.5" opacity="0.9"/><path d="M258.3 19.2A171.5 57.2 -45 0 0 19.2 258.3" stroke="#e2acab" stroke-width="3.5" opacity="0.9"/><path d="M289.3 32.3A182.7 60.9 -45 0 0 32.3 289.3" stroke="#e2acab" stroke-width="3.5" opacity="0.9"/><path d="M316.2 49.6A188.6 62.9 -45 0 0 49.6 316.2" stroke="#e2acab" stroke-width="3.5" opacity="0.9"/><path d="M339.2 70.7A189.9 63.3 -45 1 0 70.7 339.2" stroke="#e2acab" stroke-width="3.5" opacity="0.9"/><path d="M358.7 95.5A186.5 62.2 -45 1 0 95.5 358.7" stroke="#e2acab" stroke-width="3.5" opacity="0.9"/><path d="M374.2 124.1A178.3 59.4 -45 1 0 124.1 374.2" stroke="#e2acab" stroke-width="3.5" opacity="0.9"/><path d="M385.2 157.3A164.5 54.8 -45 1 0 157.3 385.2" stroke="#e2acab" stroke-width="3.5" opacity="0.9"/><path d="M390 196.7A143.6 47.9 -45 1 0 196.7 390" stroke="#e2acab" stroke-width="3.5" opacity="0.9"/><path d="M384.2 246.7A111.4 37.1 -45 1 0 246.7 384.2" stroke="#e2acab" stroke-width="3.5" opacity="0.9"/><path d="M357.5 287A49.8 16.6 -45 1 0 287 357.5A49.8 16.6 -45 1 0 357.5 287Z" stroke="#e2acab" stroke-width="3.5" opacity="0.9"/><path d="M10.2 191.7A184.4 70.3 167.5 1 0 368.4 112A190 190 0 0 1 389.8 208.3A184.4 70.3 167.5 0 1 31.6 288A190 190 0 0 1 10.2 191.7Z" fill="#a95f62" opacity="0.3"/><path d="M10 200.1A186.2 70.9 167.5 1 0 372.2 119.6A190 190 0 0 1 390 199.9A186.2 70.9 167.5 0 1 27.8 280.4A190 190 0 0 1 10 200.1Z" fill="#c98586"/><path d="M24.1 271.7A187.7 71.5 167.5 0 0 389.8 190.5M14.5 241.2A190 72.4 167.5 0 0 385.5 158.8M10.2 209.5A187.7 71.5 167.5 1 0 375.9 128.3" stroke="#a95f62" stroke-width="7"/><path d="M21.4 264.9A188.6 71.9 167.5 0 0 389.3 183.2" stroke="#e2acab" stroke-width="3.5" opacity="0.9"/><path d="M13.1 234.2A189.9 72.4 167.5 1 0 383.8 151.8" stroke="#e2acab" stroke-width="3.5" opacity="0.9"/><path d="M10 202.2A186.5 71.1 167.5 1 0 373 121.5" stroke="#e2acab" stroke-width="3.5" opacity="0.9"/><path d="M138.6 20.2A172.4 52.3 -135 1 0 379.8 261.4A190 190 0 0 1 261.4 379.8A172.4 52.3 -135 0 1 20.2 138.6A190 190 0 0 1 138.6 20.2Z" fill="#a95f62" opacity="0.3"/><path d="M130.4 23.2A175.7 53.3 -135 1 0 376.8 269.6A190 190 0 0 1 269.6 376.8A175.7 53.3 -135 0 1 23.2 130.4A190 190 0 0 1 130.4 23.2Z" fill="#c98586"/><path d="M27 121.5A179 54.3 -135 0 0 278.5 373M40.3 97A186.1 56.4 -135 0 0 303 359.7M56.5 75.4A189.6 57.5 -135 0 0 324.6 343.5M75.4 56.5A189.6 57.5 -135 1 0 343.5 324.6M97 40.3A186.1 56.4 -135 1 0 359.7 303M121.5 27A179 54.3 -135 1 0 373 278.5" stroke="#a95f62" stroke-width="7"/><path d="M30.2 114.8A181.2 55 -135 0 0 285.2 369.8" stroke="#e2acab" stroke-width="3.5" opacity="0.9"/><path d="M44.3 91.1A187.4 56.8 -135 0 0 308.9 355.7" stroke="#e2acab" stroke-width="3.5" opacity="0.9"/><path d="M61.2 70.2A189.9 57.6 -135 0 0 329.8 338.8" stroke="#e2acab" stroke-width="3.5" opacity="0.9"/><path d="M80.8 52A189 57.3 -135 1 0 348 319.2" stroke="#e2acab" stroke-width="3.5" opacity="0.9"/><path d="M103.1 36.6A184.6 56 -135 1 0 363.4 296.9" stroke="#e2acab" stroke-width="3.5" opacity="0.9"/><path d="M128.4 24A176.5 53.5 -135 1 0 376 271.6" stroke="#e2acab" stroke-width="3.5" opacity="0.9"/></svg></div></div>
 <svg id="ball-rim" viewBox="0 0 400 400"><path d="M309.7 44.9A190 190 0 0 1 160.6 385.9A200 200 0 0 0 309.7 44.9Z" fill="#a95f62" opacity="0.2"/><circle cx="200" cy="200" r="190" fill="none" stroke="#a95f62" stroke-width="5"/></svg></div>
 
         <!-- the hook rides above the ball -->
         <svg id="hook-layer" class="abs" style="left: 0; top: 0; width: 1080px; height: 7000px; overflow: visible; pointer-events: none" viewBox="0 0 1080 7000">
           <g id="hook">
-            <g transform="rotate(-158) scale(2.1) translate(-27 -22)">
+            <g transform="rotate(-152) scale(1.5) translate(-27 -22)">
               <path d="M13 66 V32 C13 15 22 5 31 5 C37.5 5 40 11 35.5 15.5 C32 19 27 20 27 29 V66 Z" fill="#6b4228" />
               <rect x="13" y="60" width="14" height="250" rx="7" fill="#6b4228" />
               <rect x="8" y="150" width="24" height="52" rx="11" fill="#8a6249" />
@@ -373,8 +379,8 @@
         <!-- end card -->
         <div id="stamp" class="abs"><span class="stencil" id="stamp-inner">Coming soon</span></div>
         <img id="logo" class="abs" src="assets/logo.png" alt="FuzzBall Factory - Handmade with love" />
-        <div id="tape" class="abs">
-          <div id="tape-track" class="stencil">
+        <div id="tape" class="abs" data-layout-allow-overflow>
+          <div id="tape-track" class="stencil" data-layout-allow-overflow>
             <span>Handmade in India</span>
             <svg viewBox="0 0 50 50" fill="none" stroke-linecap="round"><circle cx="25" cy="25" r="21" fill="#c98586" stroke="#a95f62" stroke-width="3"/><path d="M8 20C18 26 32 26 43 18M6 30C18 37 34 36 45 28M17 7C24 16 25 34 20 44" stroke="#a95f62" stroke-width="2.5"/></svg><span>Opening soon</span>
             <svg viewBox="0 0 50 50" fill="none" stroke-linecap="round"><circle cx="25" cy="25" r="21" fill="#c98586" stroke="#a95f62" stroke-width="3"/><path d="M8 20C18 26 32 26 43 18M6 30C18 37 34 36 45 28M17 7C24 16 25 34 20 44" stroke="#a95f62" stroke-width="2.5"/></svg><span>Cozy crocheted goods</span>
@@ -421,10 +427,11 @@
 
       /* thread + hook run: [fromSeg, toSeg, start, dur, ease] */
       const DRAW = ["#thread-shadow", "#thread-path", "#thread-sheen"];
-      gsap.set(DRAW, { strokeDashoffset: 1 });
+      DRAW.forEach((sel) => { const el = document.querySelector(sel); el.style.strokeDasharray = total + " " + total * 2; });
+      gsap.set(DRAW, { strokeDashoffset: total });
       gsap.set("#hook", { x: 950, y: -60 });
       const run = (a, b, t, dur, ease) => {
-        tl.to(DRAW, { strokeDashoffset: 1 - F[b], duration: dur, ease }, t);
+        tl.to(DRAW, { strokeDashoffset: total * (1 - F[b]), duration: dur, ease }, t);
         tl.to("#hook", { motionPath: { path: "#thread-path", start: F[a], end: F[b] }, duration: dur, ease }, t);
       };
       run(0, 3, 0.15, 2.45, "power2.inOut"); // hero: drop, sweep, into lane
@@ -455,7 +462,8 @@
       ];
       gsap.set(nodes.flatMap((x) => [x.n, x.text]), { opacity: 0 });
       nodes.forEach((s, i) => {
-        tl.fromTo(s.n, { scale: 0.5, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.34, ease: "back.out(2.2)" }, s.t);
+        tl.set(s.n, { opacity: 1 }, s.t);
+        tl.fromTo(s.n, { scale: 0.4 }, { scale: 1, duration: 0.34, ease: "back.out(2.2)" }, s.t);
         tl.to(s.n, { backgroundColor: "#9c4f55", duration: 0.12, ease: "none" }, s.t);
         tl.fromTo(s.text, { x: -24, opacity: 0 }, { x: 0, opacity: 1, duration: 0.5, ease: EASE_OUT }, s.t + 0.06);
         if (nodes[i + 1]) tl.to(s.n, { backgroundColor: "#3f2619", duration: 0.2, ease: "none" }, nodes[i + 1].t);
@@ -469,7 +477,7 @@
       /* the ball: pops when the tip arrives, wraps rock once */
       gsap.set("#ball", { scale: 0.4, opacity: 0, rotation: -14, transformOrigin: "50% 50%" });
       tl.to("#ball", { scale: 1, opacity: 1, rotation: 0, duration: 0.6, ease: "back.out(1.7)" }, 5.7);
-      tl.fromTo("#ball-wraps", { rotation: -16 }, { rotation: 10, duration: 2.6, ease: "sine.inOut" }, 5.8);
+      tl.fromTo("#ball-rock", { rotation: -16, transformOrigin: "50% 50%" }, { rotation: 10, duration: 2.6, ease: "sine.inOut" }, 5.8);
 
       
       /* payoff: Fuzzballs + butter swipe, then three dots */

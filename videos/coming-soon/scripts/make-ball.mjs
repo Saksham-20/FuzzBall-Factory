@@ -15,7 +15,7 @@ const layers = w.layers
   )
   .join("");
 
-const html = `<div id="ball-face"><svg id="ball-wraps" viewBox="10 10 380 380" fill="none" stroke-linecap="round">${layers}</svg></div>
+const html = `<div id="ball-face"><div id="ball-rock" data-layout-allow-overflow><svg id="ball-wraps" viewBox="10 10 380 380" fill="none" stroke-linecap="round">${layers}</svg></div></div>
 <svg id="ball-rim" viewBox="0 0 400 400"><path d="${FORM_SHADOW}" fill="${c.dark}" opacity="0.2"/><circle cx="200" cy="200" r="190" fill="none" stroke="${c.dark}" stroke-width="5"/></svg>`;
 writeFileSync(new URL("../src/ball.html", import.meta.url), html);
 console.log("ball.html", html.length, "bytes");

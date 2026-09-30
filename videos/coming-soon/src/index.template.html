@@ -188,6 +188,10 @@
         isolation: isolate;
         background: var(--rose);
       }
+      #ball-rock {
+        position: absolute;
+        inset: 0;
+      }
       #ball-wraps {
         position: absolute;
         inset: 0;
@@ -238,8 +242,8 @@
 
       /* end card */
       #stamp {
-        left: 0;
-        width: 1080px;
+        left: 250px;
+        width: 780px;
         top: 4820px;
         display: flex;
         justify-content: center;
@@ -288,8 +292,9 @@
         flex: none;
       }
       #handle {
-        left: 230px;
-        width: 800px;
+        left: 250px;
+        width: 780px;
+        text-align: center;
         top: 5980px;
         font-size: 50px;
         font-weight: 700;
@@ -300,20 +305,21 @@
   </head>
   <body>
     <div id="root" data-composition-id="main" data-start="0" data-duration="12" data-width="1080" data-height="1920">
+      <audio id="score" src="assets/audio/score.wav" data-start="0" data-duration="12" data-track-index="1" data-volume="1"></audio>
       <div id="world">
         <!-- the one live thing: rose yarn thread + the hook that leads it -->
         <svg id="thread" viewBox="0 0 1080 7000" fill="none" stroke-linecap="round" stroke-linejoin="round">
-          <g stroke-dasharray="1 2" stroke-dashoffset="1">
-            <path id="thread-shadow" pathLength="1" stroke="#a95f62" stroke-width="18" opacity="0.4" transform="translate(3 5)" />
-            <path id="thread-path" pathLength="1" stroke="#c98586" stroke-width="18" />
-            <path id="thread-sheen" pathLength="1" stroke="#e2acab" stroke-width="4" transform="translate(-3 -3)" opacity="0.85" />
+          <g>
+            <path id="thread-shadow" stroke="#a95f62" stroke-width="18" opacity="0.4" transform="translate(3 5)" />
+            <path id="thread-path" stroke="#c98586" stroke-width="18" />
+            <path id="thread-sheen" stroke="#e2acab" stroke-width="4" transform="translate(-3 -3)" opacity="0.85" />
           </g>
         </svg>
 
         <!-- hero -->
-        <h1 id="hero-h1" class="abs display">
-          <span class="line" id="l1">Yarn</span>
-          <span class="line" id="l2">in.</span>
+        <h1 id="hero-h1" class="abs display" data-layout-allow-overlap>
+          <span class="line" id="l1" data-layout-allow-overlap>Yarn</span>
+          <span class="line" id="l2" data-layout-allow-overlap>in.</span>
         </h1>
 
         <!-- stations -->
@@ -331,7 +337,7 @@
         <div class="abs" id="s2-text" style="left: 226px; top: 2396px">
           <div class="stencil st-label">Hook</div>
         </div>
-        <div id="ticket" class="abs">
+        <div id="ticket" class="abs" data-layout-allow-overlap>
           <div class="head stencil"><span>Batch #001</span><span>One of one</span></div>
           <div class="body">Made by one pair of hands.</div>
         </div>
@@ -350,7 +356,7 @@
         <!-- the hook rides above the ball -->
         <svg id="hook-layer" class="abs" style="left: 0; top: 0; width: 1080px; height: 7000px; overflow: visible; pointer-events: none" viewBox="0 0 1080 7000">
           <g id="hook">
-            <g transform="rotate(-158) scale(2.1) translate(-27 -22)">
+            <g transform="rotate(-152) scale(1.5) translate(-27 -22)">
               <path d="M13 66 V32 C13 15 22 5 31 5 C37.5 5 40 11 35.5 15.5 C32 19 27 20 27 29 V66 Z" fill="#6b4228" />
               <rect x="13" y="60" width="14" height="250" rx="7" fill="#6b4228" />
               <rect x="8" y="150" width="24" height="52" rx="11" fill="#8a6249" />
@@ -372,8 +378,8 @@
         <!-- end card -->
         <div id="stamp" class="abs"><span class="stencil" id="stamp-inner">Coming soon</span></div>
         <img id="logo" class="abs" src="assets/logo.png" alt="FuzzBall Factory - Handmade with love" />
-        <div id="tape" class="abs">
-          <div id="tape-track" class="stencil">
+        <div id="tape" class="abs" data-layout-allow-overflow>
+          <div id="tape-track" class="stencil" data-layout-allow-overflow>
             <span>Handmade in India</span>
             <!--YARN--><span>Opening soon</span>
             <!--YARN--><span>Cozy crocheted goods</span>
@@ -420,10 +426,11 @@
 
       /* thread + hook run: [fromSeg, toSeg, start, dur, ease] */
       const DRAW = ["#thread-shadow", "#thread-path", "#thread-sheen"];
-      gsap.set(DRAW, { strokeDashoffset: 1 });
+      DRAW.forEach((sel) => { const el = document.querySelector(sel); el.style.strokeDasharray = total + " " + total * 2; });
+      gsap.set(DRAW, { strokeDashoffset: total });
       gsap.set("#hook", { x: 950, y: -60 });
       const run = (a, b, t, dur, ease) => {
-        tl.to(DRAW, { strokeDashoffset: 1 - F[b], duration: dur, ease }, t);
+        tl.to(DRAW, { strokeDashoffset: total * (1 - F[b]), duration: dur, ease }, t);
         tl.to("#hook", { motionPath: { path: "#thread-path", start: F[a], end: F[b] }, duration: dur, ease }, t);
       };
       run(0, 3, 0.15, 2.45, "power2.inOut"); // hero: drop, sweep, into lane
@@ -454,7 +461,8 @@
       ];
       gsap.set(nodes.flatMap((x) => [x.n, x.text]), { opacity: 0 });
       nodes.forEach((s, i) => {
-        tl.fromTo(s.n, { scale: 0.5, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.34, ease: "back.out(2.2)" }, s.t);
+        tl.set(s.n, { opacity: 1 }, s.t);
+        tl.fromTo(s.n, { scale: 0.4 }, { scale: 1, duration: 0.34, ease: "back.out(2.2)" }, s.t);
         tl.to(s.n, { backgroundColor: "#9c4f55", duration: 0.12, ease: "none" }, s.t);
         tl.fromTo(s.text, { x: -24, opacity: 0 }, { x: 0, opacity: 1, duration: 0.5, ease: EASE_OUT }, s.t + 0.06);
         if (nodes[i + 1]) tl.to(s.n, { backgroundColor: "#3f2619", duration: 0.2, ease: "none" }, nodes[i + 1].t);
@@ -468,7 +476,7 @@
       /* the ball: pops when the tip arrives, wraps rock once */
       gsap.set("#ball", { scale: 0.4, opacity: 0, rotation: -14, transformOrigin: "50% 50%" });
       tl.to("#ball", { scale: 1, opacity: 1, rotation: 0, duration: 0.6, ease: "back.out(1.7)" }, 5.7);
-      tl.fromTo("#ball-wraps", { rotation: -16 }, { rotation: 10, duration: 2.6, ease: "sine.inOut" }, 5.8);
+      tl.fromTo("#ball-rock", { rotation: -16, transformOrigin: "50% 50%" }, { rotation: 10, duration: 2.6, ease: "sine.inOut" }, 5.8);
 
       
       /* payoff: Fuzzballs + butter swipe, then three dots */

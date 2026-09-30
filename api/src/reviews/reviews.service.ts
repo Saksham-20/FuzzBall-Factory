@@ -54,13 +54,4 @@ export class ReviewsService {
     });
     return toReviewDto(row);
   }
-
-  /**
-   * Recompute `Product.ratingAverage/ratingCount` from PUBLISHED reviews. The admin moderation code calls this
-   * after it publishes, hides or deletes a review (the denormalised columns feed `Product.rating`).
-   */
-  async recomputeRating(productId: string, db: Db = this.prisma): Promise<void> {
-    const agg = await db.review.aggregate({ where: { productId, status: 'PUBLISHED' }, _avg: { rating: true }, _count: { _all: true } });
-    await db.product.update({ where: { id: productId }, data: { ratingAverage: agg._avg.rating ?? 0, ratingCount: agg._count._all } });
-  }
 }
