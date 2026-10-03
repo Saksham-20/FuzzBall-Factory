@@ -8,7 +8,8 @@ export const MAX_DIMENSION = 2560;
  * The stored file is the master every displayed size is cut from (next/image re-encodes it per width), so it is kept
  * close to the original: AVIF at quality 74 with full-resolution colour (4:4:4). On the maker's photos that is 13%
  * larger than WebP 82 was, with clearly less loss (SSIM 0.990 against 0.974). Effort 3 encodes a 12 MP phone photo in
- * under a second on one core; effort 4 reached the same fidelity in about 4 seconds.
+ * under a second on a laptop core and about 4 seconds on the live server's one vCPU; effort 4 is about 5x slower for
+ * the same fidelity.
  */
 const AVIF = { quality: 74, effort: 3, chromaSubsampling: '4:4:4' } as const;
 /** Container formats accepted on input (checked from the file's bytes, never from the client-declared type). */
