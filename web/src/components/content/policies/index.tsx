@@ -1,4 +1,6 @@
 import { grievancePolicy } from "@/components/content/policies/grievance";
+import { ipPolicy } from "@/components/content/policies/ip";
+import { pricingPolicy } from "@/components/content/policies/pricing";
 import { privacyPolicy } from "@/components/content/policies/privacy";
 import { refundPolicy } from "@/components/content/policies/refund";
 import { shippingPolicy } from "@/components/content/policies/shipping";
@@ -11,6 +13,8 @@ export const POLICIES: Record<PolicyDoc["slug"], PolicyDoc> = {
   terms: termsPolicy,
   privacy: privacyPolicy,
   grievance: grievancePolicy,
+  ip: ipPolicy,
+  pricing: pricingPolicy,
 };
 
 export const POLICY_SLUGS = Object.keys(POLICIES) as PolicyDoc["slug"][];

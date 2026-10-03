@@ -8,7 +8,7 @@ import { JsonLd } from "@/lib/json-ld";
 export const metadata: Metadata = {
   title: "FAQ",
   description:
-    "Answers about lead times, custom work orders and quotes, payments and cash on delivery, international shipping, returns, care and why we don't make licensed characters.",
+    "Answers about lead times, custom work orders and quotes, payments and cash on delivery, international shipping, returns, care.",
   alternates: { canonical: "/faq" },
 };
 

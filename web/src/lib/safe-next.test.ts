@@ -5,7 +5,7 @@ describe("safeNext", () => {
   it.each([
     ["/account", "/account"],
     ["/checkout?step=2", "/checkout?step=2"],
-    ["/p/mug-rug#reviews", "/p/mug-rug#reviews"],
+    ["/p/whale-red#reviews", "/p/whale-red#reviews"],
     ["/order/FB-1001", "/order/FB-1001"],
   ])("keeps the same-site path %s", (input, out) => {
     expect(safeNext(input)).toBe(out);

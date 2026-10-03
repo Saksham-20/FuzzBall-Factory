@@ -74,25 +74,7 @@ export const quotePrice = (r: CustomRequest): number | undefined => {
   return q ? (q.status === "COUNTERED" && q.counter ? q.counter.amount : q.price) : undefined;
 };
 
-/* ── Licensed-character hint. A nudge only; it never declines anything. ── */
-const IP_NAMES = [
-  "pikachu", "pokemon", "pokémon", "hello kitty", "sanrio", "kuromi", "cinnamoroll", "my melody", "disney", "mickey", "minnie", "frozen elsa",
-  "marvel", "spiderman", "spider-man", "batman", "superman", "avengers", "hulk", "iron man", "naruto", "goku", "doraemon", "shin-chan", "shinchan",
-  "totoro", "ghibli", "snoopy", "peppa", "paw patrol", "bluey", "cocomelon", "minecraft", "super mario", "sonic the hedgehog", "harry potter", "hogwarts", "barbie",
-  "winnie the pooh", "labubu",
-];
-const IP_RE = new RegExp(`\\b(${IP_NAMES.map((n) => n.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&")).join("|")})\\b`, "i");
-
-export function licensedMention(r: Pick<CustomRequest, "title" | "description" | "personalization">): string | null {
-  const m = IP_RE.exec(`${r.title} ${r.description} ${r.personalization ?? ""}`);
-  return m ? m[1] : null;
-}
-
 export const DECLINE_TEMPLATES = [
-  {
-    label: "Licensed character — we only make original designs",
-    text: "Thank you for asking! We only make original designs, so I can't make licensed characters. I'd love to make an original one in the same spirit if you'd like. Just tell me what you love about it.",
-  },
   { label: "Can't meet that date", text: "Thank you for asking! I can't finish this one by the date you need. If there's any wiggle room on the date, message me and we'll see what's possible." },
   { label: "Outside what we make", text: "Thank you for asking! This is outside what I make, so I can't take it on. I'd be happy to help with something in the shop or another idea." },
   { label: "Budget is too low", text: "Thank you for asking! The work involved would come to more than the budget you shared, so I can't do it at that price. If you can stretch it, or simplify the design, message me and I'll quote it." },

@@ -18,6 +18,7 @@ placeholder wording, see `docs/PLACEHOLDERS.md`). Every rule below is enforced b
 | Idempotency keys | 24 hours | deleted | `idempotency.purge` (03:15) |
 | Uploaded photos nobody used | 7 days | file and record deleted | `uploads.purge-orphans` (04:20) |
 | Cash-on-delivery orders never confirmed | 72 hours | cancelled, stock released | `orders.expire-cod` (hourly) |
+| Support tickets and their messages (contact, grievance, takedown and data requests; the grievance register) | 3 years after the ticket closes (complaint limitation is 2 years; the register is kept at least 3) | deleted with their messages. A resolved ticket nobody answers closes after 14 days | `support.housekeeping` (04:25) |
 
 ## Erasure (DPDP Act)
 
@@ -29,6 +30,7 @@ withdraws it; the profile page shows the state. When the clock runs out `Erasure
   emails to the old address, IP addresses on audit rows.
 * **Scrubbed, kept:** orders and work orders keep amounts, items, dates and status; name, phone, email, street address,
   postal code, gift note, admin notes, tracking link and timeline notes are removed. Payments, quotes and refunds are untouched.
+* **Support tickets:** the customer's name, email, phone, subject and every message (and any photo link) are scrubbed; the register fields (number, kind, channel, category, dates, status) stay until the 3-year deletion. Tickets sent as a guest from the same email are scrubbed too. An open ticket defers the erasure like an open order.
 * **The `User` row stays** as a shell (`Deleted customer`, `erased-<id>@erased.invalid`, no usable password) so foreign keys
   hold. `erasedAt` records when.
 * **Deferred, not skipped:** an open order, an open work order or an unfinished refund postpones the erasure to the next

@@ -3,6 +3,7 @@ import { CustomModule } from '../custom/custom.module.js';
 import { OrdersModule } from '../orders/orders.module.js';
 import { PaymentsModule } from '../payments/payments.module.js';
 import { SettingsModule } from '../settings/settings.module.js';
+import { SupportModule } from '../support/support.module.js';
 import { UploadsModule } from '../uploads/uploads.module.js';
 import { AdminAuditService } from './admin-audit.service.js';
 import { AdminCategoriesService } from './admin-categories.service.js';
@@ -17,12 +18,13 @@ import { AdminPaymentsService } from './admin-payments.service.js';
 import { AdminProductsService } from './admin-products.service.js';
 import { AdminReviewsService } from './admin-reviews.service.js';
 import { AdminSettingsService } from './admin-settings.service.js';
+import { AdminSupportService } from './admin-support.service.js';
 import { ADMIN_CONTROLLERS } from './admin.controllers.js';
 import { AuditService } from './audit.service.js';
 
 /** Thin admin API over the domain services. Every route is `@Roles('admin')` and every write is audited. */
 @Module({
-  imports: [CustomModule, OrdersModule, PaymentsModule, SettingsModule, UploadsModule],
+  imports: [CustomModule, OrdersModule, PaymentsModule, SettingsModule, SupportModule, UploadsModule],
   controllers: ADMIN_CONTROLLERS,
   providers: [
     AuditService,
@@ -39,6 +41,7 @@ import { AuditService } from './audit.service.js';
     AdminEmailService,
     AdminAuditService,
     AdminSettingsService,
+    AdminSupportService,
   ],
 })
 export class AdminModule {}

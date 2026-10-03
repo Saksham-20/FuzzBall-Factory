@@ -39,6 +39,27 @@ Logs never contain passwords, tokens, reset links or query strings (redacted in 
 | Payment taken, order still "pending" | Webhook delayed or blocked | The storefront polls for ~30 s; Razorpay retries the webhook for 24 h; check Razorpay's webhook log; the `razorpay/verify` call from the browser also settles it |
 | Disk filling | Logs, dumps, uploads | `journalctl --vacuum-size=500M`; `/var/backups/fuzzball` keeps 10 pre-migration and 3 nightly dumps; uploads are on Cloudinary in production |
 
+## Support inbox
+
+Every contact message, grievance, takedown notice and data request lands in **Admin > Support** and the shop inbox gets a `ticket.new_admin` email. The dashboard shows open, due-soon and overdue counts.
+
+**Clocks.** Acknowledge within 48 hours; resolve a grievance or data request within 30 days (a message or takedown notice within 7). The hourly `support.sla` job emails the owner once when a deadline is near and once when it is past. The customer's confirmation email counts as the acknowledgement.
+
+**Answering a grievance in time**
+1. Open the ticket from Support (filter "Overdue" or "Due soon" first).
+2. Reply in the thread. A reply emails the customer and records the first response. Use a private note for your own reasoning; notes are never shown or sent.
+3. If you answered on WhatsApp or the phone, press "I answered them" so the 48 hour clock stops without an email.
+4. Press Resolve and write the outcome in the note. That text becomes the register entry and the customer is emailed.
+5. A resolved ticket the customer ignores closes by itself after 14 days; a customer reply reopens it.
+
+**Complaints that arrive outside the site** (WhatsApp, phone, post, email): press "Log a request", pick the channel, and set the date the customer actually wrote (the legal clock starts then). Tick "already acknowledged" if you have replied, so no second email goes out.
+
+**Exporting the register.** The "Grievance register" button on Admin > Support downloads number, kind, channel, category, dates, status, linked order and outcome, without names or emails. Keep it for audits; tickets are deleted 3 years after closing.
+
+**When email fails.** The ticket is still saved and shows in Admin > Support. Check Admin > Emails ("Gave up" rows can be resent), or answer on WhatsApp and press "I answered them". A customer who lost their link can write again from the same email address; reply in the new thread.
+
+**Erasure and export.** An open ticket defers an account erasure until it is resolved; erasure scrubs the person's details but keeps the register fields. The account export includes the person's tickets.
+
 ## Secrets rotation
 
 Rotate on a schedule (yearly) and immediately after any suspected leak or when someone with access leaves.

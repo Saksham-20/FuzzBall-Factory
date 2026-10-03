@@ -38,6 +38,46 @@
 **Priority:** P2
 **Depends on:** None
 
+### Support attachments from the website forms
+
+**What:** The API takes up to 4 uploaded photos on a ticket from a signed-in sender (and on admin replies), but the website's ticket forms and reply boxes have no attach button.
+
+**Why:** Damage claims and grievances are easier to settle with photos. Today customers must reply to the email or use WhatsApp. Guests cannot upload at all (uploads need login), so guest tickets would need a signed upload link or a different route.
+
+**Effort:** M
+**Priority:** P2
+**Depends on:** None
+
+### DPDP core duties (target 2027-05-13; start 2027-03)
+
+**What:** Re-read the Digital Personal Data Protection Rules 2025 (Gazette G.S.R. 846(E)) and confirm the commencement date, then: extend `audit.scrub-ips` and `auth.scrub-token-meta` retention to at least 1 year (change `privacy.tsx` and `DATA_RETENTION.md` in the same change); write the breach runbook (notify affected people without delay and the Data Protection Board within 72 hours) in `docs/RUNBOOK_OPS.md`; state the maximum response time for access requests (30 days) on the privacy page.
+
+**Why:** Log retention below a year will be non-compliant once the core duties apply, and the policy text and the code must say the same.
+
+**Effort:** M
+**Priority:** P1 (date-driven)
+**Depends on:** `docs/LEGAL_REVIEW.md`
+
+### E-Commerce Amendment Rules 2026 (in force 2027-01-01; build in December 2026)
+
+**What:** (1) Confirm the Gazette text. (2) The "was" price must be the lowest of the previous 30 days: add a price-history table or remove the strike-through. (3) Register on the National Consumer Helpline convergence programme (owner action), then mention it on the grievance page. (4) Have the owner sign the first dark-pattern audit (`docs/DARK_PATTERNS_AUDIT.md` is a code walk-through only), then set `LEGAL.darkPatternAudit` in `web/src/lib/legal.ts`. (5) Repeat the audit every year and before any new checkout or promotion feature. (6) A copy of the complaint as recorded is already sent by `ticket.received`; verify it.
+
+**Why:** The rules are reported to need these from 2027-01-01.
+
+**Effort:** M
+**Priority:** P1 (date-driven)
+**Depends on:** Owner actions
+
+### Razorpay sample invoice and the open legal decisions
+
+**What:** Razorpay asks for a sample invoice and the policy pages at activation; produce a sample invoice once GST status is known. Unresolved owner decisions (details in `docs/PLAN_LEGAL_SUPPORT_WHALES.md`): character-style pieces, EU sales (GPSR, GDPR representative), toy safety or an artisan card and the Baby category, GST registration, cash on delivery, the grievance officer details, the IEC for international card payments, and a lawyer review of the pages (`docs/LEGAL_REVIEW.md` has the checklist).
+
+**Why:** The pages keep their "draft" banner until a lawyer has signed them off.
+
+**Effort:** S
+**Priority:** P1
+**Depends on:** The maker
+
 ## Reliability
 
 ### Work-order emails still poll for their transaction to commit
@@ -112,18 +152,6 @@
 
 **Effort:** S
 **Priority:** P3
-**Depends on:** None
-
-### Credit the sample photos
-
-**What:** `web/public/samples/PROVENANCE.md` lists `mice.png` (the file is `mice.jpg`) and names no authors, but several photos are CC BY / BY-SA, which require attribution wherever they are shown.
-
-**Why:** The public test site shows them.
-
-**Context:** Add author and licence per file plus a credits line (footer or /about), or replace them with the maker's own photos, which are coming anyway.
-
-**Effort:** S
-**Priority:** P2
 **Depends on:** None
 
 ### Account pages scroll sideways on small phones

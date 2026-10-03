@@ -10,6 +10,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/Button";
 import { Checkbox, Field, Input } from "@/components/ui/Field";
 import { PasswordInput } from "@/components/account/PasswordInput";
+import { CollectionNotice } from "@/components/content/CollectionNotice";
 import { FormError, GuestOnly, applyApiError } from "@/components/account/auth/authUtils";
 import { useAuth } from "@/lib/state/AuthContext";
 
@@ -100,6 +101,7 @@ export function SignupForm() {
             </p>
           ) : null}
         </div>
+        <CollectionNotice what="name, email, phone and password (kept only as a one-way hash)" why="to run your account, deliver your orders and contact you about them" />
         <Button type="submit" size="lg" className="w-full" disabled={isSubmitting} aria-busy={isSubmitting}>
           {isSubmitting ? "Creating your account…" : "Create account"}
         </Button>

@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "rea
 import { useRouter } from "next/navigation";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowLeft, ArrowRight, Info, LogIn, Send } from "lucide-react";
+import { ArrowLeft, ArrowRight, LogIn, Send } from "lucide-react";
 import { toast } from "sonner";
 import { Ticket } from "@/components/brand/Ticket";
 import { Button } from "@/components/ui/Button";
@@ -33,6 +33,7 @@ import { SAMPLE_SETTINGS } from "@/lib/site";
 import { COUNTRIES, OCCASIONS } from "@/lib/status";
 import { formatDate, formatINR } from "@/lib/format";
 import { cn } from "@/lib/cn";
+import { CollectionNotice } from "@/components/content/CollectionNotice";
 import type { Category, Product } from "@/lib/types";
 
 const STEP_LABELS = ["The idea", "The details", "Budget", "Send"];
@@ -262,10 +263,6 @@ export function CustomForm({ initial, product, from, categories, resume }: Props
                     />
                   )}
                 />
-                <p className="flex items-start gap-2 text-sm text-brown">
-                  <Info className="mt-0.5 size-4 shrink-0" strokeWidth={1.8} />
-                  We can&apos;t make licensed characters (Disney, Sanrio, anime and the like). Original designs only.
-                </p>
               </div>
             ) : null}
 
@@ -432,7 +429,7 @@ export function CustomForm({ initial, product, from, categories, resume }: Props
                   <Checkbox
                     label={
                       <>
-                        I understand: {deposit}% advance to start, custom pieces can&apos;t be returned, colours may vary slightly, and no licensed characters.
+                        I understand: {deposit}% advance to start, custom pieces can&apos;t be returned, and colours may vary slightly.
                       </>
                     }
                     aria-invalid={errors.terms ? true : undefined}
@@ -456,6 +453,14 @@ export function CustomForm({ initial, product, from, categories, resume }: Props
               </div>
             ) : null}
           </div>
+
+          {step === 3 ? (
+            <CollectionNotice
+              className="mt-6"
+              what="description, reference photos, measurements, budget and contact details"
+              why="to quote for your piece, make it and ship it"
+            />
+          ) : null}
 
           <div className="mt-8 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
             {step > 0 ? (

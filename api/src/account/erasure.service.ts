@@ -51,14 +51,16 @@ export class ErasureService {
 
   /** Why an account cannot be erased right now, or null when it can. */
   async blocker(userId: string): Promise<string | null> {
-    const [orders, requests, refunds] = await Promise.all([
+    const [orders, requests, refunds, tickets] = await Promise.all([
       this.prisma.order.count({ where: { userId, status: { notIn: [...ORDER_DONE] } } }),
       this.prisma.customRequest.count({ where: { userId, status: { notIn: [...WORK_ORDER_DONE] } } }),
       this.prisma.refundJob.count({ where: { status: { in: ['PENDING', 'PROCESSING'] }, payment: { OR: [{ order: { userId } }, { request: { userId } }] } } }),
+      this.prisma.supportTicket.count({ where: { userId, status: { in: ['OPEN', 'WAITING_CUSTOMER'] } } }),
     ]);
     if (orders > 0) return `${orders} open order(s)`;
     if (requests > 0) return `${requests} open work order(s)`;
     if (refunds > 0) return `${refunds} unfinished refund(s)`;
+    if (tickets > 0) return `${tickets} open support request(s)`;
     return null;
   }
 
@@ -86,6 +88,7 @@ export class ErasureService {
       const products = await this.scrubReviews(tx, userId);
       await this.scrubOrders(tx, userId);
       await this.scrubWorkOrders(tx, userId);
+      await this.scrubTickets(tx, userId, user.email);
       await Promise.all([
         tx.address.deleteMany({ where: { userId } }),
         tx.wishlistItem.deleteMany({ where: { userId } }),
@@ -143,6 +146,22 @@ export class ErasureService {
       });
       await tx.orderEvent.updateMany({ where: { orderId: id }, data: { note: null, photo: null } });
     }
+  }
+
+  /**
+   * Support tickets: the person's words, name, email, phone and photos go; the register fields (number, kind, channel,
+   * dates, category, status, resolution outcome) stay until the retention job deletes the row, as the privacy policy says.
+   * Tickets they wrote to us as a guest from the same email are scrubbed too.
+   */
+  private async scrubTickets(tx: Prisma.TransactionClient, userId: string, email: string): Promise<void> {
+    const tickets = await tx.supportTicket.findMany({ where: { OR: [{ userId }, { email: { equals: email, mode: 'insensitive' } }] }, select: { id: true } });
+    const ids = tickets.map((t) => t.id);
+    if (ids.length === 0) return;
+    await tx.supportMessage.deleteMany({ where: { ticketId: { in: ids } } });
+    await tx.supportTicket.updateMany({
+      where: { id: { in: ids } },
+      data: { name: 'Deleted customer', email: null, phone: null, subject: 'Erased request', resolutionNote: null, userId: null, scrubbedAt: new Date() },
+    });
   }
 
   private async scrubWorkOrders(tx: Prisma.TransactionClient, userId: string): Promise<void> {

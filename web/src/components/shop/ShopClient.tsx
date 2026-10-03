@@ -25,6 +25,7 @@ import { listCategories, listProducts } from "@/lib/api/catalog";
 import { useApi } from "@/lib/api/useApi";
 import { cn } from "@/lib/cn";
 import { SITE } from "@/lib/site";
+import { waGeneral } from "@/lib/whatsapp";
 import type { Category, Swatch } from "@/lib/types";
 
 const PAGE_SIZE = 12;
@@ -246,27 +247,36 @@ export function ShopClient({ category, palette = [] }: { category?: Category; pa
               <SkeletonGrid />
             ) : items.length === 0 ? (
               <EmptyState
-                title={active ? "Nothing on this shelf with those filters" : "This shelf is empty right now"}
+                title={active ? "Nothing on this shelf with those filters" : category ? "This shelf is empty right now" : "The whales are on their way"}
                 action={
                   <div className="flex flex-wrap items-center justify-center gap-3">
                     {active ? (
                       <Button type="button" onClick={clearAll}>
                         Clear filters
                       </Button>
-                    ) : (
+                    ) : category ? (
                       <Button asChild>
                         <Link href="/shop">See the whole shelf</Link>
                       </Button>
-                    )}
+                    ) : null}
                     <Button asChild variant="secondary">
                       <Link href="/custom">Put in a work order instead</Link>
                     </Button>
+                    {!active && !category ? (
+                      <Button asChild variant="secondary">
+                        <a href={waGeneral()} target="_blank" rel="noopener noreferrer">
+                          Ask on WhatsApp
+                        </a>
+                      </Button>
+                    ) : null}
                   </div>
                 }
               >
                 {active
                   ? "Loosen a filter, or tell us what you have in mind and we will make it."
-                  : "New pieces land here as they come off the hook. You can also ask for something made just for you."}
+                  : category
+                    ? "New pieces land here as they come off the hook. You can also ask for something made just for you."
+                    : "The first pieces are being listed. Until then you can put in a work order or ask us on WhatsApp."}
               </EmptyState>
             ) : (
               <>

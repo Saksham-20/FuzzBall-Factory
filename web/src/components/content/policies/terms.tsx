@@ -1,28 +1,38 @@
 import Link from "next/link";
-import { Ph } from "@/components/content/Placeholder";
+import { LegalValue, Ph } from "@/components/content/Placeholder";
 import { SellerDetails } from "@/components/content/SellerDetails";
 import type { PolicyDoc } from "@/components/content/policies/types";
+import { LEGAL } from "@/lib/legal";
 import { SAMPLE_SETTINGS, SITE } from "@/lib/site";
 import { formatINR } from "@/lib/format";
 
 // PLACEHOLDER(legal-details): seller identity, tax status and court jurisdiction.
-// PLACEHOLDER(policy-draft): the whole text is a draft for legal review.
+// PLACEHOLDER(policy-draft): the whole text is a draft for legal review (docs/LEGAL_REVIEW.md lists the clauses a lawyer must sign off).
 
 const dep = SAMPLE_SETTINGS.depositPct;
+
+/** Tax wording follows the owner's GST status (an unregistered seller must not show or collect GST). */
+function TaxWording() {
+  if (LEGAL.gstRegistered === null) return <Ph>[State whether prices include GST or other taxes, as applicable to the seller]</Ph>;
+  return LEGAL.gstRegistered ? (
+    <>Prices include GST where it applies, and we issue a tax invoice.</>
+  ) : (
+    <>We are not registered for GST, so no GST is added to the prices shown, and we issue a bill of supply.</>
+  );
+}
 
 export const termsPolicy: PolicyDoc = {
   slug: "terms",
   title: "Terms and conditions",
   shortTitle: "Terms and conditions",
   description:
-    "The terms for buying from FuzzBall Factory: orders, pricing and payment, custom work orders and quotes, original designs only, handmade colour variance, and governing law in India.",
+    "The terms for buying from FuzzBall Factory: orders, pricing and payment, custom work orders and quotes, intellectual property, handmade colour variance, and governing law in India.",
   intro: "The rules for using this website and buying from us. We have tried to keep them readable.",
   summary: {
     head: "The short version",
     points: [
       "Everything is handmade, so small differences in colour and size are normal.",
       `Custom work orders follow a quote. A ${dep}% advance starts the work, and the balance is due before we ship.`,
-      "We make original designs only. We do not make licensed or copyrighted characters.",
       "These terms are governed by the laws of India. Your rights as a consumer are not reduced.",
     ],
   },
@@ -48,7 +58,7 @@ export const termsPolicy: PolicyDoc = {
       title: "Who can buy",
       body: (
         <ul>
-          <li>You must be 18 or older, or use the site with a parent or guardian who agrees to these terms.</li>
+          <li>You must be 18 or older to create an account or place an order. If you are buying a gift for a child, the buyer is the adult.</li>
           <li>Give us true details: name, address, phone and email. We use them to deliver and to reach you about your order.</li>
           <li>Keep your password private. You are responsible for what happens under your account. Tell us at once if you think it was misused.</li>
         </ul>
@@ -75,8 +85,10 @@ export const termsPolicy: PolicyDoc = {
               <strong>Materials.</strong> The fibre is listed on the product page. Tell us before ordering if you have an allergy to any fibre.
             </li>
             <li>
-              <strong>Safety.</strong> Plushies and small parts are not toys for children under 3 unless the product page says they are made for
-              that age. Supervise young children. Read the care notes.
+              <strong>Safety.</strong> Our pieces are handmade decorative and collectible items. Unless a product page states an age it is made
+              for, do not treat a piece as a toy. Small parts such as beads, safety eyes and clasps can be a choking hazard: keep every piece away
+              from children under 3 and supervise young children. Where a product page has a safety and age note, it applies to that piece. Read
+              the care notes.
             </li>
           </ul>
           <p>We may stop selling a product or change its description at any time. A product marked sold out cannot be ordered.</p>
@@ -93,8 +105,7 @@ export const termsPolicy: PolicyDoc = {
               Prices are in Indian rupees (INR). If we show an approximate price in another currency, it is only a guide. You pay in INR.
             </li>
             <li>
-              <Ph>[State whether prices include GST or other taxes, as applicable to the seller]</Ph>. The price of the item, shipping, gift
-              wrap and any cash on delivery fee are shown separately before you pay.
+              <TaxWording /> The price of the item, shipping, gift wrap and any cash on delivery fee are shown separately before you pay.
             </li>
             <li>
               Online payments are processed by Razorpay, using UPI, cards, netbanking and other methods shown at checkout. We do not see or store
@@ -168,8 +179,14 @@ export const termsPolicy: PolicyDoc = {
             </li>
           </ol>
           <p>
-            The advance is non-refundable once work has started. Changes outside the scope in the quote, or after approval, may be charged.
-            Refund details are in the <Link href="/policies/refund">cancellation and refund policy</Link>.
+            Changes outside the scope in the quote, or after approval, may be charged, and we tell you the price before we make them.
+          </p>
+          <p>
+            <strong>If you cancel.</strong> Before work starts, you pay nothing. If you cancel after work has started, we keep only the cost of the
+            materials bought and the work done for your order, shown to you in writing, and refund the rest of what you paid. If we cancel for a
+            reason not caused by you, we refund everything you paid. If you do not pay the balance within 14 days of our notice that the piece is
+            ready, we may cancel the order, and the same cost basis applies. Refund details are in the{" "}
+            <Link href="/policies/refund">cancellation and refund policy</Link>.
           </p>
           <p>
             Handmade work depends on your references. If you send a photo or description, we make our own version of it. We cannot promise an
@@ -180,13 +197,14 @@ export const termsPolicy: PolicyDoc = {
     },
     {
       id: "ip",
-      title: "Original designs and intellectual property",
+      title: "Intellectual property",
       body: (
         <>
           <p>
-            <strong>We make original designs only.</strong> We do not make or sell licensed, trademarked or copyrighted characters such as
-            those from films, cartoons, games or brands, and we do not copy other makers&apos; patterns. We will decline such requests. If you
-            send us a reference, you confirm you have the right to share it.
+            Everything we sell is handmade by us. We are not affiliated with, endorsed by or licensed by any game, anime, film, television or toy
+            company, and we do not sell official or licensed merchandise. If you send us a
+            reference, you confirm you have the right to share it. To report something you believe infringes your rights, see the{" "}
+            <Link href="/policies/ip">intellectual property and takedown policy</Link>.
           </p>
           <p>
             The designs, patterns, photographs, text and logos on this website belong to us or our licensors. You may not copy, sell or reuse them
@@ -236,12 +254,38 @@ export const termsPolicy: PolicyDoc = {
         <>
           <p>
             We take care to describe and make every piece well, and to give accurate information on this website. To the extent the law allows, we are
-            not liable for indirect or consequential loss, or for events outside our reasonable control. Our total liability for an order is limited to
-            the amount you paid for it.
+            not liable for indirect or consequential loss, or for events outside our reasonable control.
           </p>
           <p>
-            Nothing in these terms takes away any right you have under the Consumer Protection Act, 2019, the Consumer Protection (E-Commerce)
-            Rules, 2020, or any other law that cannot be excluded by agreement.
+            Nothing limits liability for death or personal injury, for a defective product, for fraud, or any right you have as a consumer under
+            the law of your country. Subject to that, our liability for any claim relating to an order is limited to the amount you paid for it.
+            This includes your rights under the Consumer Protection Act, 2019 and the Consumer Protection (E-Commerce) Rules, 2020.
+          </p>
+        </>
+      ),
+    },
+    {
+      id: "contract",
+      title: "Electronic contract and messages",
+      body: (
+        <>
+          <p>
+            Your order and these terms are an electronic contract under the Information Technology Act, 2000; no signature is needed. By giving
+            us your email address and phone number you agree that we may contact you about your order, quote or complaint by email and WhatsApp.
+            We do not send marketing messages without your separate, unticked consent.
+          </p>
+          <p>
+            <strong>Events beyond our control.</strong> Neither of us is responsible for a delay or failure caused by something outside our
+            reasonable control, such as a courier or customs delay, natural events, strikes or an outage of a payment or email provider. We will
+            tell you, and refund anything you have paid for something we cannot deliver.
+          </p>
+          <p>
+            <strong>Your account.</strong> We may suspend or close an account that breaks these terms, after telling you why, unless that would put
+            someone at risk. Open orders are still honoured or refunded.
+          </p>
+          <p>
+            <strong>The rest.</strong> If a part of these terms is found unenforceable, the rest stays in force. These terms, with the policies
+            they link to, are the whole agreement between us about your use of the site and your orders.
           </p>
         </>
       ),
@@ -262,8 +306,12 @@ export const termsPolicy: PolicyDoc = {
       body: (
         <>
           <p>
-            These terms are governed by the laws of India. Subject to the next paragraph, the courts at <Ph>[City, State for jurisdiction]</Ph> have
+            These terms are governed by the laws of India. Subject to the next paragraph, the courts at <LegalValue value={LEGAL.jurisdiction} label="City, State for jurisdiction" /> have
             jurisdiction over disputes arising from them.
+          </p>
+          <p>
+            This does not stop you from filing a complaint where you live or work (Consumer Protection Act, 2019, section 34(2)(d)). If you live
+            outside India, the mandatory consumer protections of your country of residence still apply.
           </p>
           <p>
             As a consumer, you can also approach the consumer commission that has jurisdiction under the Consumer Protection Act, 2019, and the

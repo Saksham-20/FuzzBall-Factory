@@ -16,7 +16,8 @@ npm install                      # also runs `prisma generate` (postinstall)
 createdb fuzzball                # once
 cp .env.example .env             # then fill in secrets (see below)
 npm run prisma:migrate           # applies migrations (dev: `prisma migrate dev`)
-npm run seed                     # admin + sample catalogue, settings, coupons (idempotent)
+npm run seed                     # admin, settings, empty shelves (idempotent; no products)
+npm run purge-samples            # dry run: lists the old sample rows; add `-- --yes` to delete them
 npm run start:dev                # http://localhost:4000  (watch mode)
 ```
 
@@ -28,11 +29,10 @@ In production these must also be set on purpose: `PAYMENTS_MODE` (`razorpay` or 
 `TRUST_PROXY`; live payments (`razorpay`) additionally require the Razorpay keys and webhook secret,
 `CLOUDINARY_URL` and `RESEND_API_KEY`. `HOST` defaults to `127.0.0.1` in production (behind nginx) and
 `0.0.0.0` elsewhere; `COOKIE_SECURE` defaults to true in production. One variable is read outside the schema:
-`SEED_SAMPLES=true` makes `npm run seed` add the sample users, catalogue and coupons even when
-`NODE_ENV=production`, which skips them by default.
-
-Seeded logins (dev only, password `fuzzball123`): `admin@fuzzball.test` (admin, from `ADMIN_EMAIL` /
-`ADMIN_PASSWORD`), `maya@example.com`, `arjun@example.com`, `sophie@example.com`.
+`npm run seed` creates no products, customers or coupons. The only seeded login is the admin from `ADMIN_EMAIL` /
+`ADMIN_PASSWORD` (the dev `.env.example` uses `admin@fuzzball.test` / `fuzzball123`). A database seeded before
+2026-10-03 still holds the old sample rows; `npm run purge-samples` shows them and `-- --yes` removes them
+(sample customers with orders and coupons that were really redeemed are kept and reported).
 
 ## Scripts
 
@@ -49,6 +49,7 @@ Seeded logins (dev only, password `fuzzball123`): `admin@fuzzball.test` (admin, 
 | `npm run prisma:deploy` | `prisma migrate deploy` (production) |
 | `npm run prisma:studio` | browse the data |
 | `npm run seed` | idempotent seed (`prisma/seed.ts`, run through `jiti`) |
+| `npm run purge-samples` | removes the old sample products, customers and coupons (`prisma/purge-samples.ts`); dry run unless `--yes` |
 
 Reset the local database completely: `npx prisma migrate reset` (drops, re-migrates, re-seeds).
 

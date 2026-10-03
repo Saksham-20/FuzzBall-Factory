@@ -3,6 +3,7 @@ import { toAddressDto } from '../account/address.mapper.js';
 import { customInclude, toCustomRequestDto } from '../custom/custom.mapper.js';
 import { ORDER_INCLUDE, toOrderDto } from '../orders/order.mapper.js';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { TICKET_INCLUDE, toTicketDto } from '../support/support.mapper.js';
 import { toUserDto } from '../users/user.mapper.js';
 
 /**
@@ -16,7 +17,7 @@ export class AccountExportService {
   async export(userId: string): Promise<Record<string, unknown>> {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user || user.erasedAt) throw new NotFoundException();
-    const [addresses, orders, requests, reviews, wishlist, uploads, payments] = await Promise.all([
+    const [addresses, orders, requests, reviews, wishlist, uploads, payments, tickets] = await Promise.all([
       this.prisma.address.findMany({ where: { userId }, orderBy: { createdAt: 'asc' } }),
       this.prisma.order.findMany({ where: { userId }, include: ORDER_INCLUDE, orderBy: { createdAt: 'asc' } }),
       this.prisma.customRequest.findMany({ where: { userId }, include: customInclude, orderBy: { createdAt: 'asc' } }),
@@ -28,6 +29,7 @@ export class AccountExportService {
         select: { purpose: true, amount: true, currency: true, status: true, method: true, refundedAmount: true, paidAt: true, createdAt: true, order: { select: { number: true } }, request: { select: { number: true } } },
         orderBy: { createdAt: 'asc' },
       }),
+      this.prisma.supportTicket.findMany({ where: { userId }, include: TICKET_INCLUDE, orderBy: { createdAt: 'asc' } }),
     ]);
     return {
       generatedAt: new Date().toISOString(),
@@ -40,6 +42,7 @@ export class AccountExportService {
       reviews: reviews.map((r) => ({ product: r.product.name, productSlug: r.product.slug, rating: r.rating, body: r.body, status: r.status, createdAt: r.createdAt, reply: r.reply })),
       wishlist: wishlist.map((w) => ({ product: w.product.name, productSlug: w.product.slug })),
       uploads,
+      supportRequests: tickets.map(toTicketDto),
     };
   }
 }

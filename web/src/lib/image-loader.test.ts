@@ -18,7 +18,7 @@ describe("image loader", () => {
   });
 
   it("sends everything else through Next's optimiser", () => {
-    expect(imageLoader({ src: "/samples/bag.jpg", width: 828 })).toBe("/_next/image?url=%2Fsamples%2Fbag.jpg&w=828&q=75");
+    expect(imageLoader({ src: "/maker/whale-pod.jpg", width: 828 })).toBe("/_next/image?url=%2Fmaker%2Fwhale-pod.jpg&w=828&q=75");
     expect(imageLoader({ src: "https://api.example.com/uploads/a.webp", width: 384, quality: 80 })).toBe(
       "/_next/image?url=https%3A%2F%2Fapi.example.com%2Fuploads%2Fa.webp&w=384&q=80",
     );

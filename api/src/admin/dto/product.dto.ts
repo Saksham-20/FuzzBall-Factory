@@ -154,6 +154,16 @@ export class ProductInputDto {
   @Max(50_000)
   weightG!: number;
 
+  /** Legal Metrology declaration; "1 piece" when omitted. */
+  @IsOptional()
+  @Text(40)
+  netQuantity?: string;
+
+  /** Optional safety and age note; cleared when empty. */
+  @IsOptional()
+  @Text(300)
+  safetyNote?: string;
+
   @TextList(12, 300)
   care!: string[];
 

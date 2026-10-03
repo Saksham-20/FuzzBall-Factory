@@ -32,3 +32,11 @@ export function Ph({
     </Tag>
   );
 }
+
+/**
+ * A legal fact from `LEGAL` (src/lib/legal.ts): the value when the owner has supplied it, a bracketed placeholder
+ * (outlined by the footer toggle, refused by the launch build) while it is still `null`.
+ */
+export function LegalValue({ value, label, id }: { value: string | null | undefined; label: string; id?: string }) {
+  return value ? <>{value}</> : <Ph id={id}>[{label}]</Ph>;
+}

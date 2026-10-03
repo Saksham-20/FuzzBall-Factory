@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Put, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Header, HttpCode, Param, Patch, Post, Put, Query } from '@nestjs/common';
 import { CurrentUser } from '../common/decorators/current-user.decorator.js';
 import { Roles } from '../common/decorators/roles.decorator.js';
 import type { RequestUser } from '../common/types/auth.types.js';
@@ -20,6 +20,9 @@ import { AdminPaymentsService, type AdminPaymentDto } from './admin-payments.ser
 import { AdminProductsService } from './admin-products.service.js';
 import { AdminReviewsService, type ReviewDto } from './admin-reviews.service.js';
 import { AdminSettingsService } from './admin-settings.service.js';
+import { AdminSupportService, type SupportCountsDto } from './admin-support.service.js';
+import type { AdminTicketDto } from '../support/support.mapper.js';
+import { LogTicketDto, RegisterQuery, SupportListQuery, SupportPatchDto, SupportReplyDto, SupportResolveDto } from './dto/support.dto.js';
 import { ClientIp } from './audit.service.js';
 import { AdminMessageDto, ApprovalRequestDto, DeclineCustomDto, ProgressDto, ShipCustomDto } from './dto/admin-custom.dto.js';
 import { CategoryInputDto } from './dto/category.dto.js';
@@ -391,6 +394,69 @@ export class AdminSettingsController {
   }
 }
 
+@Roles('admin')
+@Controller('admin/support')
+export class AdminSupportController {
+  constructor(private readonly support: AdminSupportService) {}
+
+  @Get()
+  list(@Query() q: SupportListQuery): Promise<AdminTicketDto[]> {
+    return this.support.list(q);
+  }
+
+  @Get('counts')
+  counts(): Promise<SupportCountsDto> {
+    return this.support.counts();
+  }
+
+  /** The grievance register. Declared before `:id` so `register.csv` is never read as an id. */
+  @Get('register.csv')
+  @Header('Content-Type', 'text/csv; charset=utf-8')
+  @Header('Content-Disposition', 'attachment; filename="grievance-register.csv"')
+  register(@Query() q: RegisterQuery): Promise<string> {
+    return this.support.registerCsv(q);
+  }
+
+  @Get(':id')
+  get(@Param('id') id: string): Promise<AdminTicketDto> {
+    return this.support.get(id);
+  }
+
+  /** Log a ticket received outside the site (WhatsApp, phone, post, email). */
+  @Post()
+  log(@CurrentUser() user: RequestUser, @Body() dto: LogTicketDto, @ClientIp() ip?: string): Promise<AdminTicketDto> {
+    return this.support.log(ctx(user, ip), dto);
+  }
+
+  @Post(':id/messages')
+  reply(@CurrentUser() user: RequestUser, @Param('id') id: string, @Body() dto: SupportReplyDto, @ClientIp() ip?: string): Promise<AdminTicketDto> {
+    return this.support.reply(ctx(user, ip), id, dto);
+  }
+
+  @HttpCode(200)
+  @Post(':id/acknowledge')
+  acknowledge(@CurrentUser() user: RequestUser, @Param('id') id: string, @ClientIp() ip?: string): Promise<AdminTicketDto> {
+    return this.support.acknowledge(ctx(user, ip), id);
+  }
+
+  @Patch(':id')
+  patch(@CurrentUser() user: RequestUser, @Param('id') id: string, @Body() dto: SupportPatchDto, @ClientIp() ip?: string): Promise<AdminTicketDto> {
+    return this.support.patch(ctx(user, ip), id, dto);
+  }
+
+  @HttpCode(200)
+  @Post(':id/resolve')
+  resolve(@CurrentUser() user: RequestUser, @Param('id') id: string, @Body() dto: SupportResolveDto, @ClientIp() ip?: string): Promise<AdminTicketDto> {
+    return this.support.resolve(ctx(user, ip), id, dto);
+  }
+
+  @HttpCode(200)
+  @Post(':id/reopen')
+  reopen(@CurrentUser() user: RequestUser, @Param('id') id: string, @ClientIp() ip?: string): Promise<AdminTicketDto> {
+    return this.support.reopen(ctx(user, ip), id);
+  }
+}
+
 export const ADMIN_CONTROLLERS = [
   AdminDashboardController,
   AdminProductsController,
@@ -405,4 +471,5 @@ export const ADMIN_CONTROLLERS = [
   AdminEmailController,
   AdminAuditController,
   AdminSettingsController,
+  AdminSupportController,
 ];

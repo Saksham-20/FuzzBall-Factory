@@ -159,6 +159,18 @@ describe('admin API (e2e)', () => {
   });
 
   describe('products', () => {
+    it('keeps the legal listing fields: net quantity defaults to "1 piece", the safety note is optional and clearable', async () => {
+      const plain = (await admin.agent.post('/admin/products').send(productBody({ name: `E2E Legal ${stamp}` })).expect(201)).body;
+      productIds.push(plain.id);
+      expect(plain).toMatchObject({ netQuantity: '1 piece' });
+      expect(plain).not.toHaveProperty('safetyNote');
+      const set = (await admin.agent.put(`/admin/products/${plain.id}`).send(productBody({ name: `E2E Legal ${stamp}`, netQuantity: 'Set of 3', safetyNote: 'Small parts. Not for children under 3.' })).expect(200)).body;
+      expect(set).toMatchObject({ netQuantity: 'Set of 3', safetyNote: 'Small parts. Not for children under 3.' });
+      const cleared = (await admin.agent.put(`/admin/products/${plain.id}`).send(productBody({ name: `E2E Legal ${stamp}`, netQuantity: '', safetyNote: '' })).expect(200)).body;
+      expect(cleared.netQuantity).toBe('1 piece');
+      expect(cleared).not.toHaveProperty('safetyNote');
+    });
+
     it('creates with images + variants in one go, gets a unique batch, and slugs from the name', async () => {
       const a = (await admin.agent.post('/admin/products').send(productBody({ name: `E2E Rosie ${stamp}` })).expect(201)).body;
       const b = (await admin.agent.post('/admin/products').send(productBody({ name: `E2E Penguin ${stamp}` })).expect(201)).body;
@@ -409,6 +421,8 @@ describe('admin API (e2e)', () => {
 
     it('disputes a review with a reason (admin-only, distinct from a plain hide) and lets the maker reply publicly', async () => {
       const product = await t.prisma.product.findFirstOrThrow({ where: { id: { in: productIds } } });
+      // the earlier review test may have picked the same product, and one customer can review a product once
+      await t.prisma.review.deleteMany({ where: { productId: product.id, userId: customer.id } });
       const review = await t.prisma.review.create({ data: { productId: product.id, userId: customer.id, author: `E2E ${stamp}`, rating: 5, body: 'Great yarn', verified: true, status: 'PUBLISHED' } });
 
       // a customer can't self-dispute or reply: the admin routes are admin-only (401 for a guest, 403 for a customer)

@@ -8,7 +8,7 @@ the web mock layer in `web/src/lib/api/*.ts` defines the response shapes the rea
 
 ```
 api/
-  prisma/            schema.prisma (whole app), migrations/, seed.ts, seed-data/
+  prisma/            schema.prisma (whole app), migrations/, seed.ts (admin, settings, empty shelves), purge-samples.ts, seed-data/
   prisma.config.ts   datasource URL, migrations path, seed command
   src/
     main.ts          bootstrap (calls configureApp)
@@ -425,7 +425,47 @@ Unpaid online orders and unconfirmed COD orders hold stock, so a shopper (matche
 
 ## Contact form
 
-`POST /contact` (public) `{ name, email, message, website? }`. Name 2-80 characters, message 10-1500, `website` is the hidden honeypot (a request that fills it gets a normal 204 and nothing is sent). Sent to `CONTACT_INBOX_EMAIL`, else `ADMIN_EMAIL`, through the email outbox as event `contact.message` with the visitor's address as Reply-To. 204 on success; 503 `CONTACT_UNAVAILABLE` when neither address is set; 400 with `fields` for bad input; 5 requests per hour per IP, then 429. The message text is never logged, and the outbox row's payload is emptied once the mail is sent.
+`POST /contact` (public) `{ name, email, message, website? }` is kept for older clients and now opens a **support ticket** (kind `SUPPORT`, topic `general`); the website's own form posts to `/support/tickets` below. Name 2-80 characters, message 10-1500, `website` is the hidden honeypot (a request that fills it gets a normal 204 and nothing is stored). 204 on success; 400 with `fields` for bad input; 5 requests per hour per IP, then 429. The old `contact.message` email event is gone: the visitor gets `ticket.received` and the shop inbox gets `ticket.new_admin`.
+
+## Support tickets (`api/src/support`, `api/src/admin/admin-support.service.ts`)
+
+Every contact message, grievance, takedown notice and data request is a ticket with a reference number (`SUP-0001`, `GRV-0001`, `IPN-0001`, `DSR-0001`, one counter per kind), a thread and two clocks. The same table is the **grievance register** (`docs/LEGAL_REVIEW.md`). Rules and numbers: `support.rules.ts` (mirrored for the web in `web/src/lib/support.ts`).
+
+| Clock | Value |
+|---|---|
+| Acknowledge | 48 hours from receipt, for every kind. The `ticket.received` email counts as the acknowledgement and carries a copy of what was recorded. |
+| Resolve | 30 days for a grievance and for a data request, 7 days for a message and a takedown notice. |
+| Close | A resolved ticket the customer does not answer closes after 14 days. A closed ticket is deleted 3 years later. |
+
+**Customer routes**
+
+| Route | Notes |
+|---|---|
+| `POST /support/tickets` (`@OptionalAuth`) | `{ kind, name, email, phone?, category, reference?, message (10-3000), attachments?, consent: true, website? }`. `category` must be one of the topics for the kind. `reference` (an order `FB-1001` or work order `WO-001`) is linked only when it belongs to the sender (same account or same email); otherwise the ticket is created unlinked with a private note. `attachments` (up to 4 uploaded photos) need a signed-in sender. 201 `{ number, accessToken }`. 5 per hour per IP. |
+| `GET /support/tickets/:number?t=<token>` | The guest link. `t` is an HMAC of the ticket id under a key derived from `JWT_ACCESS_SECRET`, so nothing secret is stored and every email carries the same working link. A wrong token and an unknown number give the same 404. Never returns private notes. 30 per hour per IP. |
+| `POST /support/tickets/:number/messages?t=<token>` | `{ body }`. Reopens a resolved or answered ticket; a closed one answers 409. |
+| `GET /account/tickets`, `GET /account/tickets/:number`, `POST /account/tickets/:number/messages` | The signed-in customer's own tickets. Another customer's number is a 404. |
+
+**Admin routes** (`@Roles('admin')`, every write audited as `support.*`)
+
+| Route | Notes |
+|---|---|
+| `GET /admin/support?status=&kind=&filter=&q=` | `status` is a ticket status or `ACTIVE`; `filter` is `overdue`, `due-soon` or `unacknowledged`. Each row carries `sla` (`ack`/`resolve` as `done`, `ok`, `due-soon`, `overdue`, plus ms left) and only its last message. Open tickets first, nearest deadline first. |
+| `GET /admin/support/counts` | `{ open, unacknowledged, dueSoon, overdue }` for the dashboard. |
+| `GET /admin/support/register.csv?from=&to=` | The grievance register: number, kind, channel, category, received, acknowledged, copy sent, first response, resolve-by, resolved, status, linked order, resolution. No names or emails. Cells that start with `= + - @` are prefixed so a spreadsheet will not run them. |
+| `GET /admin/support/:id` | The whole thread, private notes included. |
+| `POST /admin/support` | Log a ticket that arrived elsewhere: `{ kind, channel, name, email?, phone?, category, reference?, message, receivedAt?, alreadyAcknowledged }`. The clocks start at `receivedAt`. With `alreadyAcknowledged` no email is sent. |
+| `POST /admin/support/:id/messages` | `{ body, internal, attachments? }`. A reply (`internal: false`) moves the ticket to `WAITING_CUSTOMER`, records the first response and the acknowledgement, and emails `ticket.reply`. A private note is stored and never shown or sent. |
+| `POST /admin/support/:id/acknowledge` | "I answered them" (WhatsApp, phone): stops the 48 hour clock without an email. |
+| `PATCH /admin/support/:id` | `{ category?, status? (OPEN, WAITING_CUSTOMER, CLOSED), reference? }`. An empty `reference` unlinks. |
+| `POST /admin/support/:id/resolve` | `{ note, notify }`. The note is required (it is the register's outcome). 409 if already resolved or closed. |
+| `POST /admin/support/:id/reopen` | 409 if already open. |
+
+**Jobs** (`ScheduledJobs`): `support.sla` (hourly) emails the owner once per deadline (`ackReminderAt`, `resolveReminderAt`) when an acknowledgement is within 12 hours or a resolution within 5 days (or a third of its window), or either is past; `support.housekeeping` (04:25 UTC) auto-closes resolved tickets and deletes tickets 3 years after closing.
+
+**Privacy**: `docs/DATA_RETENTION.md` has the retention row; erasure scrubs a customer's tickets (name, email, phone, messages, photos) but keeps the register fields; an open ticket defers erasure; `GET /account/export` includes `supportRequests`.
+
+**Not built yet**: customers cannot attach photos from the website forms (the API accepts them for signed-in senders; the web forms do not offer it). They can reply to the emails or use WhatsApp.
 
 ## Wishlist
 

@@ -41,9 +41,32 @@ export interface WorkOrderPayload extends Recipient {
   awb?: string;
 }
 
+export interface TicketPayload extends Recipient {
+  /** SUP-0001, GRV-0001 ... */
+  ticketNumber: string;
+  subject: string;
+  /** Absolute link to the ticket thread. */
+  url: string;
+  /** GRIEVANCE tickets carry the one-month promise and the escalation route. */
+  grievance?: boolean;
+  /** The text of the message being announced (the complaint as recorded, a reply, or a resolution note). */
+  message?: string;
+  /** Raw due date for the resolution promise, formatted for the email. */
+  resolveBy?: string;
+}
+
 export interface NotificationEventMap {
-  // Contact form: goes to the shop inbox (`to`), with the visitor's address as Reply-To. `name` is the visitor's.
-  'contact.message': Recipient & { fromEmail: string; message: string };
+  // Support tickets (docs/LEGAL_REVIEW.md: acknowledge within 48 hours, with a copy of the complaint as recorded)
+  /** To the customer, at once: the reference number and a copy of what was recorded. */
+  'ticket.received': TicketPayload;
+  /** To the customer: the maker answered. */
+  'ticket.reply': TicketPayload;
+  /** To the customer: the ticket is resolved. */
+  'ticket.resolved': TicketPayload;
+  /** To the shop inbox (`to`): a new ticket, or the customer wrote again. `name` is the sender's. */
+  'ticket.new_admin': Recipient & { ticketNumber: string; subject: string; url: string; fromEmail?: string; message: string; kind: string; isReply: boolean };
+  /** To the shop inbox: tickets approaching a deadline. */
+  'ticket.sla_reminder': Recipient & { items: { ticketNumber: string; subject: string; url: string; what: string }[] };
 
   // Accounts
   'auth.welcome': Recipient;

@@ -1,18 +1,35 @@
 "use client";
 
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { Accordion, AccordionItem } from "@/components/ui/Tabs";
-import { SAMPLE_SETTINGS } from "@/lib/site";
+import { POLICY } from "@/lib/policy-constants";
+import { SAMPLE_SETTINGS, SITE } from "@/lib/site";
 import { formatINR } from "@/lib/format";
+import { LegalAddress } from "@/components/content/SellerDetails";
+import { LegalValue } from "@/components/content/Placeholder";
+import { LEGAL } from "@/lib/legal";
 import type { Product } from "@/lib/types";
 
 /** Story, details, care, shipping and returns, and the colour note, as an accordion. */
 export function ProductDetails({ product: p, className }: { product: Product; className?: string }) {
-  const rows: [string, string][] = [
+  const rows: [string, ReactNode][] = [
     ["Fiber", p.fiber],
     ["Size", p.sizeCm],
     ["Weight", `${p.weightG} g`],
-    ["Origin", "Made in India"],
+    ["Net quantity", p.netQuantity ?? "1 piece"],
+    ["Price", LEGAL.gstRegistered === false ? "Final price, no GST charged" : "MRP, inclusive of all taxes"],
+    ["Made by", <LegalAddress key="made-by" className="not-italic leading-snug" />],
+    ["Country of origin", "India"],
+    [
+      "Customer care",
+      <span key="care">
+        <a className="underline" href={`mailto:${SITE.email}`}>
+          {SITE.email}
+        </a>
+        {LEGAL.phone ? <>, {LEGAL.phone}</> : <> <LegalValue value={LEGAL.phone} label="Business phone number" /></>}
+      </span>,
+    ],
   ];
   const personalised = p.tags.includes("personalizable");
 
@@ -31,6 +48,12 @@ export function ProductDetails({ product: p, className }: { product: Product; cl
             </div>
           ))}
         </dl>
+        {p.safetyNote ? (
+          <p className="mt-4 max-w-[68ch]">
+            <strong className="font-semibold text-cocoa">Safety and age.</strong> {p.safetyNote}
+          </p>
+        ) : null}
+        <p className="mt-4 max-w-[68ch] text-brown">Handmade by us. Not an official product.</p>
       </AccordionItem>
 
       <AccordionItem value="care" title="Care">
@@ -53,8 +76,8 @@ export function ProductDetails({ product: p, className }: { product: Product; cl
           </p>
           <p>
             {p.fulfilment === "READY" && !personalised
-              ? "Ready-to-ship pieces can be exchanged or refunded within 7 days if you send an unboxing video."
-              : "Made-to-order, custom and personalised pieces are made just for you, so they can't be returned or exchanged unless they arrive damaged or wrong."}{" "}
+              ? `Ready-to-ship pieces can be exchanged or refunded within ${POLICY.returnWindowDays} days of delivery if unused.`
+              : "Made-to-order, custom and personalised pieces are made just for you, so they can't be returned for a change of mind, but we repair, replace or refund one that arrives damaged, faulty or wrong."}{" "}
             <Link href="/policies/refund" className="font-semibold text-cocoa underline">
               Read the full policy
             </Link>

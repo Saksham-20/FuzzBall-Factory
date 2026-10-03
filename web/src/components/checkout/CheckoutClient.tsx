@@ -13,6 +13,7 @@ import { EmptyState, ErrorNote, HookSpinner, Skeleton } from "@/components/ui/mi
 import { CheckoutSection } from "@/components/checkout/CheckoutSection";
 import { OrderLines } from "@/components/checkout/OrderLines";
 import { PolicyCheckbox } from "@/components/checkout/PolicyCheckbox";
+import { CollectionNotice } from "@/components/content/CollectionNotice";
 import { TestPaymentModal } from "@/components/checkout/TestPaymentModal";
 import { Totals } from "@/components/checkout/Totals";
 import { useBasket, useCheckoutQuote, useCoupon } from "@/components/checkout/useBasket";
@@ -568,7 +569,8 @@ export function CheckoutClient() {
               </p>
             ) : null}
 
-            <div className="mt-4">
+            <div className="mt-4 space-y-3">
+              <CollectionNotice what="name, contact details and delivery address" why="to take payment, make and ship your order and contact you about it" />
               <PolicyCheckbox error={errors.policy ? err("policy") : undefined} {...register("policy")} />
             </div>
 

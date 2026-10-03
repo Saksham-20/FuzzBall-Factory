@@ -2,7 +2,9 @@ import Link from "next/link";
 import { DataTable } from "@/components/content/Prose";
 import { Ph } from "@/components/content/Placeholder";
 import { SellerDetails } from "@/components/content/SellerDetails";
+import { TicketForm } from "@/components/support/TicketForm";
 import type { PolicyDoc } from "@/components/content/policies/types";
+import { LEGAL } from "@/lib/legal";
 import { SITE } from "@/lib/site";
 
 // PLACEHOLDER(legal-details): data fiduciary identity and retention periods.
@@ -59,8 +61,8 @@ export const privacyPolicy: PolicyDoc = {
               date, and the messages and quotes exchanged with us.
             </li>
             <li>
-              <strong>Messages to us:</strong> what you send through the contact form, by email or on WhatsApp, including your name, number and
-              anything you tell us.
+              <strong>Support requests and complaints:</strong> what you send through the contact, grievance or takedown forms, by email or on
+              WhatsApp: your name, email, phone, the order it is about, your message and any photos, and our replies and notes on the request.
             </li>
             <li>
               <strong>Reviews:</strong> if you write a review, the text and any photos you add.
@@ -91,7 +93,6 @@ export const privacyPolicy: PolicyDoc = {
               ["Keep your account", "Sign in, saved addresses, wishlist and order history."],
               ["Prevent fraud and misuse", "Checking payments, spotting fake or repeated cash on delivery refusals, protecting accounts."],
               ["Meet legal duties", "Tax and accounting records, and responding to lawful requests from authorities."],
-              ["Marketing (only if you agree)", "News of new drops or offers by email. Optional and separate from your order."],
             ]}
           />
           <p>
@@ -107,7 +108,7 @@ export const privacyPolicy: PolicyDoc = {
         <>
           <p>
             We rely on your consent when you give us your data for a stated purpose: by creating an account, placing an order, submitting a
-            form, or ticking a box. Marketing emails are only sent if you say yes, and every message has an unsubscribe link.
+            form, or ticking a box. We do not send marketing messages. If we ever start, it will be only to people who tick a separate, unticked box, with an unsubscribe link in every message.
           </p>
           <p>
             In some cases the law lets us use data without fresh consent, for example to complete an order you asked for, or to keep records that
@@ -133,10 +134,29 @@ export const privacyPolicy: PolicyDoc = {
             caption="Who personal data is shared with"
             head={["Who", "What they get", "Why"]}
             rows={[
-              ["Razorpay", "Your name, contact details, order amount and payment details you enter on their page", "To take payment and process refunds"],
+              [
+                <>
+                  Razorpay (payments) <a href="https://razorpay.com/privacy/" target="_blank" rel="noopener noreferrer">policy</a>
+                </>,
+                "Your name, contact details, order amount and payment details you enter on their page. Razorpay decides how it uses the payment details you give it, under its own policy",
+                "To take payment and process refunds",
+              ],
               ["Courier and shipping partners", "Your name, delivery address and phone number, and the parcel details", "To deliver your parcel and let you track it"],
-              ["Email provider", "Your email address, name and the content of order emails", "To send order, work-order and account emails"],
-              ["Hosting, storage and image services", "Data stored on the site, including images you upload", "To run the website securely"],
+              [
+                <>
+                  Resend (email) <a href="https://resend.com/legal/privacy-policy" target="_blank" rel="noopener noreferrer">policy</a>
+                </>,
+                "Your email address, name and the content of order and support emails",
+                "To send order, work-order, support and account emails",
+              ],
+              [
+                <>
+                  Cloudinary (images) <a href="https://cloudinary.com/privacy" target="_blank" rel="noopener noreferrer">policy</a>
+                </>,
+                "Photos you upload with a work order, review or support request",
+                "To store and show images",
+              ],
+              ["Our hosting provider", "Data stored on the site and in server logs", "To run the website securely"],
               ["WhatsApp (Meta)", "What you send us on WhatsApp, including your number", "Only when you choose to message us there"],
               ["Authorities", "What the law requires", "Only when legally required to disclose it"],
             ]}
@@ -173,10 +193,14 @@ export const privacyPolicy: PolicyDoc = {
               use are deleted after a week.
             </li>
             <li>
-              <strong>Contact form messages and emails:</strong> for <Ph>[retention period, e.g. 2 years]</Ph>.
+              <strong>Support requests and complaints</strong> (including the grievance register): for 3 years after the request is closed, so we can
+              answer follow-up questions and show we handled a complaint in time. If you ask us to erase your account, your name, email, phone,
+              messages and photos on these requests are removed, and only the bare record (number, dates, category and outcome) stays until that
+              period ends.
             </li>
             <li>
-              <strong>Server logs:</strong> for a short period, then deleted.
+              <strong>Server logs:</strong> for a short period, then deleted. From 2027 the law will require us to keep security and access logs for
+              one year, and we will update this page when we do.
             </li>
           </ul>
           <p>
@@ -213,6 +237,16 @@ export const privacyPolicy: PolicyDoc = {
             process.
           </p>
           <p>Please give us true and complete data, and do not give us anyone else&apos;s data without their permission.</p>
+          <p>You can also make a request here without an account:</p>
+          <TicketForm
+            kind="DATA_REQUEST"
+            withReference={false}
+            messageLabel="What would you like us to do?"
+            messageHint="Tell us the email or phone number on your orders so we can confirm it is you."
+            submitLabel="Send request"
+            notice={{ what: "name, email, phone and request", why: "to confirm who you are, act on your request and keep a record of it" }}
+            afterSend="We respond within one month."
+          />
         </>
       ),
     },
@@ -253,12 +287,37 @@ export const privacyPolicy: PolicyDoc = {
       ),
     },
     {
+      id: "eu-uk",
+      title: "If you live in the EU, UK or EEA",
+      body: (
+        <>
+          <p>
+            If you order from the European Union, the European Economic Area or the United Kingdom, the GDPR (or the UK GDPR) also applies to the
+            data we hold about you. We rely on these lawful bases: <strong>contract</strong> (to take and deliver your order and run work orders),{" "}
+            <strong>legal obligation</strong> (tax and accounting records), <strong>legitimate interests</strong> (preventing fraud and keeping the
+            site secure) and <strong>consent</strong> (where we ask for it).
+          </p>
+          <p>
+            You have the right to access your data, have it corrected or erased, restrict or object to its use, receive it in a portable form, and
+            withdraw consent. Write to the <Link href="/policies/grievance">grievance officer</Link> or use your account page. You can complain to
+            your local data protection authority (in the UK, the Information Commissioner&apos;s Office). Your data is processed in India and by the
+            providers above, which may be outside your country.
+          </p>
+          {LEGAL.euRepresentative ? (
+            <p>
+              Our representative in the EU: {LEGAL.euRepresentative}.
+            </p>
+          ) : null}
+        </>
+      ),
+    },
+    {
       id: "children",
       title: "Children",
       body: (
         <p>
-          The shop is for adults. We do not knowingly collect data from anyone under 18 without a parent or guardian&apos;s consent. If you think a
-          child has given us data, tell us and we will delete it.
+          The shop is for adults: you must be 18 or older to create an account or place an order. We do not knowingly collect data from anyone
+          under 18. If you think a child has given us data, tell us and we will delete it.
         </p>
       ),
     },

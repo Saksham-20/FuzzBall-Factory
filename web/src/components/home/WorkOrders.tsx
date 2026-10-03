@@ -50,9 +50,6 @@ export function WorkOrders() {
           <p className="mt-5 max-w-[52ch] text-sm text-brown">
             Not quite right? Counter the quote or walk away — no obligation until you accept and pay the deposit.
           </p>
-          <p className="mt-2 max-w-[52ch] text-sm text-brown">
-            We can&apos;t make licensed characters (Disney, Sanrio, anime and the like). Original designs only.
-          </p>
         </div>
 
         <Reveal kind="drop" className="mx-auto w-full max-w-[440px]">

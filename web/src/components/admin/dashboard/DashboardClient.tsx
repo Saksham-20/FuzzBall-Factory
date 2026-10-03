@@ -10,6 +10,7 @@ import { WorkshopLoadPanel } from "@/components/admin/dashboard/WorkshopLoadPane
 import { ErrorNote, Skeleton } from "@/components/ui/misc";
 import { useApi } from "@/lib/api/useApi";
 import { dashboard, type Dashboard, type NeedsYou } from "@/lib/api/admin";
+import { supportCounts } from "@/lib/api/admin-support";
 import { batchLabel, formatINR } from "@/lib/format";
 
 const KIND: Record<NeedsYou["kind"], { label: string; icon: LucideIcon }> = {
@@ -92,6 +93,21 @@ function Numbers({ d }: { d: Dashboard }) {
   );
 }
 
+/** Support requests that need a first answer or a deadline met. Its own fetch, so a slow support list never holds the dashboard. */
+function SupportNumbers() {
+  const { data, error } = useApi(supportCounts, "admin-support-counts");
+  if (error) return <p className="py-2 text-brown">The support numbers didn&apos;t load.</p>;
+  if (!data) return <Skeleton className="h-32" />;
+  return (
+    <dl>
+      <Row label="Open requests" value={data.open} href="/admin/support" />
+      <Row label="Not acknowledged yet" value={data.unacknowledged} href="/admin/support" />
+      <Row label="Due soon" value={data.dueSoon} href="/admin/support" />
+      <Row label="Overdue" value={data.overdue} href="/admin/support" />
+    </dl>
+  );
+}
+
 function LowStock({ items }: { items: Dashboard["lowStock"] }) {
   if (!items.length) return <p className="py-2 text-brown">No ready-to-ship piece is running low.</p>;
   return (
@@ -149,6 +165,9 @@ export function DashboardClient() {
           </Panel>
           <Panel title="Running low" className="lg:col-start-2">
             <LowStock items={data.lowStock} />
+          </Panel>
+          <Panel title="Support" className="lg:col-start-2">
+            <SupportNumbers />
           </Panel>
           <WorkshopLoadPanel load={data.workshopLoad} className="lg:col-start-1" />
         </div>

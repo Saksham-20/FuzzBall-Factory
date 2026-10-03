@@ -8,6 +8,7 @@ import { OrdersService } from '../orders/orders.service.js';
 import { RefundsService } from '../payments/refunds.service.js';
 import { JobRunner } from './job-runner.service.js';
 import { UploadsService } from '../uploads/uploads.service.js';
+import { SupportService } from '../support/support.service.js';
 import { RetentionService } from './retention.service.js';
 
 /** Every recurring job in one place. Each tick goes through `JobRunner` (one at a time, logged, never throws). */
@@ -23,6 +24,7 @@ export class ScheduledJobs {
     private readonly emails: EmailOutboxService,
     private readonly uploads: UploadsService,
     private readonly erasure: ErasureService,
+    private readonly support: SupportService,
   ) {}
 
   /** Releases stock held by online orders nobody paid within the payment window. */
@@ -101,6 +103,18 @@ export class ScheduledJobs {
   @Cron('10 4 * * *')
   eraseDueAccounts() {
     return this.runner.run('account.erase-due', () => this.erasure.processDue());
+  }
+
+  /** Emails the owner once about support tickets whose 48 hour acknowledgement or resolution date is close or past. */
+  @Cron(CronExpression.EVERY_HOUR)
+  supportSla() {
+    return this.runner.run('support.sla', () => this.support.slaSweep());
+  }
+
+  /** Closes resolved tickets the customer never answered, and deletes tickets 3 years after they closed. */
+  @Cron('25 4 * * *')
+  supportHousekeeping() {
+    return this.runner.run('support.housekeeping', async () => ({ closed: await this.support.autoClose(), purged: await this.retention.purgeSupportTickets() }));
   }
 
   /** Drops the IP address and browser string from old refresh-token rows. */

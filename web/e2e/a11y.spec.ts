@@ -44,7 +44,7 @@ test("the focus ring stands out in the maker's cocoa message bubbles", async ({ 
   await page.waitForURL((url) => !url.pathname.startsWith("/login"));
 
   await page.goto("/admin/custom/WO-021");
-  const photo = page.getByText("The first penguin is done!").locator("a").first();
+  const photo = page.getByText("The first whale is done!").locator("a").first();
   await photo.focus();
   const ring = await photo.evaluate((el) => {
     let ground = el.parentElement!;

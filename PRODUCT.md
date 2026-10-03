@@ -37,7 +37,7 @@ Every piece is crocheted by one maker's hands, so nearly everything is either on
 - Catalogue: categories (e.g. bouquets & flowers, keychains & charms, plushies/amigurumi, bags, wearables, hair accessories, home decor, baby, gifting/hampers), variants (colour, size), stock including qty-1 one-of-a-kind items, ready-to-ship vs made-to-order with lead time.
 - Custom orders: new request or "customize this product", reference images, colours, size, budget/quote, needed-by date; admin quote/counter/accept/reject; status timeline with progress photos.
 - Policies required for Razorpay and Indian E-Commerce Rules 2020: shipping, cancellation & refund, terms, privacy, contact, grievance officer, country of origin.
-- Character/IP-licensed designs must not be sold; original designs only.
+- Fan pieces of existing characters (for example Pokémon) are part of the range: the owner's decision, 2026-09-30. They are never described as licensed, official or endorsed, and no brand's logo or marks are used as the shop's own. The site makes no "original designs only" promise.
 - Undecided: exact product list and prices, shipping partner/rates (Shiprocket suggested), international shipping rate model, WhatsApp number, legal entity details.
 
 ## Brand Commitments

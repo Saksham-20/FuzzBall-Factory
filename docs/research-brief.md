@@ -46,7 +46,7 @@ Photos: ≥2000px short side, 4:5 or 1:1, product ≥60% frame, one lighting ses
 - **Deposits:** 50% before materials, non-refundable once work starts; balance before ship. Razorpay Payment Links fit.
 - **Returns:** custom/personalized non-returnable unless damaged/wrong; ready-to-ship exchange/refund in short window w/ unboxing video. Disclose before purchase + at checkout.
 - **Shipping bulky items:** volumetric weight (L×W×H/5000); snug boxes, compress plush, sleeve bouquets.
-- **Character IP:** Disney/Pokémon/Sanrio/Bluey = infringement. Sell originals; decline or clearly handle "inspired" requests.
+- **Character IP:** Disney/Pokémon/Sanrio/Bluey = infringement risk (takedowns, payment-provider and marketplace bans). Research finding only: the owner chose on 2026-09-30 to make fan pieces anyway, and owns that risk (see `PRODUCT.md`).
 - **COD / RTO:** COD RTO ~26% vs <2% prepaid, ₹180–240 per failure. Prepaid-first; COD only on ready-to-ship under price cap, COD fee ₹30–50, WhatsApp confirmation before dispatch. Never COD on custom.
 - **Transparency:** public order status timeline; WhatsApp + email on every status change.
 

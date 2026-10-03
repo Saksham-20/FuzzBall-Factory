@@ -12,7 +12,7 @@ async function signIn(page: Page, email: string) {
 }
 
 test("a guest buys a ready-to-ship piece with cash on delivery and can track it", async ({ page }) => {
-  await page.goto("/p/pocket-penguins");
+  await page.goto("/p/whale-red");
   await page.getByRole("button", { name: "Add to cart" }).first().click();
 
   await page.goto("/checkout");
@@ -66,7 +66,7 @@ test("the admin can open an order and a work order; a customer cannot reach the 
   await page.goto("/admin/orders");
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   await page.goto("/admin/custom/WO-021");
-  await expect(page.getByText("The first penguin is done!")).toBeVisible();
+  await expect(page.getByText("The first whale is done!")).toBeVisible();
 
   // The operations screens open (the sample shop has no outbox or audit trail, so they say so) and pass an axe scan.
   for (const [path, heading, empty] of [["/admin/emails", "Emails", "Nothing has failed"], ["/admin/audit", "Audit log", "Nothing recorded"]] as const) {
@@ -85,7 +85,7 @@ test("the work order form opens for a signed-in customer", async ({ page }) => {
 });
 
 test("an overseas order: zone rate, duties note, no cash on delivery, a postal code in the right shape, then paid online", async ({ page }) => {
-  await page.goto("/p/pocket-penguins");
+  await page.goto("/p/whale-red");
   await page.getByRole("button", { name: "Add to cart" }).first().click();
   await page.goto("/checkout");
   await page.getByLabel("Full name").fill("Test Shopper");

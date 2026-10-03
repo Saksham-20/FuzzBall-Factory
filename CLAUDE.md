@@ -18,6 +18,7 @@ FuzzBall Factory — e-commerce site for a solo maker's handmade crochet product
 4. `.impeccable/surfaces/web-src-app-page-tsx.md` — locked visual direction ("The Factory Floor")
 5. `DESIGN.md` — the visual system as built: tokens, components, named rules (sidecar: `.impeccable/design.json`)
 6. `docs/research-brief.md` — domain research
+7. `docs/LEGAL_REVIEW.md` — legal research, per-page gaps, lawyer/CA checklist (the policy pages are drafts until a lawyer signs)
 
 Also: `TODOS.md` (deferred work by priority), `plans/` (self-contained fixes for the storefront's motion; `plans/README.md` gives the order), `docs/BUILD_GUIDE.md` (page-building conventions), `docs/DEPLOY_VPS.md` (the test server; real addresses live only in the gitignored `docs/DEPLOY_VPS.local.md`). Production: `ops/` (nginx, systemd, release build, deploy and rollback, backups; see `ops/README.md`), `docs/DEPLOY_PROD.md`, `docs/RUNBOOK_OPS.md`, `docs/RUNBOOK_DR.md`. `scripts/verify.sh` runs the same checks as CI.
 
@@ -25,7 +26,9 @@ Also: `TODOS.md` (deferred work by priority), `plans/` (self-contained fixes for
 
 - **UI is built** (`web/`): landing, shop, product, custom work orders, cart/checkout, track, auth, account, admin, content pages. Runs on a mock data layer (`web/src/lib/api/*`, localStorage) by default; `NEXT_PUBLIC_USE_MOCK=false` sends each call to the real API instead (`web/src/lib/api/real/*`, `NEXT_PUBLIC_API_URL`).  Server-side catalogue reads (home, menus, category and product pages, metadata, sitemap) go through `web/src/lib/catalog-server.ts`: the API in real mode (cached 2 minutes), the seed data in mock mode.
 - `api/` — NestJS + Prisma + Postgres backend, built with unit + e2e tests (`npm test`, `npm run test:e2e`). Endpoint map in `docs/API.md`. Online payment: the storefront opens the real Razorpay window (`settlePayment` in `web/src/lib/api/http.ts`) when the API is in `PAYMENTS_MODE=razorpay`, and the "Test payment" modal when it is `mock` (the API fakes it in development without keys; in production `PAYMENTS_MODE` must be chosen). Live payments still need the maker's Razorpay account. Production setup: `ops/`, `docs/DEPLOY_PROD.md`, runbooks in `docs/RUNBOOK_*.md`; `scripts/verify.sh` runs the CI checks locally.
-- **Placeholders are tagged**: `PLACEHOLDER(id)` in code, `data-placeholder` in the DOM (footer toggle shows them), full registry in `docs/PLACEHOLDERS.md`. Sample photos in `web/public/samples/` are not the maker's products. Keep registry up to date when adding any stand-in.
+- **Support system**: every contact message, grievance, takedown notice and data request is a ticket (`api/src/support`, admin at `/admin/support`, customer views at `/support/ticket/[number]` and `/account/support`). The same table is the grievance register. Runbook: `docs/RUNBOOK_OPS.md`; routes: `docs/API.md`.
+- **Sample data is gone**: the seed makes only the admin, settings and the 8 shelves (with the maker's photos). Existing databases clean up with `npm run purge-samples` in `api/` (dry run, then `-- --yes`). The first products to list are the whales (`docs/WHALE_LISTING.md`). Legal facts live in `web/src/lib/legal.ts` (empty until the maker supplies them); research and lawyer checklist in `docs/LEGAL_REVIEW.md`.
+- **Placeholders are tagged**: `PLACEHOLDER(id)` in code, `data-placeholder` in the DOM (footer toggle shows them), full registry in `docs/PLACEHOLDERS.md`. Keep registry up to date when adding any stand-in.
 - Still needed from the maker: real products/photos/prices, WhatsApp number, legal details, Razorpay/Cloudinary/Resend accounts.
 
 ## Commands (web)

@@ -1,9 +1,13 @@
+import type { ReactNode } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Ticket } from "@/components/brand/Ticket";
 import { Button } from "@/components/ui/Button";
 import { Reveal } from "@/components/ui/Reveal";
 import { LoopClip } from "@/components/home/LoopClip";
+import { serverProducts } from "@/lib/catalog-server";
+import { waGeneral } from "@/lib/whatsapp";
+import type { Product } from "@/lib/types";
 
 const WHALES = [
   { key: "red", name: "Red", tilt: -1.5 },
@@ -12,8 +16,18 @@ const WHALES = [
   { key: "pink", name: "Pink", tilt: -1 },
 ] as const;
 
-/** The whale keychains, from the maker's own photo and clips: one still of the pod, one loop per colour. */
-export function WhalePod() {
+/** The listing for a whale colour: a published keychain with a variant or swatch in that colour (null until it exists). */
+const listingFor = (products: Product[], colour: string) =>
+  products.find((p) => p.variants.some((v) => v.colour.toLowerCase().split(/\W+/).includes(colour)) || p.slug.split("-").includes(colour)) ?? null;
+
+/**
+ * The whale keychains, from the maker's own photo and clips: one still of the pod, one loop per colour. Until a whale is
+ * listed in the shop, the buttons lead to a work order and WhatsApp (never to an empty shelf, never to a made-up price);
+ * once a keychain is published each card gets a link to it and the primary button opens the shelf.
+ */
+export async function WhalePod() {
+  const keychains = await serverProducts({ category: "keychains" });
+  const listed = keychains.length > 0;
   return (
     <section aria-labelledby="pod-h" className="relative overflow-x-clip py-[clamp(3.5rem,7vw,6rem)]">
       <div className="shell">
@@ -45,30 +59,64 @@ export function WhalePod() {
               {WHALES.map((w, i) => (
                 <li key={w.key}>
                   <Reveal kind="drop" delay={(i % 2) * 70}>
-                    <Ticket tone="paper" compactHead head={[w.name, "Whale"]} className="transition-[translate,box-shadow] duration-300 ease-out hf:hover:-translate-y-1.5 hf:hover:shadow-lift" style={{ rotate: `${w.tilt}deg` }}>
-                      <LoopClip
-                        src={`/maker/clips/whale-${w.key}.mp4`}
-                        poster={`/maker/clips/whale-${w.key}.jpg`}
-                        label={`${w.name} whale keychain turning in a hand`}
-                        className="relative aspect-[3/4] overflow-hidden rounded-[10px] bg-kraft-light"
-                      />
-                    </Ticket>
+                    <WhaleCard product={listingFor(keychains, w.key)} name={w.name}>
+                      <Ticket tone="paper" compactHead head={[w.name, "Whale"]} className="transition-[translate,box-shadow] duration-300 ease-out hf:hover:-translate-y-1.5 hf:hover:shadow-lift" style={{ rotate: `${w.tilt}deg` }}>
+                        <LoopClip
+                          src={`/maker/clips/whale-${w.key}.mp4`}
+                          poster={`/maker/clips/whale-${w.key}.jpg`}
+                          label={`${w.name} whale keychain turning in a hand`}
+                          className="relative aspect-[3/4] overflow-hidden rounded-[10px] bg-kraft-light"
+                        />
+                      </Ticket>
+                    </WhaleCard>
                   </Reveal>
                 </li>
               ))}
             </ul>
 
             <Reveal delay={80} className="mt-9 flex flex-wrap items-center gap-3">
-              <Button asChild size="lg">
-                <Link href="/shop/keychains">Shop keychains</Link>
-              </Button>
-              <Button asChild size="lg" variant="secondary">
-                <Link href="/custom">Ask for another colour</Link>
-              </Button>
+              {listed ? (
+                <>
+                  <Button asChild size="lg">
+                    <Link href="/shop/keychains">Shop keychains</Link>
+                  </Button>
+                  <Button asChild size="lg" variant="secondary">
+                    <Link href="/custom">Ask for another colour</Link>
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button asChild size="lg">
+                    <Link href="/custom">Ask for a whale</Link>
+                  </Button>
+                  <Button asChild size="lg" variant="secondary">
+                    <a href={waGeneral()} target="_blank" rel="noopener noreferrer">
+                      Ask on WhatsApp
+                    </a>
+                  </Button>
+                </>
+              )}
             </Reveal>
           </div>
         </div>
       </div>
     </section>
+  );
+}
+
+/** Once a whale is listed the card gets a link to it under the clip. The link sits beside the clip, never around it: the clip holds its own play/pause button, and a button inside a link is not valid. */
+function WhaleCard({ product, name, children }: { product: Product | null; name: string; children: ReactNode }) {
+  return (
+    <>
+      {children}
+      {product ? (
+        <Link
+          href={`/p/${product.slug}`}
+          className="mt-3 inline-flex min-h-11 items-center text-sm font-medium text-cocoa underline underline-offset-4 decoration-brown-soft hf:hover:decoration-cocoa"
+        >
+          {name} whale: see the listing
+        </Link>
+      ) : null}
+    </>
   );
 }

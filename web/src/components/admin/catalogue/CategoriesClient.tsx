@@ -73,7 +73,7 @@ function CategoryForm({ formId, initial, takenSlugs, onSaved, onBusy }: { formId
       <Field label="Blurb" optional error={errors.blurb?.message} hint="A few words under the name, like “Amigurumi friends”.">
         {(p) => <Textarea {...p} rows={2} className="min-h-20" {...register("blurb")} />}
       </Field>
-      <Field label="Image link" error={errors.image?.message} hint="A photo link. Sample photos look like /samples/bear.jpg.">
+      <Field label="Image link" error={errors.image?.message} hint="A photo link, like the one an upload gives you.">
         {(p) => <Input {...p} inputMode="url" autoComplete="off" {...register("image")} />}
       </Field>
       {previewOk ? (

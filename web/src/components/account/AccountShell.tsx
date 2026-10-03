@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, type ReactNode } from "react";
 import { toast } from "sonner";
-import { Heart, LayoutDashboard, LogOut, MapPin, PackageOpen, Scissors, UserRound } from "lucide-react";
+import { Heart, LayoutDashboard, LifeBuoy, LogOut, MapPin, PackageOpen, Scissors, UserRound } from "lucide-react";
 import { HookSpinner } from "@/components/ui/misc";
 import { RequireAuth } from "@/components/ui/RequireAuth";
 import { useAuth } from "@/lib/state/AuthContext";
@@ -14,6 +14,7 @@ const LINKS = [
   { href: "/account", label: "Overview", icon: LayoutDashboard, exact: true },
   { href: "/account/orders", label: "Orders", icon: PackageOpen },
   { href: "/account/custom", label: "Work orders", icon: Scissors },
+  { href: "/account/support", label: "Help requests", icon: LifeBuoy },
   { href: "/account/wishlist", label: "Wishlist", icon: Heart },
   { href: "/account/addresses", label: "Addresses", icon: MapPin },
   { href: "/account/profile", label: "Profile", icon: UserRound },

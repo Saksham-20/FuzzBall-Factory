@@ -99,7 +99,8 @@ describe('uploads: ownership, quota, allow-list, orphan cleanup (e2e)', () => {
       ['javascript:alert(1)', false],
       ['//evil.example/uploads/x.jpg', false],
       ['/uploads/uploads/abc.webp', true],
-      ['/samples/bear.jpg', true], // development only: the web app's own sample photos
+      ['/maker/whale-pod.jpg', true], // the web app's own maker photos (starter shelf covers)
+      ['/samples/bear.jpg', false], // the stock sample photos are gone
     ])('%s -> %s', (url, allowed) => {
       expect(uploads.isOwnStorageUrl(url)).toBe(allowed);
     });

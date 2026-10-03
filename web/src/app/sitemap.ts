@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 import { LEGAL_UPDATED } from "@/components/content/meta";
 import { POLICY_SLUGS } from "@/components/content/policies";
-import { serverCategories, serverProducts } from "@/lib/catalog-server";
+import { serverActiveCategories, serverProducts } from "@/lib/catalog-server";
 import { SITE } from "@/lib/site";
 
 // Product and category URLs come from the catalogue (the API in real mode, the seed data in mock mode). Rebuilt at
@@ -9,7 +9,7 @@ import { SITE } from "@/lib/site";
 export const revalidate = 300;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [categories, products] = await Promise.all([serverCategories(), serverProducts()]);
+  const [categories, products] = await Promise.all([serverActiveCategories(), serverProducts()]);
   const base = SITE.url.replace(/\/$/, "");
   const now = new Date();
   const legalDate = new Date(`${LEGAL_UPDATED}T12:00:00+05:30`);

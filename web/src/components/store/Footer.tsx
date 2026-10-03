@@ -3,13 +3,13 @@ import { LogoMark } from "@/components/brand/LogoMark";
 import { PlaceholderToggle } from "@/components/store/PlaceholderToggle";
 import { SITE } from "@/lib/site";
 import { waGeneral } from "@/lib/whatsapp";
-import { serverCategories } from "@/lib/catalog-server";
+import { serverActiveCategories } from "@/lib/catalog-server";
 
 const col = "space-y-2.5 text-[15px] [&_a]:text-kraft-light [&_a]:underline-offset-4 [&_a:hover]:text-cream [&_a:hover]:underline";
 const head = "font-stencil mb-4 text-[12px] text-kraft";
 
 export async function Footer() {
-  const categories = await serverCategories();
+  const categories = await serverActiveCategories();
   return (
     <footer className="bg-cocoa text-cream [--focus-ring:var(--color-butter)]">
       <div className="shell pt-20 pb-10">
@@ -65,6 +65,8 @@ export async function Footer() {
               <li><Link href="/policies/terms">Terms</Link></li>
               <li><Link href="/policies/privacy">Privacy</Link></li>
               <li><Link href="/policies/grievance">Grievance officer</Link></li>
+              <li><Link href="/policies/pricing">Pricing details</Link></li>
+              <li><Link href="/policies/ip">Intellectual property</Link></li>
             </ul>
           </nav>
         </div>

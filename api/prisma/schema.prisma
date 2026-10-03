@@ -158,6 +158,7 @@ model User {
   reviews           Review[]
   couponRedemptions CouponRedemption[]
   auditLogs         AuditLog[]
+  tickets           SupportTicket[]
 }
 
 /// Rotating refresh tokens. A token belongs to a family (one login session).
@@ -311,6 +312,10 @@ model Product {
   fiber          String        @default("")
   sizeCm         String        @default("")
   weightG        Int           @default(0)
+  /// Legal Metrology listing declaration: "1 piece", "Set of 3".
+  netQuantity    String        @default("1 piece")
+  /// Optional safety and age note shown on the product page (e.g. small parts, age grading). Null = none shown.
+  safetyNote     String?
   care           String[]
   /// [{ name, hex }]
   swatches       Json          @default("[]")
@@ -432,6 +437,7 @@ model Order {
   payments          Payment[]
   couponRedemptions CouponRedemption[]
   reviews           Review[]
+  tickets           SupportTicket[]
 
   @@index([userId, createdAt])
   @@index([status, createdAt])
@@ -518,13 +524,14 @@ model CustomRequest {
   updatedAt       DateTime     @updatedAt
 
   /// Restrict: a work order (and the money on it) is a record we keep. Erasing a customer anonymises the user row instead.
-  user        User                 @relation(fields: [userId], references: [id], onDelete: Restrict)
-  baseProduct Product?             @relation(fields: [baseProductId], references: [id], onDelete: SetNull)
-  images      CustomRequestImage[]
-  messages    CustomMessage[]
-  quotes      Quote[]
-  events      CustomEvent[]
-  payments    Payment[]
+  user           User                 @relation(fields: [userId], references: [id], onDelete: Restrict)
+  baseProduct    Product?             @relation(fields: [baseProductId], references: [id], onDelete: SetNull)
+  images         CustomRequestImage[]
+  messages       CustomMessage[]
+  quotes         Quote[]
+  events         CustomEvent[]
+  payments       Payment[]
+  supportTickets SupportTicket[]
 
   @@index([userId, createdAt])
   @@index([status, createdAt])
@@ -871,4 +878,100 @@ model AuditLog {
 model Counter {
   key   String @id
   value Int    @default(0)
+}
+
+enum TicketKind {
+  SUPPORT
+  GRIEVANCE
+  IP_NOTICE
+  DATA_REQUEST
+}
+
+enum TicketChannel {
+  WEB
+  EMAIL
+  WHATSAPP
+  PHONE
+  POST
+}
+
+enum TicketStatus {
+  OPEN
+  WAITING_CUSTOMER
+  RESOLVED
+  CLOSED
+}
+
+enum TicketAuthor {
+  customer
+  maker
+  /// Private note: never shown to the customer, never emailed.
+  internal
+}
+
+/// Every contact message, grievance, IP/takedown notice and data request, from the website or logged by hand (WhatsApp,
+/// phone, post). It doubles as the grievance register the E-Commerce Rules ask for: received/acknowledged/resolved times
+/// are kept per row. Retention: 3 years after closing (docs/DATA_RETENTION.md).
+model SupportTicket {
+  id                String        @id @default(cuid())
+  /// "SUP-0001", "GRV-0001", "IPN-0001", "DSR-0001" (by kind), from the Counter table.
+  number            String        @unique
+  kind              TicketKind
+  channel           TicketChannel @default(WEB)
+  status            TicketStatus  @default(OPEN)
+  /// One of a fixed list per kind (see api/src/support/support.rules.ts).
+  category          String
+  subject           String
+  name              String
+  /// Null when a complaint was logged from a WhatsApp or phone chat and the customer gave no address.
+  email             String?
+  phone             String?
+  userId            String?
+  orderId           String?
+  customRequestId   String?
+  ackDueAt          DateTime
+  /// When the acknowledgement (email or manual) went out.
+  ackedAt           DateTime?
+  resolveDueAt      DateTime
+  firstResponseAt   DateTime?
+  resolvedAt        DateTime?
+  closedAt          DateTime?
+  resolutionNote    String?
+  /// When the customer was sent a copy of the complaint as recorded.
+  recordCopySentAt  DateTime?
+  /// One owner reminder per threshold, so the hourly job never repeats itself.
+  ackReminderAt     DateTime?
+  resolveReminderAt DateTime?
+  /// Set when the customer's personal details were scrubbed (account erasure).
+  scrubbedAt        DateTime?
+  lastActivityAt    DateTime      @default(now())
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  user     User?            @relation(fields: [userId], references: [id], onDelete: SetNull)
+  order    Order?           @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  request  CustomRequest?   @relation(fields: [customRequestId], references: [id], onDelete: SetNull)
+  messages SupportMessage[]
+
+  @@index([status, resolveDueAt])
+  @@index([status, ackDueAt])
+  @@index([kind, createdAt])
+  @@index([userId, createdAt])
+  @@index([closedAt])
+  @@index([email])
+}
+
+model SupportMessage {
+  id          String       @id @default(cuid())
+  ticketId    String
+  author      TicketAuthor
+  body        String
+  attachments String[]
+  /// When the message was emailed to the customer (maker replies only).
+  emailedAt   DateTime?
+  createdAt   DateTime     @default(now())
+
+  ticket SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  @@index([ticketId, createdAt])
 }

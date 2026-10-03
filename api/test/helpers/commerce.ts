@@ -98,7 +98,7 @@ export async function makeProduct(
       status: o.status ?? 'PUBLISHED',
       sample: true,
       swatches: [{ name: 'Cream', hex: '#f1e4d3' }] as Prisma.InputJsonValue,
-      images: { create: [{ url: '/samples/bear.jpg', alt: 'Bear', sortOrder: 0 }] },
+      images: { create: [{ url: '/maker/whale-pod.jpg', alt: 'Bear', sortOrder: 0 }] },
       variants: { create: [{ sku: slug, colour: 'Cream', priceDelta: 0, stock: o.stock ?? 5 }] },
       ...(o.extra as object),
     },

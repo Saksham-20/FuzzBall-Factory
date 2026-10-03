@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import type { ReadSection } from "@/components/content/ReadLayout";
 
 export interface PolicyDoc {
-  slug: "shipping" | "refund" | "terms" | "privacy" | "grievance";
+  slug: "shipping" | "refund" | "terms" | "privacy" | "grievance" | "ip" | "pricing";
   /** h1 on the page. */
   title: string;
   /** <title> and link label. */

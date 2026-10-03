@@ -18,6 +18,10 @@ The API now refuses to boot without `NODE_ENV`, so keep it set in `/etc/fuzzball
 
 While it runs in development mode and is reachable from the internet, treat it as open: the mock payment confirm route is public, the JWT secret strength check is skipped, and the seed falls back to the sample admin password unless `ADMIN_PASSWORD` is set. Seed it with a unique `ADMIN_PASSWORD`, use long random JWT secrets that appear nowhere in this repo, and keep real customers off it.
 
+## Removing the old sample data
+
+A server seeded before 2026-10-03 still holds the sample products, three sample customers and three sample coupons. From `api/` on the server: `npm run purge-samples` prints exactly what would go (dry run); `npm run purge-samples -- --yes` deletes it and moves shelf covers off `/samples/`. A sample customer who placed an order, and a coupon that was really redeemed, are kept and listed. Back up the database first and ask the owner before running it on a server.
+
 ## Redeploy (build on your machine, never on the VPS)
 
 With `NEXT_DIST_DIR=.next-vps` the standalone server reads `.next-vps/static`, not `.next/static`: copy the static folder into `web/.next-vps/static` on the server, and restart `fuzzball-web` afterwards (Next lists static files at startup). Check with `scripts/smoke.sh <site>`.

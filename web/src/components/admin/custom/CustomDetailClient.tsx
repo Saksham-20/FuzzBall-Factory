@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { Check, ChevronLeft, Clock, Minus, MessageCircle, TriangleAlert } from "lucide-react";
+import { Check, ChevronLeft, Clock, Minus, MessageCircle } from "lucide-react";
 import { AdminPage, Panel } from "@/components/admin/ui";
 import { RefundPanel } from "@/components/admin/RefundPanel";
 import { Button } from "@/components/ui/Button";
@@ -22,7 +22,7 @@ import { Due } from "./Due";
 import { QuoteBuilder } from "./QuoteBuilder";
 import { Thread } from "./Thread";
 import { workOrderWhatsApp } from "./wa";
-import { DECLINE_TEMPLATES, OPEN_FOR_QUOTE, ageLabel, budgetLabel, licensedMention, moneyQuote, moverOf, paymentStates, type PayState } from "./workflow";
+import { OPEN_FOR_QUOTE, ageLabel, budgetLabel, moneyQuote, moverOf, paymentStates, type PayState } from "./workflow";
 
 function BackLink() {
   return (
@@ -37,7 +37,6 @@ export function CustomDetailClient({ number }: { number: string }) {
   // The builder is open by default when a quote is the next move, and opens on demand after a counter.
   const [builderRequested, setBuilderRequested] = useState(false);
   const [declineOpen, setDeclineOpen] = useState(false);
-  const [declineInitial, setDeclineInitial] = useState<string>();
 
   if (error && !r) {
     const missing = error instanceof ApiError && error.status === 404;
@@ -90,15 +89,11 @@ export function CustomDetailClient({ number }: { number: string }) {
               openBuilder={openBuilder}
               declineOpen={declineOpen}
               setDeclineOpen={setDeclineOpen}
-              declineInitial={declineInitial}
             />
           </div>
 
           <div className="space-y-6 lg:col-start-1 lg:row-span-2 lg:row-start-1">
-            <RequestPanel
-              r={r}
-              onDeclineForLicensed={() => { setDeclineInitial(DECLINE_TEMPLATES[0].label); setDeclineOpen(true); }}
-            />
+            <RequestPanel r={r} />
             {showBuilder ? <QuoteBuilder focusOnOpen={builderRequested} request={r} onSent={(next) => { setBuilderRequested(false); setData(next); }} /> : null}
             <Thread request={r} onUpdated={setData} />
             <ProgressPanel r={r} />
@@ -118,9 +113,7 @@ export function CustomDetailClient({ number }: { number: string }) {
   );
 }
 
-function RequestPanel({ r, onDeclineForLicensed }: { r: CustomRequest; onDeclineForLicensed: () => void }) {
-  const mention = licensedMention(r);
-  const canDecline = OPEN_FOR_QUOTE.includes(r.status);
+function RequestPanel({ r }: { r: CustomRequest }) {
   const specs: [string, string | undefined][] = [
     ["Category", r.category],
     ["Colours", r.colours.join(", ") || undefined],
@@ -134,16 +127,6 @@ function RequestPanel({ r, onDeclineForLicensed }: { r: CustomRequest; onDecline
   return (
     <Panel title="The request">
       <div className="space-y-5">
-        {mention && canDecline ? (
-          <div role="note" className="flex gap-3 rounded-[12px] bg-warn-wash p-3 text-warn">
-            <TriangleAlert aria-hidden className="mt-0.5 size-5 shrink-0" strokeWidth={1.8} />
-            <div className="space-y-2">
-              <p className="max-w-[60ch] font-medium">This mentions “{mention}”, which may be a licensed character. We only make original designs. Have a look at the references before you quote. Nothing is declined automatically.</p>
-              <button type="button" onClick={onDeclineForLicensed} className="press min-h-11 font-semibold underline underline-offset-4">Decline with the licensed-character note</button>
-            </div>
-          </div>
-        ) : null}
-
         <div>
           {r.kind === "CUSTOMIZE" ? <p className="mb-1 text-sm font-semibold text-brown">Customising an existing piece{r.baseProductSlug ? `: ${r.baseProductSlug.replaceAll("-", " ")}` : ""}</p> : <p className="mb-1 text-sm font-semibold text-brown">A new idea</p>}
           <p className="max-w-[68ch] leading-relaxed whitespace-pre-line">{r.description}</p>

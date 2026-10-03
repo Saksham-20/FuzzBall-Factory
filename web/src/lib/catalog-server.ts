@@ -40,6 +40,18 @@ export function serverCategories(): Promise<Category[]> {
   return orEmpty(loadCategories);
 }
 
+/**
+ * Shelves that have something on them. Menus and the sitemap use this, so an empty shelf (and a brand-new shop with no
+ * products yet) never shows a dead link. A shelf's own page still renders, with an empty state.
+ */
+export function serverActiveCategories(): Promise<Category[]> {
+  return orEmpty(async () => {
+    const [categories, products] = await Promise.all([loadCategories(), serverProducts()]);
+    const used = new Set(products.map((p) => p.category));
+    return categories.filter((c) => used.has(c.slug));
+  });
+}
+
 /** Published products, newest first: all of them, or one category's. Pages through the API (100 at a time). */
 export function serverProducts(opts: { category?: string; max?: number } = {}): Promise<Product[]> {
   return orEmpty(async () => {

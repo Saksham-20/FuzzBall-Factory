@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { formatINR } from "@/lib/format";
+import { POLICY } from "@/lib/policy-constants";
 import { SAMPLE_SETTINGS, SITE } from "@/lib/site";
 import { waRealLight } from "@/lib/whatsapp";
 
@@ -183,19 +184,25 @@ export const FAQ_GROUPS: FaqGroup[] = [
       {
         id: "ret-rts",
         q: "Can I return a ready-to-ship piece?",
-        a: <p>Yes. Within 7 days of delivery you can ask for an exchange or a refund, if the piece is unused. Please film the unboxing. Details are in the <Link href="/policies/refund">refund policy</Link>.</p>,
-        ld: "Yes. Within 7 days of delivery you can ask for an exchange or a refund on a ready-to-ship piece if it is unused. An unboxing video is needed for damage claims.",
+        a: <p>Yes. Within {POLICY.returnWindowDays} days of delivery you can ask for an exchange or a refund, if the piece is unused. Details are in the <Link href="/policies/refund">refund policy</Link>.</p>,
+        ld: `Yes. Within ${POLICY.returnWindowDays} days of delivery you can ask for an exchange or a refund on a ready-to-ship piece if it is unused.`,
       },
       {
         id: "ret-mto",
         q: "Can I return a made-to-order or personalised piece?",
-        a: <p>Not for change of mind, because it was made for you. If it arrives damaged, faulty or not as ordered, tell us within 7 days and we will replace, repair or refund it.</p>,
-        ld: "Made-to-order and personalised pieces cannot be returned for change of mind because they are made for you. If one arrives damaged, faulty or not as ordered, the maker will replace, repair or refund it when reported within 7 days.",
+        a: <p>Not for change of mind, because it was made for you. If it arrives damaged or not as ordered, tell us within {POLICY.returnWindowDays} days, and if there is a fault in the making, within {POLICY.defectWindowDays} days. We will repair, replace or refund it.</p>,
+        ld: `Made-to-order and personalised pieces cannot be returned for change of mind because they are made for you. If one arrives damaged or not as ordered (report within ${POLICY.returnWindowDays} days) or has a fault in the making (within ${POLICY.defectWindowDays} days), the maker will repair, replace or refund it.`,
       },
       {
         id: "ret-damaged",
         q: "My parcel arrived damaged. What do I do?",
-        a: <p>Send us your order number, photos and the unboxing video within 7 days, on WhatsApp or at {SITE.email}. We will arrange a replacement or refund.</p>,
+        a: <p>Send us your order number and photos within {POLICY.returnWindowDays} days, on WhatsApp or at {SITE.email}. An unboxing video helps if you filmed one, but it is not required. We will arrange a replacement or refund.</p>,
+      },
+      {
+        id: "ret-eu",
+        q: "I live in the EU or UK. Can I change my mind?",
+        a: <p>Yes, for non-personalised items: you can withdraw within {POLICY.euWithdrawalDays} days of receiving them, and you pay the return shipping. Items made to your specification or clearly personalised are excluded. See the <Link href="/policies/refund#eu-uk">refund policy</Link>.</p>,
+        ld: `Buyers in the EU and UK can withdraw from a purchase of non-personalised items within ${POLICY.euWithdrawalDays} days of receiving them. Items made to the buyer's specification or clearly personalised are excluded.`,
       },
       {
         id: "ret-when",
@@ -232,20 +239,20 @@ export const FAQ_GROUPS: FaqGroup[] = [
       {
         id: "care-safe",
         q: "Are the plushies safe for babies?",
-        a: <p>Read the product page. Plushies and small parts are not toys for children under 3 unless the page says the piece is made for that age. Always supervise young children.</p>,
-        ld: "Plushies and small parts are not toys for children under 3 unless the product page says the piece is made for that age. Young children should always be supervised.",
+        a: <p>Our pieces are handmade decorative and collectible items, not toys, unless a product page states an age it is made for. Small parts such as beads, safety eyes and clasps can be a choking hazard, so keep every piece away from children under 3 and always supervise young children.</p>,
+        ld: "Handmade pieces are decorative and collectible items, not toys, unless a product page states an age it is made for. Small parts can be a choking hazard, so keep every piece away from children under 3 and supervise young children.",
       },
     ],
   },
   {
-    id: "characters",
-    title: "Licensed characters",
+    id: "designs",
+    title: "Our designs",
     items: [
       {
-        id: "char-make",
-        q: "Can you make a Disney, Pokémon or other cartoon character?",
-        a: <p>No. We make original designs only. Licensed and copyrighted characters belong to their owners, so we do not make or sell them. Tell us the colours, mood and features you love, and we will suggest an original design.</p>,
-        ld: "No. FuzzBall Factory makes original designs only. Licensed and copyrighted characters belong to their owners, so they are not made or sold. The maker can suggest an original design based on the colours, mood and features you like.",
+        id: "licensed",
+        q: "Do you make official or licensed characters?",
+        a: <p>No. Everything is handmade by us. We are not affiliated with, endorsed by or licensed by any game, anime, film or toy company, and we do not sell official merchandise.</p>,
+        ld: "No. Everything is handmade by the studio. The studio is not affiliated with, endorsed by or licensed by any game, anime, film or toy company, and does not sell official merchandise.",
       },
     ],
   },

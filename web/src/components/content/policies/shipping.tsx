@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { DataTable } from "@/components/content/Prose";
-import { Ph } from "@/components/content/Placeholder";
+import { LegalValue } from "@/components/content/Placeholder";
 import { LegalAddress } from "@/components/content/SellerDetails";
 import { ShippingRates } from "@/components/content/ShippingRates";
 import type { PolicyDoc } from "@/components/content/policies/types";
+import { LEGAL } from "@/lib/legal";
+import { POLICY } from "@/lib/policy-constants";
 import { SITE } from "@/lib/site";
 
 // PLACEHOLDER(legal-details): seller identity below.
@@ -24,7 +26,7 @@ export const shippingPolicy: PolicyDoc = {
       "Ready-to-ship pieces leave in about 1 to 2 business days. Made-to-order pieces are crocheted after you order, so they take longer. The exact time is on the product page and at checkout.",
       "We ship across India and to selected countries. Prices are in Indian rupees.",
       "You get a tracking link once your parcel is handed to the courier.",
-      "Please record a video while opening your parcel. It is the fastest way to sort out any damage.",
+      "If you can, record a video while opening your parcel. It helps us settle a damage claim with the courier faster, but photos are fine too.",
     ],
   },
   sections: [
@@ -34,7 +36,7 @@ export const shippingPolicy: PolicyDoc = {
       body: (
         <>
           <p>
-            Orders on this website are sold and shipped by <Ph>[Legal business name]</Ph>, trading as {SITE.name} (&quot;we&quot;,
+            Orders on this website are sold and shipped by <LegalValue value={LEGAL.legalName} label="Legal business name" />, trading as {SITE.name} (&quot;we&quot;,
             &quot;us&quot;). Every parcel is packed and dispatched from India.
           </p>
           <p>Dispatch address:</p>
@@ -53,8 +55,12 @@ export const shippingPolicy: PolicyDoc = {
             deliver there.
           </p>
           <p>
-            We do not ship to addresses that our courier cannot serve, to P.O. boxes, or to countries where the parcel would be restricted by
-            law.
+            We do not ship to addresses that our courier cannot serve, to P.O. boxes, to countries or people under sanctions that apply to us,
+            or to countries where the parcel would be restricted by law.
+          </p>
+          <p>
+            <strong>Risk of loss.</strong> The parcel is at our risk until it is delivered to you. If it is lost or damaged on the way, see the
+            section on damaged, missing or wrong parcels.
           </p>
         </>
       ),
@@ -100,7 +106,7 @@ export const shippingPolicy: PolicyDoc = {
       body: (
         <>
           <p>
-            We ship through third-party courier partners, currently <Ph id="shipping-rates">[Courier partner or shipping aggregator]</Ph>.
+            We ship through third-party courier partners, currently <LegalValue id="shipping-rates" value={LEGAL.courierPartner} label="Courier partner or shipping aggregator" />.
             We choose the courier that serves your address best, and we may change courier partners without notice.
           </p>
           <p>
@@ -139,7 +145,8 @@ export const shippingPolicy: PolicyDoc = {
             <li>
               <strong>Customs, duties and taxes.</strong> Import duties, VAT, GST-equivalent taxes and courier handling fees charged by the
               destination country are not included in our price. They are the buyer&apos;s responsibility and are collected by the courier
-              or customs authority.
+              or customs authority. Many countries now charge duty even on small parcels: for example, the EU applies a flat EUR 3 duty to
+              parcels up to EUR 150 from 1 July 2026, and the United States no longer exempts low-value parcels from duty.
             </li>
             <li>
               <strong>Customs forms.</strong> We declare the contents and value of the parcel truthfully, as required by law. We cannot
@@ -150,8 +157,15 @@ export const shippingPolicy: PolicyDoc = {
             </li>
             <li>
               <strong>Refused or unclaimed parcels.</strong> If a parcel is returned to us because it was refused, unclaimed or held by
-              customs, we refund the item price after it reaches us, less the shipping charges both ways and any duties we had to pay.
+              customs, we refund the item price after it reaches us, less the shipping charges both ways and any duties we had to pay. This
+              does not apply where the refusal is our fault, for example a damaged or wrong item, or a parcel that arrived much later than we promised.
             </li>
+            {LEGAL.euRepresentative ? (
+              <li>
+                <strong>Product safety contact in the EU.</strong> Manufacturer: <LegalValue value={LEGAL.legalName} label="Legal business name" />, India.
+                EU responsible person: {LEGAL.euRepresentative}.
+              </li>
+            ) : null}
           </ul>
         </>
       ),
@@ -205,12 +219,12 @@ export const shippingPolicy: PolicyDoc = {
       body: (
         <>
           <p>
-            <strong>Record an unboxing video.</strong> Please film the parcel being opened, in one unbroken clip, starting with the sealed
-            package and the shipping label visible. This is the quickest way for us to settle a claim with the courier and to give you a
-            replacement or refund.
+            <strong>An unboxing video helps.</strong> If you can, film the parcel being opened in one unbroken clip, starting with the sealed
+            package and the shipping label. It is the quickest way for us to settle a claim with the courier. If you do not have one, send
+            photos and we will still review your claim.
           </p>
           <ol>
-            <li>Tell us within 7 days of delivery, on WhatsApp or at {SITE.email}. Send your order number, the unboxing video and clear photos of the damage or the wrong item.</li>
+            <li>Tell us within {POLICY.returnWindowDays} days of delivery, on WhatsApp or at {SITE.email}. Send your order number and clear photos of the damage or the wrong item.</li>
             <li>We reply within 2 business days and tell you what we will do.</li>
             <li>
               If the piece arrived damaged or is not what you ordered, we will send a replacement, or refund you, as described in the{" "}
@@ -218,7 +232,7 @@ export const shippingPolicy: PolicyDoc = {
             </li>
           </ol>
           <p>
-            <strong>Marked delivered but not received?</strong> Tell us within 7 days of the delivery date shown in tracking. We will raise it
+            <strong>Marked delivered but not received?</strong> Tell us within {POLICY.returnWindowDays} days of the delivery date shown in tracking. We will raise it
             with the courier. If the courier confirms the parcel is lost, we will reship the piece or refund you in full.
           </p>
           <p>

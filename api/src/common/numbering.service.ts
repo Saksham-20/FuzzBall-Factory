@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 import type { Prisma } from '../generated/prisma/client.js';
+import type { TicketKind } from '../generated/prisma/enums.js';
+import { formatTicketNumber } from '../support/support.rules.js';
 
 type Db = PrismaService | Prisma.TransactionClient;
 
@@ -8,6 +10,7 @@ type Db = PrismaService | Prisma.TransactionClient;
 export const COUNTERS = {
   order: { key: 'order', base: 1000 },
   workOrder: { key: 'work_order', base: 0 },
+  ticket: (kind: TicketKind) => ({ key: `ticket_${kind.toLowerCase()}`, base: 0 }),
 } as const;
 
 export const formatOrderNumber = (n: number) => `FB-${n}`;
@@ -34,6 +37,11 @@ export class NumberingService {
 
   async nextOrderNumber(db: Db = this.prisma): Promise<string> {
     return formatOrderNumber(await this.next(COUNTERS.order, db));
+  }
+
+  /** `SUP-0001`, `GRV-0001`, `IPN-0001`, `DSR-0001`: one counter per kind. */
+  async nextTicketNumber(kind: TicketKind, db: Db = this.prisma): Promise<string> {
+    return formatTicketNumber(kind, await this.next(COUNTERS.ticket(kind), db));
   }
 
   async nextWorkOrderNumber(db: Db = this.prisma): Promise<string> {

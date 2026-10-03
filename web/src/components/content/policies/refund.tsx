@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { DataTable } from "@/components/content/Prose";
-import { Ph } from "@/components/content/Placeholder";
+import { LegalValue } from "@/components/content/Placeholder";
 import type { PolicyDoc } from "@/components/content/policies/types";
+import { LEGAL } from "@/lib/legal";
+import { POLICY } from "@/lib/policy-constants";
 import { SAMPLE_SETTINGS, SITE } from "@/lib/site";
 
 // PLACEHOLDER(legal-details): seller identity below.
@@ -9,22 +11,24 @@ import { SAMPLE_SETTINGS, SITE } from "@/lib/site";
 // maker's business decisions and must be confirmed.
 
 const dep = SAMPLE_SETTINGS.depositPct;
+const { returnWindowDays: ret, defectWindowDays: defect, euWithdrawalDays: eu } = POLICY;
 
 export const refundPolicy: PolicyDoc = {
   slug: "refund",
   title: "Cancellation and refund policy",
   shortTitle: "Cancellation and refund policy",
   description:
-    "How cancellations, exchanges and refunds work at FuzzBall Factory: 7-day exchange or refund on ready-to-ship crochet, made-to-order and custom work rules, and refunds in 5 to 7 business days.",
+    `How cancellations, exchanges and refunds work at FuzzBall Factory: ${ret}-day exchange or refund on ready-to-ship crochet, made-to-order and custom work rules, damaged or faulty items, and refunds in ${POLICY.refundArrival}.`,
   intro:
     "Handmade pieces are treated differently from factory stock. This page explains what can be cancelled, returned or refunded, and how to ask.",
   summary: {
     head: "The short version",
     points: [
-      "Ready-to-ship pieces: exchange or refund within 7 days of delivery, if the piece is unused. Please film the unboxing.",
-      "Made-to-order and personalised pieces cannot be returned, unless they arrive damaged, faulty or not as ordered.",
-      `Custom work orders: the ${dep}% advance is non-refundable once we have started work on your piece.`,
-      "Approved refunds reach your original payment method in 5 to 7 business days.",
+      `Ready-to-ship pieces: exchange or refund within ${ret} days of delivery, if the piece is unused.`,
+      "Made-to-order and personalised pieces cannot be returned for change of mind. If one arrives damaged, faulty or not as ordered, we repair, replace or refund it.",
+      `Damaged in transit or the wrong item: tell us within ${ret} days. A fault in the making: within ${defect} days. Your legal rights are not affected.`,
+      `Custom work orders: cancel before work starts and you pay nothing. After that we keep only the cost of the materials bought and the work done, shown to you in writing.`,
+      `Approved refunds reach your original payment method in ${POLICY.refundArrival}.`,
     ],
   },
   sections: [
@@ -41,10 +45,10 @@ export const refundPolicy: PolicyDoc = {
             caption="Return and refund rules by kind of order"
             head={["Kind of order", "Change of mind", "Damaged, faulty or wrong item"]}
             rows={[
-              ["Ready to ship", "Exchange or refund within 7 days of delivery, if unused", "Replacement or refund"],
+              ["Ready to ship", `Exchange or refund within ${ret} days of delivery, if unused`, "Replacement or refund"],
               ["Made to order", "Not returnable", "Replacement or refund"],
               ["Personalised (name, text, chosen size or colours)", "Not returnable", "Replacement or refund"],
-              ["Custom work order", "See the custom work orders section", "Replacement, repair or refund"],
+              ["Custom work order", "See the custom work orders section", "Repair, replacement or refund"],
             ]}
           />
           <p>
@@ -65,9 +69,10 @@ export const refundPolicy: PolicyDoc = {
               {SITE.email} with your order number. You get a full refund.
             </li>
             <li>
-              <strong>Made to order:</strong> you can cancel within 24 hours of placing the order, as long as we have not started crocheting
-              it. We mark the order &quot;In production&quot; on your order page when we begin. After that it cannot be cancelled. If the piece
-              is damaged or wrong, the rules below apply.
+              <strong>Made to order:</strong> cancel any time before we start crocheting it, and you pay nothing. We mark the order
+              &quot;In production&quot; on your order page when we begin. After that, you can still cancel: we keep only the cost of the
+              materials bought and the work done for your piece, shown to you in writing, and refund the rest. If the piece is damaged or
+              wrong, the rules below apply.
             </li>
             <li>
               <strong>Custom work orders:</strong> you can decline a quote at any time at no cost. After you accept and pay, see the custom
@@ -91,11 +96,11 @@ export const refundPolicy: PolicyDoc = {
       body: (
         <>
           <p>
-            You can ask for an exchange or a refund within <strong>7 days of delivery</strong>. To qualify, the piece must be:
+            You can ask for an exchange or a refund within <strong>{ret} days of delivery</strong>. To qualify, the piece must be:
           </p>
           <ul>
             <li>unused, unwashed and in the condition it arrived in, with any tags and packaging;</li>
-            <li>reported to us within the 7 days, with your order number and an unboxing video (see below).</li>
+            <li>reported to us within the {ret} days, with your order number.</li>
           </ul>
           <p>
             Exchanges depend on stock. Many of our pieces are one of a kind, so if there is no suitable replacement we will refund you. For a
@@ -103,8 +108,12 @@ export const refundPolicy: PolicyDoc = {
             replacement.
           </p>
           <p>
-            <strong>Not eligible:</strong> pieces that have been worn, washed, altered or damaged after delivery; pieces without the
-            unboxing video where damage is claimed; and normal variation in colour and stitch (see below).
+            <strong>Not eligible for change of mind:</strong> pieces that have been worn, washed, altered or damaged after delivery, and normal
+            variation in colour and stitch (see below).
+          </p>
+          <p>
+            An unboxing video, filmed in one unbroken clip from the sealed parcel, helps us settle a claim with the courier. If you do not have
+            one, send photos and we will still review your claim.
           </p>
         </>
       ),
@@ -119,13 +128,16 @@ export const refundPolicy: PolicyDoc = {
             check the size in cm and the colour photos before ordering, and ask us on WhatsApp if you are unsure. We can send a photo in
             natural light on request.
           </p>
-          <p>We will replace, repair or refund a made-to-order or personalised piece if it:</p>
+          <p>We will repair, replace or refund a made-to-order or personalised piece if it:</p>
           <ul>
             <li>arrives damaged;</li>
             <li>has a fault in the making, such as a loose seam, a fault in stitching or a missing detail; or</li>
             <li>is not what you ordered, for example the wrong colour, size or spelling of the name against your order confirmation.</li>
           </ul>
-          <p>Tell us within 7 days of delivery, with your order number, the unboxing video and photos.</p>
+          <p>
+            Tell us within {ret} days of delivery if it arrived damaged or is not what you ordered, and within {defect} days if there is a fault in
+            the making. Send your order number and photos. Your rights under the Consumer Protection Act, 2019 are not limited by these windows.
+          </p>
         </>
       ),
     },
@@ -148,24 +160,27 @@ export const refundPolicy: PolicyDoc = {
               progress&quot;, we refund the advance, less any payment gateway charges we cannot recover.
             </li>
             <li>
-              <strong>After work starts.</strong> The advance is <strong>non-refundable</strong> once work has started, because the
-              yarn is bought and the hours are spent. We show you progress photos on your work order.
+              <strong>After work starts.</strong> If you cancel, we keep only the cost of the materials bought and the work done for your
+              order, itemised and shown to you in writing, and refund the rest of what you have paid. We show you progress photos on your work
+              order, so you can see what has been done.
             </li>
             <li>
               <strong>Approval and balance.</strong> When the piece is ready, you see photos and approve it. The balance is paid before we
-              ship. Changes you ask for after approval, or outside the scope written in the quote, may be charged extra.
+              ship, within {POLICY.balanceDueDays} days of our notice. After that we may cancel the order, and the same cost basis applies.
+              Changes you ask for after approval, or outside the scope written in the quote, may be charged extra, and we tell you the price first.
             </li>
             <li>
               <strong>Delivery.</strong> If the finished piece arrives damaged, or does not match the approved quote and photos, we will
-              repair, replace or refund it as described above. Custom pieces are not otherwise returnable.
+              repair or replace it, or refund you if that is not possible in a reasonable time. Custom pieces are not otherwise returnable
+              for change of mind.
             </li>
           </ol>
           <p>
-            If we cannot complete your work order, for any reason, we refund everything you have paid, including the advance.
+            If we cannot complete your work order, or we cancel it for a reason that is not yours, we refund everything you have paid,
+            including the advance.
           </p>
           <p>
-            Custom work is never cash on delivery. We do not make licensed characters or copy another maker&apos;s design, so we will decline
-            those requests before you pay anything.
+            Custom work is never cash on delivery.
           </p>
         </>
       ),
@@ -176,12 +191,12 @@ export const refundPolicy: PolicyDoc = {
       body: (
         <>
           <ol>
-            <li>Message us on WhatsApp or write to {SITE.email} within 7 days of delivery.</li>
+            <li>Message us on WhatsApp or write to {SITE.email} within the windows above ({ret} days of delivery for transit damage, a wrong item or an exchange; {defect} days for a fault in the making).</li>
             <li>
-              Send your order number, the reason, clear photos and your <strong>unboxing video</strong>: one unbroken clip, from the
-              sealed parcel and shipping label to the piece coming out.
+              Send your order number, the reason and clear photos. An <strong>unboxing video</strong>, if you filmed one, helps but is not
+              required.
             </li>
-            <li>We reply within 2 business days to approve, ask for more detail, or explain why we cannot.</li>
+            <li>We reply within {POLICY.refundStartBusinessDays} business days to approve, ask for more detail, or explain why we cannot.</li>
             <li>If we approve a return, we tell you where to send the piece, or arrange a pickup where the courier can. Keep the tracking number.</li>
             <li>We check the piece when it arrives, then send your replacement or refund.</li>
           </ol>
@@ -200,7 +215,7 @@ export const refundPolicy: PolicyDoc = {
           <ul>
             <li>
               <strong>Timing.</strong> Once a refund is approved (and, for a return, once we have received and checked the piece), we start the
-              refund within 2 business days. It reaches you in <strong>5 to 7 business days</strong>. Some banks and card issuers take a few
+              refund within {POLICY.refundStartBusinessDays} business days. It reaches you in <strong>{POLICY.refundArrival}</strong>. Some banks and card issuers take a few
               days more to show it.
             </li>
             <li>
@@ -225,6 +240,20 @@ export const refundPolicy: PolicyDoc = {
       ),
     },
     {
+      id: "eu-uk",
+      title: "Buyers in the EU and UK",
+      body: (
+        <>
+          <p>
+            If you live in the EU or UK, you can withdraw from a purchase of non-personalised items within {eu} days of receiving them (return
+            shipping is paid by you). Items made to your specification or clearly personalised are excluded (Directive 2011/83/EU, Art 16(c)). To
+            withdraw, write to {SITE.email} with your order number.
+          </p>
+          <p>Import duties and taxes charged by your country are not refunded by us, and your mandatory local consumer rights still apply.</p>
+        </>
+      ),
+    },
+    {
       id: "variance",
       title: "Colour and stitch variation",
       body: (
@@ -240,7 +269,7 @@ export const refundPolicy: PolicyDoc = {
       title: "Who to contact",
       body: (
         <p>
-          <Ph>[Legal business name]</Ph>, trading as {SITE.name}. Write to <a href={`mailto:${SITE.email}`}>{SITE.email}</a> or use the{" "}
+          <LegalValue value={LEGAL.legalName} label="Legal business name" />, trading as {SITE.name}. Write to <a href={`mailto:${SITE.email}`}>{SITE.email}</a> or use the{" "}
           <Link href="/contact">contact page</Link>. Complaints are handled as described on the{" "}
           <Link href="/policies/grievance">grievance officer</Link> page.
         </p>

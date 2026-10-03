@@ -122,7 +122,7 @@ Dashboard (today's orders, pending quotes, revenue, low stock, queue load) · Pr
 - One-of-a-kind: qty 1, auto sold-out, 10-min reservation at checkout, "Sold — request similar" → custom form.
 - International: prices in INR, approximate local currency shown, admin-set international shipping zones/rates, Razorpay international cards enabled, no COD.
 - Colour-variance disclaimer on every PDP; "see it in real light" WhatsApp button.
-- Original designs only; custom form states that licensed characters can't be made.
+- Fan pieces of existing characters are allowed (owner's decision, 2026-09-30); never call them licensed, official or endorsed. No "original designs only" promise on the site.
 - Legal pages + grievance officer + origin "Made in India".
 
 ---

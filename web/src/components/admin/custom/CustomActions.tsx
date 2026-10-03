@@ -30,13 +30,11 @@ interface Props {
   /** For calls that return nothing (mark under review). */
   onRefresh: () => void;
   openBuilder: () => void;
-  /** Set when the licensed-character hint's button opened the decline dialog. */
   declineOpen: boolean;
   setDeclineOpen: (open: boolean) => void;
-  declineInitial?: string;
 }
 
-export function CustomActions({ request: r, onUpdated, onRefresh, openBuilder, declineOpen, setDeclineOpen, declineInitial }: Props) {
+export function CustomActions({ request: r, onUpdated, onRefresh, openBuilder, declineOpen, setDeclineOpen }: Props) {
   const [busy, setBusy] = useState<Op | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>();
@@ -239,7 +237,6 @@ export function CustomActions({ request: r, onUpdated, onRefresh, openBuilder, d
           title="Decline this request?"
           description={`This message goes to ${firstName(r.customerName)} and ends the work order. Edit it so it sounds like you.`}
           templates={DECLINE_TEMPLATES}
-          initial={declineInitial}
           fieldLabel="Message to the customer"
           confirmLabel="Decline request"
           busyLabel="Declining…"

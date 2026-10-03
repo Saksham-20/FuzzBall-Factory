@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { RETAIN_AFTER_CLOSE_DAYS } from '../support/support.rules.js';
 
 const DAY_MS = 86_400_000;
 /** Refresh and reset tokens are useless once expired; the small grace keeps reuse-detection evidence for a while. */
@@ -50,6 +51,12 @@ export class RetentionService {
   /** Forgets the IP on old audit rows (personal data with a short useful life). Returns how many rows changed. */
   async scrubAuditIps(now: Date = new Date()): Promise<number> {
     const { count } = await this.prisma.auditLog.updateMany({ where: { ip: { not: null }, createdAt: { lt: new Date(now.getTime() - AUDIT_IP_KEEP_DAYS * DAY_MS) } }, data: { ip: null } });
+    return count;
+  }
+
+  /** Support tickets (and, by cascade, their messages) go RETAIN_AFTER_CLOSE_DAYS after they were closed. Open ones stay. */
+  async purgeSupportTickets(now: Date = new Date()): Promise<number> {
+    const { count } = await this.prisma.supportTicket.deleteMany({ where: { status: 'CLOSED', closedAt: { lt: new Date(now.getTime() - RETAIN_AFTER_CLOSE_DAYS * DAY_MS) } } });
     return count;
   }
 

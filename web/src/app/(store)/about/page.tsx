@@ -10,7 +10,7 @@ import { SITE } from "@/lib/site";
 export const metadata: Metadata = {
   title: "About",
   description:
-    "FuzzBall Factory is a one-person crochet studio in India. Every plushie, bouquet, bag and charm is hooked by hand, ready to ship or made to order, always from original designs.",
+    "FuzzBall Factory is a one-person crochet studio in India. Every plushie, bouquet, bag and charm is hooked by hand, ready to ship or made to order.",
   alternates: { canonical: "/about" },
 };
 
@@ -27,18 +27,17 @@ export default function AboutPage() {
       noHelp
       lead={
         <figure className="mb-14">
-          <div data-placeholder="sample-photo" className="relative aspect-[4/3] overflow-hidden rounded-ticket bg-kraft-light">
+          <div className="relative aspect-[4/3] overflow-hidden rounded-ticket bg-kraft-light">
             <Image
-              src="/samples/yarn-assorted.jpg"
-              alt="Balls of yarn in assorted colours"
+              src="/maker/crew-hedgehog.jpg"
+              alt="A hand-crocheted hedgehog in cream and brown yarn with black bead eyes"
               fill
               sizes="(min-width:1024px) 68ch, 100vw"
-              className="object-cover"
+              className="object-cover object-[50%_35%]"
               priority
             />
           </div>
-          {/* PLACEHOLDER(sample-photo): openly licensed stand-in, replace with the maker's own photo (docs/PLACEHOLDERS.md) */}
-          <figcaption className="font-stencil mt-2 text-[12px] text-brown-soft">Sample photo. The maker&apos;s own pictures go here.</figcaption>
+          <figcaption className="font-stencil mt-2 text-[12px] text-brown-soft">One of the crew, hooked by hand.</figcaption>
         </figure>
       }
       sections={[
@@ -86,10 +85,6 @@ export default function AboutPage() {
             <ul>
               <li>
                 <strong>Handmade, really.</strong> One maker crochets every piece. We say so plainly, and we say how long it takes.
-              </li>
-              <li>
-                <strong>Original designs only.</strong> We do not make licensed characters or copy other makers. If you want a favourite character, we
-                will offer an original design in the same spirit instead.
               </li>
               <li>
                 <strong>Honest about colour and size.</strong> Sizes are in cm. Screens and dye lots vary, so we will send a photo in natural light on

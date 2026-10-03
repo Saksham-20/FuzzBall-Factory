@@ -1,22 +1,40 @@
-import { Ph } from "@/components/content/Placeholder";
+import { LegalValue, Ph } from "@/components/content/Placeholder";
+import { LEGAL } from "@/lib/legal";
 import { SITE } from "@/lib/site";
 
 /**
  * PLACEHOLDER(legal-details): seller identity required by the Consumer Protection
- * (E-Commerce) Rules, 2020: legal name, registered address, GSTIN, contact.
+ * (E-Commerce) Rules, 2020: legal name, registered address, GSTIN, contact. Values come from `LEGAL`.
  */
 export function LegalAddress({ className }: { className?: string }) {
   return (
     <address className={className ?? "not-italic leading-relaxed"}>
-      <Ph>[Legal business name]</Ph>
-      <br />
-      <Ph>[Registered address, line 1]</Ph>
-      <br />
-      <Ph>[City, State, PIN code]</Ph>
-      <br />
+      {LEGAL.legalName ? <>{LEGAL.legalName}<br /></> : <><Ph>[Legal business name]</Ph><br /></>}
+      {LEGAL.addressLines?.length ? (
+        LEGAL.addressLines.map((line) => (
+          <span key={line}>
+            {line}
+            <br />
+          </span>
+        ))
+      ) : (
+        <>
+          <Ph>[Registered address, line 1]</Ph>
+          <br />
+          <Ph>[City, State, PIN code]</Ph>
+          <br />
+        </>
+      )}
       India
     </address>
   );
+}
+
+/** "GSTIN 29…" when registered, "not registered for GST" when not, a placeholder until the owner answers. */
+export function GstLine() {
+  if (LEGAL.gstRegistered === null) return <Ph>[GSTIN, or a note that the seller is not registered]</Ph>;
+  if (!LEGAL.gstRegistered) return <>Not registered for GST. No GST is charged.</>;
+  return <LegalValue value={LEGAL.gstin} label="GSTIN" />;
 }
 
 export function SellerDetails() {
@@ -26,7 +44,8 @@ export function SellerDetails() {
       <dd>{SITE.name}</dd>
       <dt className="font-semibold text-cocoa">Legal name</dt>
       <dd>
-        <Ph>[Legal business name]</Ph>
+        <LegalValue value={LEGAL.legalName} label="Legal business name" />
+        {LEGAL.constitution ? <>, {LEGAL.constitution}</> : null}
       </dd>
       <dt className="font-semibold text-cocoa">Registered address</dt>
       <dd>
@@ -34,7 +53,7 @@ export function SellerDetails() {
       </dd>
       <dt className="font-semibold text-cocoa">GSTIN</dt>
       <dd>
-        <Ph>[GSTIN, or a note that the seller is not registered]</Ph>
+        <GstLine />
       </dd>
       <dt className="font-semibold text-cocoa">Email</dt>
       <dd>
@@ -44,7 +63,7 @@ export function SellerDetails() {
       </dd>
       <dt className="font-semibold text-cocoa">Phone</dt>
       <dd>
-        <Ph>[Business phone number]</Ph>
+        <LegalValue value={LEGAL.phone} label="Business phone number" />
       </dd>
       <dt className="font-semibold text-cocoa">Country of origin</dt>
       <dd>India. Every piece is handmade in India.</dd>

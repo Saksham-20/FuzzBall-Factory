@@ -73,14 +73,15 @@ export class UploadsService {
 
   /**
    * True for a URL that points into our own storage: `/uploads/...` on this API, the configured public API address, or
-   * our Cloudinary cloud. In development the web app's own sample images (`/samples/`, `/brand/`) count too.
+   * our Cloudinary cloud. The web app's own maker photos (`/maker/`) count in every environment (the starter shelf covers use them); in development its `/brand/` images count too.
    */
   isOwnStorageUrl(url: string): boolean {
     const clean = (path: string) => !path.includes('..') && !/[\s\\]/.test(path);
     if (url.startsWith('/')) {
       if (!clean(url)) return false;
       if (/^\/uploads\/[\w./-]+$/.test(url)) return true;
-      return this.config.get('NODE_ENV', { infer: true }) !== 'production' && /^\/(samples|brand)\/[\w./-]+$/.test(url);
+      if (/^\/maker\/[\w./-]+$/.test(url)) return true;
+      return this.config.get('NODE_ENV', { infer: true }) !== 'production' && /^\/brand\/[\w./-]+$/.test(url);
     }
     let parsed: URL;
     try {

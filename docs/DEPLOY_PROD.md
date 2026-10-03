@@ -74,8 +74,8 @@ cd api && NODE_ENV=production ADMIN_EMAIL=you@example.com ADMIN_PASSWORD='<long,
   DATABASE_URL="$MIGRATE_DATABASE_URL" npx prisma db seed
 ```
 
-`NODE_ENV=production` makes the seed skip the sample users, sample catalogue and sample coupons (`api/prisma/seed.ts`);
-never set `SEED_SAMPLES=true` against production. Then sign in to the admin and add the real categories and products.
+The seed creates only the admin, the settings and the empty shelves (categories); it never creates products, customers or
+coupons (`api/prisma/seed.ts`). Then sign in to the admin and add the real products.
 Remove `ADMIN_EMAIL` and `ADMIN_PASSWORD` from any env file afterwards.
 
 ## Staging (the existing test VPS, or a second small box)

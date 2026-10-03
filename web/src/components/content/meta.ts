@@ -1,5 +1,5 @@
 /** Date the draft legal text was last edited. Update whenever a policy changes. */
-export const LEGAL_UPDATED = "2026-09-21";
+export const LEGAL_UPDATED = "2026-10-03";
 
 export const LEGAL_UPDATED_LABEL = new Intl.DateTimeFormat("en-IN", {
   day: "numeric",

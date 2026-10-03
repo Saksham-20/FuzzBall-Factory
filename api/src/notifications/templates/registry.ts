@@ -1,4 +1,4 @@
-import type { NotificationEvent, NotificationEventMap, OrderPayload, RenderedEmail, Template, TemplateContext, WorkOrderPayload } from '../events.js';
+import type { NotificationEvent, NotificationEventMap, OrderPayload, RenderedEmail, Template, TemplateContext, TicketPayload, WorkOrderPayload } from '../events.js';
 import { formatRupees, renderEmail } from './layout.js';
 
 /**
@@ -42,18 +42,74 @@ const note = (n?: string) => (n ? [n] : []);
 const customsNote = (p: OrderPayload, text: string) => (p.international ? [text] : []);
 const itemLines = (p: OrderPayload) => (p.items?.length ? [p.items.map((i) => `${i.qty} x ${i.name}`).join(', ')] : []);
 
+function ticketReceived(p: TicketPayload, ctx: TemplateContext): RenderedEmail {
+  return renderEmail({
+    ...base(ctx),
+    subject: `We got your request [${p.ticketNumber}]`,
+    preheader: `Your reference is ${p.ticketNumber}.`,
+    heading: 'We have your request',
+    paragraphs: [
+      `Hi ${first(p.name)}, thank you for writing. Your reference is ${p.ticketNumber}.`,
+      ...(p.grievance
+        ? [`This is recorded as a complaint. We acknowledge it within 48 hours (this email is the acknowledgement) and we will resolve it${p.resolveBy ? ` by ${p.resolveBy}` : ' within one month'}.`]
+        : [`We will get back to you${p.resolveBy ? ` by ${p.resolveBy}` : ' soon'}.`]),
+      `Subject: ${p.subject}`,
+      ...(p.message ? [`A copy of what you sent, as we recorded it:\n${p.message}`] : []),
+    ],
+    cta: { label: 'Open your request', url: p.url },
+    footnote: 'Keep this email: the link is how you reach your request without signing in.',
+  });
+}
+
 export const templates: Registry = {
-  'contact.message': (p, ctx) => ({
+  'ticket.received': (p, ctx) => ticketReceived(p, ctx),
+
+  'ticket.reply': (p, ctx) =>
+    renderEmail({
+      ...base(ctx),
+      subject: `Re: ${p.subject} [${p.ticketNumber}]`,
+      preheader: 'We have written back to you.',
+      heading: 'We have replied',
+      paragraphs: [`Hi ${first(p.name)},`, ...(p.message ? [p.message] : []), `Reference: ${p.ticketNumber}. You can answer on the page below.`],
+      cta: { label: 'Open your request', url: p.url },
+    }),
+
+  'ticket.resolved': (p, ctx) =>
+    renderEmail({
+      ...base(ctx),
+      subject: `Resolved: ${p.subject} [${p.ticketNumber}]`,
+      preheader: 'We have closed this off with a resolution.',
+      heading: 'Your request is resolved',
+      paragraphs: [
+        `Hi ${first(p.name)},`,
+        ...(p.message ? [`What we did: ${p.message}`] : []),
+        `Reference: ${p.ticketNumber}. If this does not settle it, reply on the page below and we will look again.`,
+        ...(p.grievance ? ['If you are still not satisfied, you can call the National Consumer Helpline on 1915 (consumerhelpline.gov.in), or file a complaint with a consumer commission at edaakhil.nic.in.'] : []),
+      ],
+      cta: { label: 'Open your request', url: p.url },
+    }),
+
+  'ticket.new_admin': (p, ctx) => ({
     ...renderEmail({
       brandName: ctx.brandName,
-      subject: `New message from ${p.name.replace(/[\r\n]+/g, ' ').slice(0, 60)}`,
+      subject: `${p.isReply ? 'Reply on' : 'New'} ${p.ticketNumber}: ${p.subject.replace(/[\r\n]+/g, ' ').slice(0, 70)}`,
       preheader: p.message.slice(0, 90),
-      heading: 'New message from the contact form',
-      paragraphs: [`From: ${p.name} <${p.fromEmail}>`, p.message],
-      footnote: 'Reply to this email to answer them directly.',
+      heading: p.isReply ? `${p.name} wrote again` : `New ${p.kind.toLowerCase().replace('_', ' ')} request`,
+      paragraphs: [`From: ${p.name}${p.fromEmail ? ` <${p.fromEmail}>` : ' (no email given)'}`, p.message],
+      cta: { label: 'Open in the admin', url: p.url },
+      footnote: 'Answer from the admin so the reply is kept on the ticket and the clocks stop.',
     }),
-    replyTo: p.fromEmail,
+    ...(p.fromEmail ? { replyTo: p.fromEmail } : {}),
   }),
+
+  'ticket.sla_reminder': (p, ctx) =>
+    renderEmail({
+      brandName: ctx.brandName,
+      subject: `${p.items.length} support request${p.items.length === 1 ? '' : 's'} near a deadline`,
+      heading: 'Support deadlines',
+      paragraphs: p.items.map((i) => `${i.ticketNumber} (${i.subject.slice(0, 60)}): ${i.what}. ${i.url}`),
+      footnote: 'Acknowledge within 48 hours and resolve a grievance within one month: the law asks for both.',
+    }),
 
   'auth.welcome': (p, ctx) =>
     renderEmail({

@@ -13,6 +13,7 @@ const eslintConfig = defineConfig([
     ".next-*/**",
     // Hand-assembled test-VPS bundle (local only, git-ignored)
     ".deploy-vps/**",
+    ".vps-stage/**",
     "out/**",
     "build/**",
     "next-env.d.ts",

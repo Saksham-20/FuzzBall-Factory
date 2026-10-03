@@ -20,6 +20,7 @@ import { EmptyState, ErrorNote, Skeleton } from "@/components/ui/misc";
 import { useApi } from "@/lib/api/useApi";
 import { getAdminProduct, saveProduct } from "@/lib/api/admin";
 import { listCategories } from "@/lib/api/catalog";
+import { flaggedNames } from "@/lib/ip-words";
 import { ApiError } from "@/lib/api/errors";
 import { OCCASIONS } from "@/lib/status";
 import { formatINR } from "@/lib/format";
@@ -78,6 +79,8 @@ const schema = z
     fiber: z.string().trim(),
     sizeCm: z.string().trim(),
     weightG: num("Enter grams, like 120.", { min: 0, optional: true }),
+    netQuantity: z.string().trim().max(40, "Use at most 40 characters."),
+    safetyNote: z.string().trim().max(300, "Use at most 300 characters."),
     care: z.string(),
     occasions: z.array(z.string()),
     tags: z.string(),
@@ -86,7 +89,7 @@ const schema = z
     const price = Number(v.price);
     const cmp = Number(v.compareAtPrice);
     if (v.compareAtPrice.trim() !== "" && Number.isFinite(price) && Number.isFinite(cmp) && cmp <= price) {
-      ctx.addIssue({ code: "custom", path: ["compareAtPrice"], message: "Compare-at must be higher than the price, or leave it empty." });
+      ctx.addIssue({ code: "custom", path: ["compareAtPrice"], message: "The previous price must be higher than the price, or leave it empty." });
     }
     if (v.isOneOfAKind && v.variants.reduce((s, x) => s + (Number(x.stock) || 0), 0) > 1) {
       ctx.addIssue({ code: "custom", path: ["variants"], message: "A one-of-a-kind piece can only have 1 in stock in total." });
@@ -104,7 +107,7 @@ function toDefaults(p?: Product): FormValues {
       images: [], price: "", compareAtPrice: "", fulfilment: "READY", leadTimeDays: "2",
       isOneOfAKind: false, customizable: true, giftable: true,
       variants: [{ vid: newId(), colour: "", size: "", priceDelta: "0", stock: "1" }],
-      swatches: [], fiber: "", sizeCm: "", weightG: "", care: "", occasions: [], tags: "",
+      swatches: [], fiber: "", sizeCm: "", weightG: "", netQuantity: "1 piece", safetyNote: "", care: "", occasions: [], tags: "",
     };
   }
   return {
@@ -115,7 +118,7 @@ function toDefaults(p?: Product): FormValues {
     isOneOfAKind: p.isOneOfAKind, customizable: p.customizable, giftable: p.giftable,
     variants: p.variants.map((v) => ({ vid: v.id, colour: v.colour, size: v.size ?? "", priceDelta: String(v.priceDelta), stock: String(v.stock) })),
     swatches: p.swatches.map((s) => ({ name: s.name, hex: s.hex })),
-    fiber: p.fiber, sizeCm: p.sizeCm, weightG: p.weightG ? String(p.weightG) : "",
+    fiber: p.fiber, sizeCm: p.sizeCm, weightG: p.weightG ? String(p.weightG) : "", netQuantity: p.netQuantity ?? "1 piece", safetyNote: p.safetyNote ?? "",
     care: p.care.join("\n"), occasions: p.occasions, tags: p.tags.join(", "),
   };
 }
@@ -134,6 +137,8 @@ function toInput(v: FormValues, p?: Product) {
     fiber: v.fiber.trim(),
     sizeCm: v.sizeCm.trim(),
     weightG: v.weightG.trim() ? Number(v.weightG) : 0,
+    netQuantity: v.netQuantity.trim() || "1 piece",
+    safetyNote: v.safetyNote.trim() || undefined,
     care: v.care.split("\n").map((l) => l.trim()).filter(Boolean),
     images: v.images.map((i) => ({ src: i.src, alt: i.alt.trim() || v.name.trim() })),
     swatches: v.swatches.map((s) => ({ name: s.name.trim(), hex: s.hex })),
@@ -244,6 +249,20 @@ function VariantsField({ control, register, errors, ooak, fulfilment }: { contro
         <Plus strokeWidth={2} /> Add a variant
       </Button>
     </div>
+  );
+}
+
+/** Warns (never blocks) when the name, tagline, description or tags name an existing character or brand. */
+function CharacterNameWarning({ control }: { control: Control<FormValues> }) {
+  const [name, tagline, description, tags] = useWatch({ control, name: ["name", "tagline", "description", "tags"] });
+  const hits = flaggedNames([name, tagline, description, tags].join(" \n "));
+  if (hits.length === 0) return null;
+  return (
+    <p role="note" className="rounded-[10px] bg-butter/40 px-4 py-3 text-sm text-cocoa">
+      <strong className="font-semibold">Check the wording.</strong> This names {hits.join(", ")}. Listings must not use the names of existing characters or brands:
+      it invites a takedown and reads as a claim that the piece is official. Describe the piece itself (shape, colours, size) instead. See{" "}
+      <a className="underline" href="/policies/ip" target="_blank" rel="noopener noreferrer">the intellectual property policy</a>.
+    </p>
   );
 }
 
@@ -375,6 +394,7 @@ function ProductForm({ product, categories }: { product?: Product; categories: C
               <Field label="Description" error={errors.description?.message} hint="What it is, how it feels, what makes it special. Plain words.">
                 {(p) => <Textarea {...p} rows={5} {...register("description")} />}
               </Field>
+              <CharacterNameWarning control={control} />
               <Field label="Category" error={errors.category?.message} className="md:max-w-sm">
                 {(p) => (
                   <Select {...p} {...register("category")}>
@@ -403,7 +423,7 @@ function ProductForm({ product, categories }: { product?: Product; categories: C
                     </div>
                   )}
                 </Field>
-                <Field label="Compare-at price (₹)" optional error={errors.compareAtPrice?.message} hint="A higher, crossed-out price. Leave empty if there's no offer.">
+                <Field label="Previous price (₹)" optional error={errors.compareAtPrice?.message} hint="Shown crossed out. It must be the lowest price this piece was sold at in the last 30 days, or the offer is misleading. Leave empty if there is no offer.">
                   {(p) => <Input {...p} inputMode="numeric" className="tabular" {...register("compareAtPrice")} />}
                 </Field>
               </div>
@@ -450,6 +470,19 @@ function ProductForm({ product, categories }: { product?: Product; categories: C
                 </Field>
                 <Field label="Weight (g)" optional error={errors.weightG?.message}>
                   {(p) => <Input {...p} inputMode="numeric" className="tabular" {...register("weightG")} />}
+                </Field>
+              </div>
+              <div className="grid gap-4 md:grid-cols-2">
+                <Field label="Net quantity" hint="Shown on the product page, like “1 piece” or “Set of 3”." error={errors.netQuantity?.message}>
+                  {(p) => <Input {...p} placeholder="1 piece" {...register("netQuantity")} />}
+                </Field>
+                <Field
+                  label="Safety and age note"
+                  optional
+                  hint="Shown on the product page. For example the age it is made for, or a small-parts warning. Leave empty to show nothing; never claim an age grade you have not checked."
+                  error={errors.safetyNote?.message}
+                >
+                  {(p) => <Textarea {...p} rows={3} {...register("safetyNote")} />}
                 </Field>
               </div>
               <Field label="Care instructions" optional hint="One instruction per line.">

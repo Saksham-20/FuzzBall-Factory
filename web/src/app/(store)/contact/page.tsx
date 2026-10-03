@@ -3,9 +3,10 @@ import Link from "next/link";
 import { Mail, MessageCircle } from "lucide-react";
 import { Ticket } from "@/components/brand/Ticket";
 import { ContactForm } from "@/components/content/ContactForm";
-import { Ph } from "@/components/content/Placeholder";
-import { LegalAddress } from "@/components/content/SellerDetails";
+import { LegalValue } from "@/components/content/Placeholder";
+import { GstLine, LegalAddress } from "@/components/content/SellerDetails";
 import { Button } from "@/components/ui/Button";
+import { LEGAL } from "@/lib/legal";
 import { SITE } from "@/lib/site";
 import { waGeneral } from "@/lib/whatsapp";
 
@@ -61,7 +62,7 @@ export default function ContactPage() {
                 For orders, include your order number. For a made-to-order piece, tell us the date you need it by.
               </p>
               <p className="text-[1.0625rem] leading-[1.7] text-brown">
-                We reply during these hours: <Ph id="contact-hours">[Days and hours the maker replies, e.g. Mon to Sat, 10:00 to 18:00 IST]</Ph>
+                We reply during these hours: <LegalValue id="contact-hours" value={LEGAL.customerCareHours} label="Days and hours the maker replies, e.g. Mon to Sat, 10:00 to 18:00 IST" />
               </p>
             </section>
 
@@ -73,10 +74,10 @@ export default function ContactPage() {
                 <div className="space-y-3 px-3 pt-1 pb-3 text-[15px] text-cocoa">
                   <LegalAddress />
                   <p>
-                    Phone: <Ph>[Business phone number]</Ph>
+                    Phone: <LegalValue value={LEGAL.phone} label="Business phone number" />
                   </p>
                   <p>
-                    GSTIN: <Ph>[GSTIN, or a note that the seller is not registered]</Ph>
+                    GSTIN: <GstLine />
                   </p>
                 </div>
               </Ticket>

@@ -21,7 +21,7 @@ interface Props {
   title: string;
   description?: ReactNode;
   templates: ReasonTemplate[];
-  /** Pre-picked template label (e.g. when opened from the licensed-character hint). */
+  /** Pre-picked template label. */
   initial?: string;
   fieldLabel?: string;
   confirmLabel: string;

@@ -9,7 +9,7 @@ const PAGES = [
   ["home", "/"],
   ["shop", "/shop"],
   ["a shelf", "/shop/plushies"],
-  ["a product", "/p/rosie-bear"],
+  ["a product", "/p/whale-red"],
   ["cart", "/cart"],
   ["wishlist", "/wishlist"],
   ["checkout", "/checkout"],
@@ -20,6 +20,11 @@ const PAGES = [
   ["contact", "/contact"],
   ["faq", "/faq"],
   ["a policy", "/policies/refund"],
+  ["the grievance page", "/policies/grievance"],
+  ["the takedown page", "/policies/ip"],
+  ["pricing details", "/policies/pricing"],
+  ["the privacy policy", "/policies/privacy"],
+  ["a request link that does not open", "/support/ticket/SUP-0001?t=nope"],
   ["not found", "/no-such-page"],
 ] as const;
 

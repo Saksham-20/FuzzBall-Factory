@@ -44,6 +44,10 @@ export interface Product {
   fiber: string;
   sizeCm: string;
   weightG: number;
+  /** Legal Metrology net-quantity declaration, e.g. "1 piece". Absent = "1 piece". */
+  netQuantity?: string;
+  /** Optional safety and age note shown on the product page. */
+  safetyNote?: string;
   care: string[];
   images: { src: string; alt: string }[];
   swatches: Swatch[];
@@ -303,4 +307,80 @@ export interface StoreSettings {
   intlZones: { name: string; countries: string[]; rate: number; days: string }[];
   depositPct: number;
   quoteValidityDays: number;
+}
+
+// ---- Support tickets (contact, grievance, takedown and data requests). Mirrors api/src/support/support.mapper.ts.
+
+export type TicketKind = "SUPPORT" | "GRIEVANCE" | "IP_NOTICE" | "DATA_REQUEST";
+export type TicketChannel = "WEB" | "EMAIL" | "WHATSAPP" | "PHONE" | "POST";
+export type TicketStatus = "OPEN" | "WAITING_CUSTOMER" | "RESOLVED" | "CLOSED";
+
+export interface TicketMessage {
+  id: string;
+  author: "customer" | "maker";
+  body: string;
+  attachments: string[];
+  at: string;
+}
+
+/** What the customer sees of their own request. */
+export interface Ticket {
+  number: string;
+  kind: TicketKind;
+  channel: TicketChannel;
+  status: TicketStatus;
+  category: string;
+  subject: string;
+  createdAt: string;
+  ackedAt?: string;
+  /** The date we promise to have resolved it by. */
+  resolveBy: string;
+  resolvedAt?: string;
+  resolutionNote?: string;
+  /** Order or work-order number the request is linked to. */
+  reference?: string;
+  messages: TicketMessage[];
+}
+
+export type SlaState = "done" | "ok" | "due-soon" | "overdue";
+
+export interface TicketSla {
+  ack: SlaState;
+  /** Milliseconds left (negative = overdue). */
+  ackMs: number;
+  resolve: SlaState;
+  resolveMs: number;
+}
+
+export interface AdminTicketMessage extends Omit<TicketMessage, "author"> {
+  author: "customer" | "maker" | "internal";
+}
+
+/** The maker's view: contact details, the clocks and the private notes. */
+export interface AdminTicket extends Omit<Ticket, "messages"> {
+  id: string;
+  name: string;
+  email?: string;
+  phone?: string;
+  userId?: string;
+  orderId?: string;
+  orderNumber?: string;
+  workOrderId?: string;
+  workOrderNumber?: string;
+  ackDueAt: string;
+  resolveDueAt: string;
+  firstResponseAt?: string;
+  closedAt?: string;
+  recordCopySentAt?: string;
+  scrubbed: boolean;
+  lastActivityAt: string;
+  sla: TicketSla;
+  messages: AdminTicketMessage[];
+}
+
+export interface SupportCounts {
+  open: number;
+  unacknowledged: number;
+  dueSoon: number;
+  overdue: number;
 }

@@ -9,7 +9,8 @@ import type {
 registerSeedLookup(productById);
 
 /*
- * PLACEHOLDER(catalogue): all users, orders, work orders and coupons below are SAMPLE data.
+ * PLACEHOLDER(catalogue): all users, orders, work orders and coupons below are SAMPLE data (mock mode only: a real-API
+ * build never contains them). The products they refer to are the four whale fixtures in mock/catalog.ts.
  * The mock DB lives in localStorage ("fbf-mock-v1") so admin changes show up in the customer
  * account in the same browser. Real data comes from the NestJS API in Phase 2.
  */
@@ -98,16 +99,16 @@ function order(n: number, o: Partial<Order> & Pick<Order, "items" | "status" | "
 
 const orders: Order[] = [
   order(23, {
-    items: [line("p4", 1), line("p10", 1)], status: "PLACED", paymentMethod: "COD", paymentStatus: "COD_DUE",
+    items: [line("p4", 1), line("p3", 1)], status: "PLACED", paymentMethod: "COD", paymentStatus: "COD_DUE",
     events: [{ status: "PLACED", at: iso(0, 9), note: "Order placed. We'll confirm on WhatsApp before dispatch." }],
   }, 0),
   order(22, {
-    items: [line("p1", 1, "Cherry")], status: "IN_PRODUCTION", paymentMethod: "RAZORPAY", paymentStatus: "PAID",
-    giftNote: "Happy birthday, Meera! Love, Maya", giftWrap: 59, total: 1450 + 59,
+    items: [line("p1", 1, "Red")], status: "IN_PRODUCTION", paymentMethod: "RAZORPAY", paymentStatus: "PAID",
+    giftNote: "Happy birthday, Meera! Love, Maya", giftWrap: 59, total: 399 + 79 + 59,
     events: [
       { status: "PLACED", at: iso(3, 10) },
       { status: "CONFIRMED", at: iso(3, 11), note: "Payment received." },
-      { status: "IN_PRODUCTION", at: iso(2, 10), note: "Rosie's sweater is on the hook." },
+      { status: "IN_PRODUCTION", at: iso(2, 10), note: "The red whale is on the hook." },
     ],
   }, 3),
   order(21, {
@@ -119,20 +120,20 @@ const orders: Order[] = [
     ],
   }, 9),
   order(20, {
-    items: [line("p2", 2), line("p5", 1)], status: "DELIVERED", paymentMethod: "RAZORPAY", paymentStatus: "PAID", courier: "India Post", awb: "EE123456789IN",
+    items: [line("p2", 2), line("p4", 1)], status: "DELIVERED", paymentMethod: "RAZORPAY", paymentStatus: "PAID", courier: "India Post", awb: "EE123456789IN",
     events: [
       { status: "PLACED", at: iso(20) }, { status: "CONFIRMED", at: iso(20, 12) }, { status: "PACKED", at: iso(18) },
       { status: "SHIPPED", at: iso(17) }, { status: "DELIVERED", at: iso(13), note: "Delivered." },
     ],
   }, 20),
   order(19, {
-    items: [line("p15", 1)], status: "CANCELLED", paymentMethod: "COD", paymentStatus: "FAILED",
+    items: [line("p1", 1)], status: "CANCELLED", paymentMethod: "COD", paymentStatus: "FAILED",
     events: [{ status: "PLACED", at: iso(30) }, { status: "CANCELLED", at: iso(29), note: "Cancelled at the customer's request." }],
   }, 30),
   order(18, {
     userId: "u3", contact: { name: sophie.name, email: sophie.email, phone: sophie.phone! }, address: addr(addrUK),
-    items: [line("p8", 1, "Navy", "M")], status: "CONFIRMED", paymentMethod: "RAZORPAY", paymentStatus: "PAID",
-    subtotal: 1199, shipping: 1499, total: 2698, events: [{ status: "PLACED", at: iso(1) }, { status: "CONFIRMED", at: iso(1, 12) }],
+    items: [line("p3", 1, "Blue")], status: "CONFIRMED", paymentMethod: "RAZORPAY", paymentStatus: "PAID",
+    subtotal: 399, shipping: 1499, total: 1898, events: [{ status: "PLACED", at: iso(1) }, { status: "CONFIRMED", at: iso(1, 12) }],
   }, 1),
 ];
 
@@ -152,7 +153,7 @@ const wo = (n: number, over: Partial<CustomRequest> & Pick<CustomRequest, "title
   number: `WO-${String(n).padStart(3, "0")}`,
   userId: "u1", customerName: maya.name, customerPhone: maya.phone!,
   kind: "NEW", category: "plushies", colours: ["Cream", "Navy"], size: "About 15 cm tall", quantity: 1,
-  budgetMin: 1500, budgetMax: 2200, references: ["/samples/bear.jpg"], country: "IN", postalCode: "560038",
+  budgetMin: 1500, budgetMax: 2200, references: ["/maker/whale-pod.jpg"], country: "IN", postalCode: "560038",
   quotes: [], messages: [], events: [], createdAt: iso(daysAgo), ...over,
 });
 
@@ -173,33 +174,33 @@ const custom: CustomRequest[] = [
     events: [{ status: "REQUESTED", at: iso(3) }, { status: "QUOTED", at: iso(1), note: "Quote sent: ₹1,850." }],
   }, 3),
   wo(27, {
-    title: "Wildflower bouquet, pastel", description: "Pastel version of your wildflower bouquet, 9 stems. Wrapped in kraft paper.",
-    status: "COUNTERED", kind: "CUSTOMIZE", baseProductSlug: "wildflower-bouquet", category: "bouquets", colours: ["Lilac", "Cream", "Peach"], size: "9 stems", budgetMin: 1500, budgetMax: 2000,
-    quotes: [q("q27a", 2400, { status: "COUNTERED", counter: { amount: 2000, note: "Could we do 7 stems for ₹2,000?", at: iso(1, 16) } })],
+    title: "Pastel whale pod", description: "A pastel version of the whale keychains, a pod of 9 in mint, lilac and peach. Packed in kraft paper.",
+    status: "COUNTERED", kind: "CUSTOMIZE", baseProductSlug: "whale-pink", category: "keychains", colours: ["Mint", "Lilac", "Peach"], size: "9 whales", quantity: 9, budgetMin: 1500, budgetMax: 2000,
+    quotes: [q("q27a", 2400, { status: "COUNTERED", counter: { amount: 2000, note: "Could we do 7 whales for ₹2,000?", at: iso(1, 16) } })],
     events: [{ status: "REQUESTED", at: iso(6) }, { status: "QUOTED", at: iso(4) }, { status: "COUNTERED", at: iso(1, 16), note: "Counter-offer sent: ₹2,000." }],
   }, 6),
   wo(24, {
     title: "Cat plushie that looks like Biscuit", description: "A chubby orange tabby, about 20 cm, with a white belly. Photos of Biscuit attached.",
-    status: "DEPOSIT_PENDING", category: "plushies", colours: ["Marigold", "Cream"], size: "About 20 cm", budgetMin: 2000, budgetMax: 3000, references: ["/samples/kitty.jpg", "/samples/cat.jpg"],
+    status: "DEPOSIT_PENDING", category: "plushies", colours: ["Marigold", "Cream"], size: "About 20 cm", budgetMin: 2000, budgetMax: 3000, references: ["/maker/crew-hedgehog.jpg", "/maker/crew-turtle.jpg"],
     quotes: [q("q24a", 2600, { status: "ACCEPTED" })],
     events: [{ status: "REQUESTED", at: iso(8) }, { status: "QUOTED", at: iso(6) }, { status: "ACCEPTED", at: iso(1, 9), note: "Quote accepted: ₹2,600. Deposit of ₹1,300 to start." }],
   }, 8),
   wo(21, {
-    title: "Two matching penguin keychains", description: "Two penguins in different scarves, for me and my best friend.",
-    status: "IN_PROGRESS", category: "keychains", quantity: 2, size: "7 cm each", colours: ["Black", "Cream", "Rose"], budgetMin: 700, budgetMax: 1000, references: ["/samples/penguin.jpg"],
+    title: "Two matching whale keychains", description: "Two whales with our initials stitched on the belly, for me and my best friend.",
+    status: "IN_PROGRESS", category: "keychains", quantity: 2, size: "7 cm each", colours: ["Blue", "Pink"], budgetMin: 700, budgetMax: 1000, references: ["/maker/whale-pod.jpg"],
     quotes: [q("q21a", 850, { status: "ACCEPTED", timelineDays: 6 })],
-    messages: [{ id: "m3", author: "maker", body: "The first penguin is done! Scarf number two tomorrow.", attachments: ["/samples/penguin.jpg"], at: iso(1, 14) }],
+    messages: [{ id: "m3", author: "maker", body: "The first whale is done! Number two tomorrow.", attachments: ["/maker/clips/whale-blue.jpg"], at: iso(1, 14) }],
     events: [
       { status: "REQUESTED", at: iso(12) }, { status: "QUOTED", at: iso(11) }, { status: "ACCEPTED", at: iso(10) },
       { status: "IN_PROGRESS", at: iso(4), note: "Deposit received. Starting today." },
-      { status: "IN_PROGRESS", at: iso(1, 14), note: "Progress photo: penguin one is done.", photo: "/samples/penguin.jpg" },
-      { status: "IN_PROGRESS", at: iso(0, 10), note: "Progress photo: scarves in the works.", photo: "/samples/keychain.jpg" },
+      { status: "IN_PROGRESS", at: iso(1, 14), note: "Progress photo: whale one is done.", photo: "/maker/clips/whale-blue.jpg" },
+      { status: "IN_PROGRESS", at: iso(0, 10), note: "Progress photo: the second whale is on the hook.", photo: "/maker/clips/whale-pink.jpg" },
     ],
   }, 12),
   wo(18, {
-    title: "Pikachu plushie", description: "A Pikachu, about 25 cm.", status: "DECLINED", category: "plushies", colours: ["Yellow"], budgetMin: 1500, budgetMax: 2500, references: [],
-    messages: [{ id: "m4", author: "maker", body: "Thank you for asking! I can't make licensed characters. I'd love to make an original yellow mouse instead.", at: iso(14) }],
-    events: [{ status: "REQUESTED", at: iso(15) }, { status: "DECLINED", at: iso(14), note: "Licensed character. We only make original designs." }],
+    title: "Giant cream bear", description: "A very large cream bear, about 1 m tall.", status: "DECLINED", category: "plushies", colours: ["Cream"], budgetMin: 1500, budgetMax: 2500, references: [],
+    messages: [{ id: "m4", author: "maker", body: "Thank you for asking! A piece that big is outside what I can make. I'd love to make a smaller one, about 30 cm.", at: iso(14) }],
+    events: [{ status: "REQUESTED", at: iso(15) }, { status: "DECLINED", at: iso(14), note: "Outside what we make." }],
   }, 15),
 ];
 
@@ -231,7 +232,7 @@ export function seedDb(): DB {
     reviews: [], // no reviews seeded: the UI must show an honest empty state
     materials,
     settings,
-    seq: { order: 1023, wo: 30, product: 15, material: materials.length },
+    seq: { order: 1023, wo: 30, product: 4, material: materials.length },
   };
 }
 

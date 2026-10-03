@@ -52,7 +52,9 @@
     ".next-seo/types/**/*.ts",
     ".next-seo/dev/types/**/*.ts",
     ".next-perf/types/**/*.ts",
-    ".next-perf/dev/types/**/*.ts"
+    ".next-perf/dev/types/**/*.ts",
+    ".next-critique/types/**/*.ts",
+    ".next-critique/dev/types/**/*.ts"
   ],
   "exclude": [
     "node_modules"

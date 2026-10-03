@@ -17,6 +17,10 @@ export interface ProductDto {
   fiber: string;
   sizeCm: string;
   weightG: number;
+  /** Legal Metrology net-quantity declaration, e.g. "1 piece". */
+  netQuantity: string;
+  /** Optional safety and age note for the product page. */
+  safetyNote?: string;
   care: string[];
   images: { src: string; alt: string }[];
   swatches: { name: string; hex: string }[];
@@ -78,6 +82,8 @@ export const toProductDto = (p: ProductRow): ProductDto => ({
   fiber: p.fiber,
   sizeCm: p.sizeCm,
   weightG: p.weightG,
+  netQuantity: p.netQuantity,
+  ...(p.safetyNote ? { safetyNote: p.safetyNote } : {}),
   care: p.care,
   images: p.images.map((i) => ({ src: i.url, alt: i.alt })),
   swatches: toSwatches(p.swatches),

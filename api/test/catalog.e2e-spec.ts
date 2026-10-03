@@ -58,7 +58,7 @@ describe('catalogue, settings, shipping (e2e)', () => {
       const [item] = (await http().get(`/products?q=${KEY}&sort=price-asc`).expect(200)).body.items;
       expect(item).toMatchObject({
         slug: b.slug, category: 'plushies', price: 100, fulfilment: 'MADE_TO_ORDER', status: 'PUBLISHED', sample: true,
-        images: [{ src: '/samples/bear.jpg', alt: 'Bear' }], swatches: [{ name: 'Dusty rose', hex: '#c98586' }],
+        images: [{ src: '/maker/whale-pod.jpg', alt: 'Bear' }], swatches: [{ name: 'Dusty rose', hex: '#c98586' }],
         variants: [{ id: b.variantId, colour: 'Cream', priceDelta: 0, stock: 5 }],
       });
       expect(typeof item.batch).toBe('number');
@@ -165,12 +165,30 @@ describe('catalogue, settings, shipping (e2e)', () => {
   });
 
   describe('POST /coupons/validate', () => {
+    // Own codes, so the test does not depend on (or fight over) any seeded coupon.
+    const stamp = Date.now().toString(36).toUpperCase();
+    const PCT = `PCT${stamp}`;
+    const FLAT = `FLAT${stamp}`;
+    const OFF = `OFF${stamp}`;
+    beforeAll(async () => {
+      await t.prisma.coupon.createMany({
+        data: [
+          { code: PCT, kind: 'PERCENT', value: 10, minCart: 0, active: true },
+          { code: FLAT, kind: 'FLAT', value: 100, minCart: 999, active: true },
+          { code: OFF, kind: 'PERCENT', value: 20, minCart: 0, active: false },
+        ],
+      });
+    });
+    afterAll(async () => {
+      await t.prisma.coupon.deleteMany({ where: { code: { in: [PCT, FLAT, OFF] } } });
+    });
+
     it('validates against the server-priced basket', async () => {
       const lines = [{ productId: a.productId, variantId: a.variantId, qty: 1 }];
-      const ok = await http().post('/coupons/validate').send({ code: 'firstfuzz', lines }).expect(200);
-      expect(ok.body).toEqual({ valid: true, code: 'FIRSTFUZZ', kind: 'PERCENT', value: 10, discount: 30 });
-      expect((await http().post('/coupons/validate').send({ code: 'GIFT100', lines }).expect(200)).body).toEqual({ valid: false, error: 'Add ₹699 more to use this code.' });
-      expect((await http().post('/coupons/validate').send({ code: 'EXPIRED20', lines }).expect(200)).body).toEqual({ valid: false, error: "This code isn't active." });
+      const ok = await http().post('/coupons/validate').send({ code: PCT.toLowerCase(), lines }).expect(200);
+      expect(ok.body).toEqual({ valid: true, code: PCT, kind: 'PERCENT', value: 10, discount: 30 });
+      expect((await http().post('/coupons/validate').send({ code: FLAT, lines }).expect(200)).body).toEqual({ valid: false, error: 'Add ₹699 more to use this code.' });
+      expect((await http().post('/coupons/validate').send({ code: OFF, lines }).expect(200)).body).toEqual({ valid: false, error: "This code isn't active." });
       expect((await http().post('/coupons/validate').send({ code: 'NOPE', lines }).expect(200)).body.valid).toBe(false);
     });
   });

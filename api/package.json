@@ -26,6 +26,7 @@
     "prisma:deploy": "prisma migrate deploy",
     "prisma:studio": "prisma studio",
     "seed": "prisma db seed",
+    "purge-samples": "jiti prisma/purge-samples.ts",
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {

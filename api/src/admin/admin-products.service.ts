@@ -194,6 +194,8 @@ export class AdminProductsService {
       fiber: dto.fiber,
       sizeCm: dto.sizeCm,
       weightG: dto.weightG,
+      netQuantity: dto.netQuantity?.trim() || '1 piece',
+      safetyNote: dto.safetyNote?.trim() || null,
       care: dto.care,
       swatches: dto.swatches.map((s) => ({ name: s.name, hex: s.hex })),
       isOneOfAKind: dto.isOneOfAKind,
