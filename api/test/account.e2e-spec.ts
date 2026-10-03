@@ -150,11 +150,11 @@ describe('account and uploads (e2e)', () => {
       await guest(t).post('/uploads').attach('file', await png(), { filename: 'a.png', contentType: 'image/png' }).expect(401);
     });
 
-    it('accepts an image, re-encodes it to WebP (2000px max, EXIF gone) and serves it back', async () => {
+    it('accepts an image, re-encodes it to AVIF (2560px max, EXIF gone) and serves it back', async () => {
       const u = await newUser('up');
       const big = await sharp({ create: { width: 3000, height: 1500, channels: 3, background: '#888' } }).withExif({ IFD0: { Copyright: 'secret-photographer' } }).jpeg().toBuffer();
       const res = await u.agent.post('/uploads').attach('file', big, { filename: 'holiday.jpg', contentType: 'image/jpeg' }).expect(201);
-      expect(res.body).toEqual({ url: expect.stringMatching(/^http:\/\/localhost:\d+\/uploads\/uploads\/[0-9a-f-]{36}\.webp$/) });
+      expect(res.body).toEqual({ url: expect.stringMatching(/^http:\/\/localhost:\d+\/uploads\/uploads\/[0-9a-f-]{36}\.avif$/) });
 
       const path = new URL(res.body.url as string).pathname;
       const served = await guest(t).get(path).buffer(true).parse((r, cb) => {
@@ -163,12 +163,12 @@ describe('account and uploads (e2e)', () => {
         r.on('end', () => cb(null, Buffer.concat(chunks)));
       });
       expect(served.status).toBe(200);
-      expect(served.headers['content-type']).toBe('image/webp');
+      expect(served.headers['content-type']).toBe('image/avif');
       expect(served.headers['cross-origin-resource-policy']).toBe('cross-origin');
       expect(served.headers['x-content-type-options']).toBe('nosniff');
       expect(served.headers['cache-control']).toContain('immutable');
       const meta = await sharp(served.body as Buffer).metadata();
-      expect(meta).toMatchObject({ format: 'webp', width: 2000, height: 1000 });
+      expect(meta).toMatchObject({ format: 'heif', compression: 'av1', width: 2560, height: 1280 });
       expect(meta.exif).toBeUndefined();
       expect((served.body as Buffer).includes(Buffer.from('secret-photographer'))).toBe(false);
     });

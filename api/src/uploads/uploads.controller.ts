@@ -21,7 +21,9 @@ interface UploadedImage {
 
 const ALLOWED_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif']);
 const SAFE_FOLDER = /^[a-z0-9][a-z0-9-]{0,39}$/;
-const SAFE_FILE = /^[a-f0-9-]{36}\.webp$/;
+/** New uploads are AVIF; files stored before 2026-10-04 are WebP. */
+const SAFE_FILE = /^[a-f0-9-]{36}\.(avif|webp)$/;
+const CONTENT_TYPE: Record<string, string> = { avif: 'image/avif', webp: 'image/webp' };
 
 @Controller('uploads')
 export class UploadsController {
@@ -32,7 +34,7 @@ export class UploadsController {
 
   /**
    * `multipart/form-data` with one image in the `file` field. Any signed-in user (customers attach reference
-   * images to custom requests, the admin uploads product photos). Max 8 MB; re-encoded to WebP, EXIF stripped, max 2000px.
+   * images to custom requests, the admin uploads product photos). Max 8 MB; re-encoded to AVIF, EXIF stripped, max 2560px.
    */
   @Throttle({ default: { limit: 20, ttl: 60_000 } })
   @Post()
@@ -54,8 +56,9 @@ export class UploadsController {
   }
 
   /**
-   * Local-disk driver only (dev): serves stored files. Names are strictly validated (no traversal) and only
-   * files we wrote (`<uuid>.webp`) are reachable. Cross-origin embedding is allowed so the web app's <img> works.
+   * Local-disk driver only: serves stored files. Names are strictly validated (no traversal) and only files we wrote
+   * (`<uuid>.avif`, or `.webp` from before) are reachable, with their type set here rather than guessed. Cross-origin
+   * embedding is allowed so the web app's <img> works.
    */
   @Public()
   @SkipThrottle()
@@ -64,7 +67,8 @@ export class UploadsController {
     const notFound = () => res.status(404).json({ code: ErrorCode.NOT_FOUND, message: "We couldn't find that." });
     if (this.storage.name !== 'local' || !SAFE_FOLDER.test(folder) || !SAFE_FILE.test(file)) return void notFound();
     const root = join((this.storage as LocalDiskDriver).dir, folder);
-    res.sendFile(file, { root, dotfiles: 'deny', maxAge: '365d', immutable: true, headers: { 'Cross-Origin-Resource-Policy': 'cross-origin' } }, (err) => {
+    const headers = { 'Cross-Origin-Resource-Policy': 'cross-origin', 'Content-Type': CONTENT_TYPE[file.slice(file.lastIndexOf('.') + 1)] };
+    res.sendFile(file, { root, dotfiles: 'deny', maxAge: '365d', immutable: true, headers }, (err) => {
       if (err && !res.headersSent) notFound();
     });
   }

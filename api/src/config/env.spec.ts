@@ -110,8 +110,15 @@ describe('validateEnv in production', () => {
     expect(validateEnv({ ...live, TRUST_PROXY: '0' }).TRUST_PROXY).toBe(0);
   });
 
-  it.each(['RAZORPAY_KEY_ID', 'RAZORPAY_KEY_SECRET', 'RAZORPAY_WEBHOOK_SECRET', 'CLOUDINARY_URL', 'RESEND_API_KEY'])('live payments require %s', (key) => {
+  it.each(['RAZORPAY_KEY_ID', 'RAZORPAY_KEY_SECRET', 'RAZORPAY_WEBHOOK_SECRET', 'RESEND_API_KEY'])('live payments require %s', (key) => {
     expect(() => validateEnv({ ...live, [key]: undefined })).toThrowError(new RegExp(key));
+  });
+
+  it('stores uploads on the server in production when Cloudinary is not set, in a named absolute folder', () => {
+    const onDisk = { ...live, CLOUDINARY_URL: undefined };
+    expect(() => validateEnv(onDisk)).toThrowError(/UPLOADS_DIR must be an absolute path/);
+    expect(() => validateEnv({ ...onDisk, UPLOADS_DIR: 'uploads' })).toThrowError(/UPLOADS_DIR must be an absolute path/);
+    expect(validateEnv({ ...onDisk, UPLOADS_DIR: '/var/www/fuzzball/uploads' }).UPLOADS_DIR).toBe('/var/www/fuzzball/uploads');
   });
 
   it('refuses COOKIE_SECURE=false with live payments but allows it for a mock staging box', () => {
@@ -125,6 +132,7 @@ describe('validateEnv in production', () => {
       TRUST_PROXY: '1',
       PAYMENTS_MODE: 'mock',
       COOKIE_SECURE: 'false',
+      UPLOADS_DIR: '/var/www/fuzzball/uploads',
     };
     const env = validateEnv(staging);
     expect(env.PAYMENTS_MODE).toBe('mock');

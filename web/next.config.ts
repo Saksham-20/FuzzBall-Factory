@@ -2,6 +2,7 @@ import { join } from "node:path";
 import type { NextConfig } from "next";
 import { PHASE_PRODUCTION_BUILD } from "next/constants";
 import { assertBuildEnv } from "./src/lib/build-env";
+import { DELIVERY_QUALITY } from "./src/lib/image-loader";
 import { assertNoPlaceholders } from "./src/lib/placeholders-scan";
 import { securityHeaders } from "./src/lib/security-headers";
 
@@ -31,6 +32,8 @@ const nextConfig: NextConfig = {
     // Cloudinary pictures are transformed by Cloudinary (see image-loader.ts); the rest go through Next's optimiser.
     loaderFile: "./src/lib/image-loader.ts",
     formats: ["image/avif", "image/webp"],
+    // The only quality the optimiser accepts, so nobody can ask the server to encode the same picture at 100 levels.
+    qualities: [DELIVERY_QUALITY],
     // Optimised copies are kept a day, not a minute: the source images change rarely and re-encoding costs CPU.
     minimumCacheTTL: 86_400,
     remotePatterns: [

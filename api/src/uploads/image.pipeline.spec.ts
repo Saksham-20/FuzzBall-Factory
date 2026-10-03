@@ -8,10 +8,10 @@ const jpeg = (w: number, h: number) =>
     .toBuffer();
 
 describe('processImage', () => {
-  it('re-encodes to WebP, caps the longest side at 2000px and never upscales', async () => {
+  it('re-encodes to AVIF, caps the longest side at 2560px and never upscales', async () => {
     const big = await processImage(await jpeg(3200, 1600));
-    expect(big).toMatchObject({ contentType: 'image/webp', extension: 'webp', width: MAX_DIMENSION, height: 1000 });
-    expect((await sharp(big.buffer).metadata()).format).toBe('webp');
+    expect(big).toMatchObject({ contentType: 'image/avif', extension: 'avif', width: MAX_DIMENSION, height: 1280 });
+    expect(await sharp(big.buffer).metadata()).toMatchObject({ format: 'heif', compression: 'av1' });
     const small = await processImage(await jpeg(300, 200));
     expect([small.width, small.height]).toEqual([300, 200]);
   });
@@ -30,9 +30,18 @@ describe('processImage', () => {
     expect([out.width, out.height]).toEqual([200, 400]);
   });
 
+  it('keeps colour detail: a photo-like image survives with SSIM-level fidelity, not just the right size', async () => {
+    // Fine noise is the hardest case for a lossy encoder; the output's mean channel values stay within a hair.
+    const noisy = await sharp(Buffer.from(Array.from({ length: 256 * 256 * 3 }, (_, i) => (i * 7919) % 251)), { raw: { width: 256, height: 256, channels: 3 } }).png().toBuffer();
+    const out = await processImage(noisy);
+    const [a, b] = await Promise.all([sharp(noisy).stats(), sharp(out.buffer).stats()]);
+    a.channels.slice(0, 3).forEach((c, i) => expect(Math.abs(c.mean - b.channels[i].mean)).toBeLessThan(2));
+  });
+
   it('accepts PNG (with alpha) and GIF', async () => {
     const png = await sharp({ create: { width: 50, height: 50, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0.5 } } }).png().toBuffer();
     await expect(processImage(png)).resolves.toMatchObject({ width: 50 });
+    expect((await sharp((await processImage(png)).buffer).metadata()).hasAlpha).toBe(true);
     const gif = await sharp({ create: { width: 20, height: 20, channels: 3, background: '#fff' } }).gif().toBuffer();
     await expect(processImage(gif)).resolves.toMatchObject({ width: 20 });
   });

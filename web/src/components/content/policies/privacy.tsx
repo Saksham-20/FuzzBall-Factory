@@ -150,13 +150,10 @@ export const privacyPolicy: PolicyDoc = {
                 "To send order, work-order, support and account emails",
               ],
               [
-                <>
-                  Cloudinary (images) <a href="https://cloudinary.com/privacy" target="_blank" rel="noopener noreferrer">policy</a>
-                </>,
-                "Photos you upload with a work order, review or support request",
-                "To store and show images",
+                "Our hosting provider",
+                "Data stored on the site (including photos you upload with a work order, review or support request) and in server logs",
+                "To run the website securely",
               ],
-              ["Our hosting provider", "Data stored on the site and in server logs", "To run the website securely"],
               ["WhatsApp (Meta)", "What you send us on WhatsApp, including your number", "Only when you choose to message us there"],
               ["Authorities", "What the law requires", "Only when legally required to disclose it"],
             ]}

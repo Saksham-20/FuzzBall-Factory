@@ -109,6 +109,11 @@ export const envSchema = rawSchema
       if (!env.WEB_ORIGIN) problem('WEB_ORIGIN', 'WEB_ORIGIN must be set in production (comma-separated browser origins)');
       if (env.TRUST_PROXY === undefined) problem('TRUST_PROXY', 'TRUST_PROXY must be set in production (proxy hops in front of the API, e.g. 1 behind nginx, 0 for none)');
       if (!mode) problem('PAYMENTS_MODE', 'PAYMENTS_MODE must be set to "razorpay" or "mock" in production');
+      // Photos are stored on this server unless Cloudinary is configured: name a folder that outlives every release
+      // (the default, ./uploads, sits inside the release and would be lost on the next deploy) and back it up.
+      if (!env.CLOUDINARY_URL && !env.UPLOADS_DIR?.startsWith('/')) {
+        problem('UPLOADS_DIR', 'UPLOADS_DIR must be an absolute path in production when CLOUDINARY_URL is not set (uploads are stored on this server)');
+      }
     }
 
     if (mode === 'razorpay') {
@@ -116,7 +121,6 @@ export const envSchema = rawSchema
       if (!env.RAZORPAY_KEY_SECRET) problem('RAZORPAY_KEY_SECRET', 'RAZORPAY_KEY_SECRET is required when PAYMENTS_MODE=razorpay');
       if (production) {
         if (!env.RAZORPAY_WEBHOOK_SECRET) problem('RAZORPAY_WEBHOOK_SECRET', 'RAZORPAY_WEBHOOK_SECRET is required for live payments in production');
-        if (!env.CLOUDINARY_URL) problem('CLOUDINARY_URL', 'CLOUDINARY_URL is required for live payments in production (uploads must not sit on local disk)');
         if (!env.RESEND_API_KEY) problem('RESEND_API_KEY', 'RESEND_API_KEY is required for live payments in production (order and password-reset emails)');
         if (env.COOKIE_SECURE === false) problem('COOKIE_SECURE', 'COOKIE_SECURE=false is not allowed with live payments: serve the site over HTTPS');
       }
