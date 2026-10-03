@@ -84,7 +84,24 @@ test("the work order form opens for a signed-in customer", async ({ page }) => {
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
 });
 
+test("a piece from the crew opens the custom form with it filled in", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("link", { name: "Make me one: Turtle" }).click();
+  await expect(page).toHaveURL(/\/custom\?idea=turtle$/);
+  await expect(page.getByRole("heading", { level: 1, name: "Make me one" })).toBeVisible();
+  await expect(page.getByLabel("Name your idea")).toHaveValue("Crochet turtle");
+});
+
+test("at launch the checkout ships within India only", async ({ page }) => {
+  test.skip(process.env.NEXT_PUBLIC_SHIPS_INTERNATIONAL === "true", "International shipping is switched on for this run.");
+  await page.goto("/p/whale-red");
+  await page.getByRole("button", { name: "Add to cart" }).first().click();
+  await page.goto("/checkout");
+  await expect(page.getByLabel("Country").locator("option")).toHaveText(["India"]);
+});
+
 test("an overseas order: zone rate, duties note, no cash on delivery, a postal code in the right shape, then paid online", async ({ page }) => {
+  test.skip(process.env.NEXT_PUBLIC_SHIPS_INTERNATIONAL !== "true", "International shipping is off at launch (SITE.shipsInternational).");
   await page.goto("/p/whale-red");
   await page.getByRole("button", { name: "Add to cart" }).first().click();
   await page.goto("/checkout");

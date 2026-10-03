@@ -24,11 +24,12 @@ import { checkShipping } from "@/lib/api/shipping";
 import { getSettings } from "@/lib/api/settings";
 import { useApi } from "@/lib/api/useApi";
 import { postalFieldError } from "@/lib/postal";
-import { CHECKOUT_DEFAULTS, GIFT_NOTE_MAX, checkoutSchema, type CheckoutValues } from "@/lib/schemas/checkout";
+import { CHECKOUT_DEFAULTS, GIFT_NOTE_MAX, checkoutSchema, checkoutSchemaIndia, type CheckoutValues } from "@/lib/schemas/checkout";
 import { SITE } from "@/lib/site";
 import { useAuth } from "@/lib/state/AuthContext";
 import { formatDate, formatINR } from "@/lib/format";
-import { COUNTRIES, INDIAN_STATES } from "@/lib/status";
+import { SHIP_TO } from "@/lib/countries";
+import { INDIAN_STATES } from "@/lib/status";
 import type { Address } from "@/lib/types";
 
 const pinOk = (country: string, postal: string) => (country === "IN" ? /^[1-9][0-9]{5}$/.test(postal) : !postalFieldError(country, postal));
@@ -41,7 +42,7 @@ export function CheckoutClient() {
   const [coupon, setCoupon] = useCoupon();
   const { data: settings } = useApi(getSettings, "settings");
 
-  const form = useForm<CheckoutValues>({ resolver: zodResolver(checkoutSchema), mode: "onTouched", defaultValues: CHECKOUT_DEFAULTS });
+  const form = useForm<CheckoutValues>({ resolver: zodResolver(SITE.shipsInternational ? checkoutSchema : checkoutSchemaIndia), mode: "onTouched", defaultValues: CHECKOUT_DEFAULTS });
   const { register, control, setValue, getValues, handleSubmit, formState } = form;
   const { errors } = formState;
 
@@ -359,7 +360,7 @@ export function CheckoutClient() {
                       },
                     })}
                   >
-                    {COUNTRIES.map((c) => (
+                    {SHIP_TO.map((c) => (
                       <option key={c.code} value={c.code}>
                         {c.name}
                       </option>

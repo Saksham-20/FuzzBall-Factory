@@ -51,7 +51,7 @@ export function BuyBox({ product: p }: { product: Product }) {
   const [qty, setQty] = useState(1);
   const [check, setCheck] = useState<ShippingCheck>();
   const [guide, setGuide] = useState(false);
-  const [flight, setFlight] = useState<Flight | null>(null);
+  const [flight, setFlight] = useState<(Flight & { variantId: string }) | null>(null);
   const [pushing, setPushing] = useState(false);
   const [ctaVisible, setCtaVisible] = useState(false);
 
@@ -109,15 +109,15 @@ export function BuyBox({ product: p }: { product: Product }) {
     const v = choose();
     if (!v) return;
     addLine(v);
-    toast.success(`${p.name} is in your basket`);
+    // No toast: the drawer that opens is the confirmation, and on phones a toast sat over its Checkout button.
     const to = bagCenter();
     // No flight for keyboard activation (detail 0), reduced motion, or a bag that isn't on screen.
     if (e.detail === 0 || prefersReducedMotion() || !to) {
-      cart.setOpen(true);
+      cart.setOpen(true, v.id);
       return;
     }
     const r = e.currentTarget.getBoundingClientRect();
-    setFlight({ id: Date.now(), from: { x: r.left + r.width / 2, y: r.top + r.height / 2 }, to });
+    setFlight({ id: Date.now(), from: { x: r.left + r.width / 2, y: r.top + r.height / 2 }, to, variantId: v.id });
   };
 
   const onBuyNow = () => {
@@ -272,7 +272,7 @@ export function BuyBox({ product: p }: { product: Product }) {
               <ShareMenu
                 content={{
                   url: `${SITE.url}/p/${p.slug}`,
-                  text: `Check out ${p.name} (${formatINR(price)}) — handmade crochet from FuzzBall Factory.`,
+                  text: `Check out ${p.name} (${formatINR(price)}): handmade crochet from FuzzBall Factory.`,
                 }}
                 label={`Share ${p.name}`}
                 className={cn(
@@ -314,7 +314,7 @@ export function BuyBox({ product: p }: { product: Product }) {
           flight={flight}
           onDone={() => {
             setFlight(null);
-            cart.setOpen(true);
+            cart.setOpen(true, flight.variantId);
           }}
         />
       ) : null}

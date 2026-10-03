@@ -2,6 +2,7 @@
 
 import { addBusinessDays, formatDate } from "@/lib/format";
 import { cn } from "@/lib/cn";
+import { SITE } from "@/lib/site";
 import type { Product } from "@/lib/types";
 
 /** India transit assumption used until the shopper checks their own pincode (matches lib/api/shipping). */
@@ -70,7 +71,9 @@ export function LeadTimeThread({ product, deliverBy, className }: Props) {
       <p className="mt-3 text-sm text-brown">
         {deliverBy
           ? "Delivery date is for the place you checked below."
-          : "An estimate for India. Check your pincode or country below for yours."}
+          : SITE.shipsInternational
+            ? "An estimate for India. Check your pincode or country below for yours."
+            : "An estimate. Check your pincode below for yours."}
       </p>
     </div>
   );

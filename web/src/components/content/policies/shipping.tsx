@@ -18,13 +18,13 @@ export const shippingPolicy: PolicyDoc = {
   title: "Shipping policy",
   shortTitle: "Shipping policy",
   description:
-    "Where FuzzBall Factory ships, dispatch times for ready-to-ship and made-to-order crochet, shipping charges in India and abroad, tracking, and what to do if a parcel arrives damaged.",
+    `Where FuzzBall Factory ships, dispatch times for ready-to-ship and made-to-order crochet, shipping charges in India${SITE.shipsInternational ? " and abroad" : ""}, tracking, and what to do if a parcel arrives damaged.`,
   intro: "How your order gets from our hooks to your door: what we ship, when it leaves, what it costs and what to do if something goes wrong.",
   summary: {
     head: "The short version",
     points: [
       "Ready-to-ship pieces leave in about 1 to 2 business days. Made-to-order pieces are crocheted after you order, so they take longer. The exact time is on the product page and at checkout.",
-      "We ship across India and to selected countries. Prices are in Indian rupees.",
+      SITE.shipsInternational ? "We ship across India and to selected countries. Prices are in Indian rupees." : "We ship across India. We don't ship abroad yet.",
       "You get a tracking link once your parcel is handed to the courier.",
       "If you can, record a video while opening your parcel. It helps us settle a damage claim with the courier faster, but photos are fine too.",
     ],
@@ -50,9 +50,10 @@ export const shippingPolicy: PolicyDoc = {
       body: (
         <>
           <p>
-            We ship to serviceable PIN codes across India, and to the countries listed in the international table below. Not every
-            PIN code or country can be reached by our courier partners. Enter your address at checkout and it will tell you whether we can
-            deliver there.
+            {SITE.shipsInternational
+              ? "We ship to serviceable PIN codes across India, and to the countries listed in the international table below. Not every PIN code or country can be reached by our courier partners."
+              : "We ship to serviceable PIN codes across India. We don't ship outside India yet. Not every PIN code can be reached by our courier partners."}{" "}
+            Enter your address at checkout and it will tell you whether we can deliver there.
           </p>
           <p>
             We do not ship to addresses that our courier cannot serve, to P.O. boxes, to countries or people under sanctions that apply to us,
@@ -134,7 +135,12 @@ export const shippingPolicy: PolicyDoc = {
     {
       id: "international",
       title: "International shipping",
-      body: (
+      body: !SITE.shipsInternational ? (
+        <p>
+          We don&apos;t ship outside India yet. When we do, the countries, rates and customs terms will be listed here before we take
+          any order from abroad.
+        </p>
+      ) : (
         <>
           <p>
             We ship to the countries below. Prices are in Indian rupees, and the rate at checkout is the charge for your parcel. The rate

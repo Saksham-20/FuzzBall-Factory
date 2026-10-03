@@ -71,8 +71,10 @@ export function ProductDetails({ product: p, className }: { product: Product; cl
             {p.fulfilment === "READY"
               ? "Ready-to-ship pieces leave the factory in 1–2 days."
               : `This piece is crocheted after you order. The lead time above (about ${p.leadTimeDays} days) is when it is finished, before shipping.`}{" "}
-            India shipping is {formatINR(SAMPLE_SETTINGS.domesticShipping)}, free above {formatINR(SAMPLE_SETTINGS.freeShippingAbove)}. Worldwide shipping starts at{" "}
-            {formatINR(SAMPLE_SETTINGS.intlFrom)} and is priced by country at checkout.
+            India shipping is {formatINR(SAMPLE_SETTINGS.domesticShipping)}, free above {formatINR(SAMPLE_SETTINGS.freeShippingAbove)}.{" "}
+            {SITE.shipsInternational
+              ? `Worldwide shipping starts at ${formatINR(SAMPLE_SETTINGS.intlFrom)} and is priced by country at checkout.`
+              : "We ship within India for now."}
           </p>
           <p>
             {p.fulfilment === "READY" && !personalised

@@ -59,7 +59,7 @@ export function Drawer({ open, onOpenChange, title, description, children, foote
               <X className="size-5" />
             </D.Close>
           </header>
-          <div className="flex-1 overflow-y-auto px-5 py-2" data-lenis-prevent>
+          <div className="flex-1 overflow-y-auto px-5 py-2">
             {children}
           </div>
           {footer ? <footer className="flex flex-wrap justify-end gap-2 border-t border-line bg-cream px-5 py-4">{footer}</footer> : null}

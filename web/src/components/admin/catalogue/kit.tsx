@@ -38,7 +38,7 @@ export interface ChipOption<T extends string> {
 /** Filter buttons that read as a single choice. Uses aria-pressed, not tabs, because they filter one table. */
 export function FilterChips<T extends string>({ label, value, onChange, options }: { label: string; value: T; onChange: (v: T) => void; options: ChipOption<T>[] }) {
   return (
-    <div role="group" aria-label={label} className="-mx-4 flex gap-1 overflow-x-auto px-4 pb-1 md:mx-0 md:px-0" data-lenis-prevent>
+    <div role="group" aria-label={label} className="-mx-4 flex gap-1 overflow-x-auto px-4 pb-1 md:mx-0 md:px-0">
       {options.map((o) => {
         const on = o.value === value;
         return (

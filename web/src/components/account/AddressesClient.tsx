@@ -16,6 +16,8 @@ import { EmptyState, ErrorNote, Skeleton } from "@/components/ui/misc";
 import * as account from "@/lib/api/account";
 import { useApi } from "@/lib/api/useApi";
 import { ApiError } from "@/lib/api/errors";
+import { SHIP_TO } from "@/lib/countries";
+import { SITE } from "@/lib/site";
 import { COUNTRIES, INDIAN_STATES } from "@/lib/status";
 import type { Address } from "@/lib/types";
 
@@ -208,6 +210,9 @@ const schema = z
     if (v.country === "IN" && !/^[1-9][0-9]{5}$/.test(v.postalCode)) {
       ctx.addIssue({ code: "custom", path: ["postalCode"], message: "Indian PIN codes are 6 digits, like 560038." });
     }
+    if (!SITE.shipsInternational && v.country !== "IN") {
+      ctx.addIssue({ code: "custom", path: ["country"], message: "We ship within India for now. Use an address in India." });
+    }
   });
 type Values = z.infer<typeof schema>;
 
@@ -298,7 +303,7 @@ function AddressFields({ address, onBusy, onSaved }: { address?: Address; onBusy
       <Field label="Country" error={errors.country?.message}>
         {(p) => (
           <Select {...p} {...register("country", { onChange: () => setValue("state", "") })} autoComplete="country">
-            {COUNTRIES.map((c) => (
+            {SHIP_TO.map((c) => (
               <option key={c.code} value={c.code}>
                 {c.name}
               </option>

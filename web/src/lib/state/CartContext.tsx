@@ -24,7 +24,10 @@ interface CartApi {
   remove: (productId: string, variantId: string) => void;
   clear: () => void;
   open: boolean;
-  setOpen: (v: boolean) => void;
+  /** Opens or closes the drawer. `justAdded` (a variant id) tells the drawer which line was just put in. */
+  setOpen: (v: boolean, justAdded?: string) => void;
+  /** The variant whose add opened the drawer, or null when the shopper opened it themselves. */
+  justAdded: string | null;
   wishlist: string[];
   toggleWish: (productId: string) => boolean;
 }
@@ -34,7 +37,12 @@ const Ctx = createContext<CartApi | null>(null);
 export function CartProvider({ children }: { children: ReactNode }) {
   const lines = useSyncExternalStore(cartStore.subscribe, cartStore.getSnapshot, cartStore.getServerSnapshot);
   const wishlist = useSyncExternalStore(wishStore.subscribe, wishStore.getSnapshot, wishStore.getServerSnapshot);
-  const [open, setOpen] = useState(false);
+  const [open, setOpenState] = useState(false);
+  const [justAdded, setJustAdded] = useState<string | null>(null);
+  const setOpen = useCallback((v: boolean, added?: string) => {
+    setOpenState(v);
+    setJustAdded(v ? (added ?? null) : null);
+  }, []);
   const { user } = useAuth();
   const userId = user?.id ?? null;
   // Real API: cart lines carry database ids, so the products are fetched once per id and cached (productCache).
@@ -139,10 +147,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
       clear,
       open,
       setOpen,
+      justAdded,
       wishlist,
       toggleWish,
     };
-  }, [lines, wishlist, open, add, setQty, remove, clear, toggleWish, loaded]);
+  }, [lines, wishlist, open, setOpen, justAdded, add, setQty, remove, clear, toggleWish, loaded]);
 
   return <Ctx.Provider value={api}>{children}</Ctx.Provider>;
 }

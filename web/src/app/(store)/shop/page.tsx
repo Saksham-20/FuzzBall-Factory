@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import { ShopClient, ShopFallback } from "@/components/shop/ShopClient";
-import { serverProducts } from "@/lib/catalog-server";
+import { serverActiveCategories, serverProducts } from "@/lib/catalog-server";
 import { paletteOf } from "@/lib/palette";
 
 export const metadata: Metadata = {
@@ -12,10 +12,11 @@ export const metadata: Metadata = {
 };
 
 export default async function ShopPage() {
-  const palette = paletteOf(await serverProducts());
+  const [products, shelves] = await Promise.all([serverProducts(), serverActiveCategories()]);
+  const palette = paletteOf(products);
   return (
     <Suspense fallback={<ShopFallback />}>
-      <ShopClient palette={palette} />
+      <ShopClient palette={palette} shelves={shelves} />
     </Suspense>
   );
 }

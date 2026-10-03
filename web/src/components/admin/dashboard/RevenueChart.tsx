@@ -73,7 +73,7 @@ export function RevenueChart({ days }: { days: Day[] }) {
       </div>
       <details className="mt-3">
         <summary className="press inline-flex min-h-11 cursor-pointer items-center text-sm font-semibold underline">Daily figures as a table</summary>
-        <div className="mt-2 max-h-64 overflow-y-auto" data-lenis-prevent>
+        <div className="mt-2 max-h-64 overflow-y-auto">
           <table className="w-full max-w-sm text-left text-sm">
             <caption className="sr-only">Paid order revenue per day, last 30 days</caption>
             <thead>

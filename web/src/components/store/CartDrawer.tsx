@@ -1,11 +1,13 @@
 "use client";
 
+import { useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import * as Dialog from "@radix-ui/react-dialog";
 import { Minus, Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { ThreadProgress } from "@/components/ui/misc";
+import { Stamp } from "@/components/brand/Stamp";
 import { YarnBall } from "@/components/brand/YarnBall";
 import { useCart } from "@/lib/state/CartContext";
 import { formatINR, formatDate, dispatchDate } from "@/lib/format";
@@ -13,13 +15,25 @@ import { SAMPLE_SETTINGS } from "@/lib/site";
 import { waLink } from "@/lib/whatsapp";
 
 export function CartDrawer() {
-  const { open, setOpen, lines, count, subtotal, remove, setQty, hasMadeToOrder, maxLeadTime, freeShippingRemaining, productOf } =
+  const { open, setOpen, justAdded, lines, count, subtotal, remove, setQty, hasMadeToOrder, maxLeadTime, freeShippingRemaining, productOf } =
     useCart();
   const progress = Math.min(1, subtotal / SAMPLE_SETTINGS.freeShippingAbove);
 
   const items = lines
     .map((l) => ({ l, p: productOf(l.productId) }))
     .filter((x): x is { l: typeof x.l; p: NonNullable<typeof x.p> } => !!x.p);
+
+  // Opened by an add: say what went in (the toast that used to say it covered Checkout on phones).
+  const added = justAdded ? items.find(({ l }) => l.variantId === justAdded)?.p.name : undefined;
+
+  // A long basket: bring the line just put in into view, so its stamp lands where it is seen. A ref callback, not an
+  // effect: the portal mounts the drawer's content a render after `open` turns on.
+  const showAdded = useCallback((li: HTMLLIElement | null) => {
+    const list = li?.parentElement;
+    if (!li || !list) return;
+    const below = li.getBoundingClientRect().bottom - list.getBoundingClientRect().bottom;
+    if (below > 0) list.scrollTop += below + 8;
+  }, []);
 
   const waText =
     "Hi! I'd like to order:\n" +
@@ -31,13 +45,14 @@ export function CartDrawer() {
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-50 bg-cocoa/45 data-[state=closed]:animate-[fade-out_200ms_ease-out_forwards] data-[state=open]:animate-[fade-in_250ms_ease-out]" />
         <Dialog.Content
-          aria-describedby={undefined}
+          {...(added ? {} : { "aria-describedby": undefined })}
           className="fixed inset-y-0 right-0 z-50 flex w-full max-w-[430px] flex-col bg-paper shadow-lift outline-none data-[state=closed]:animate-[drawer-out_240ms_var(--ease-drawer)_forwards] data-[state=open]:animate-[drawer-in_380ms_var(--ease-drawer)]"
         >
           <header className="flex items-center justify-between px-5 pt-5 pb-3">
             <Dialog.Title className="font-display text-[2rem]">
               Your basket <span className="font-stencil tabular align-middle text-[13px] text-brown-soft">({count})</span>
             </Dialog.Title>
+            {added ? <Dialog.Description className="sr-only">{added} added to your basket.</Dialog.Description> : null}
             <Dialog.Close
               aria-label="Close basket"
               className="press grid size-11 place-items-center rounded-full text-cocoa [@media(hover:hover)_and_(pointer:fine)]:hover:bg-cocoa/8"
@@ -66,18 +81,31 @@ export function CartDrawer() {
                 <ThreadProgress value={progress} className="mt-2" />
               </div>
 
-              <ul className="flex-1 divide-y divide-line overflow-y-auto px-5" data-lenis-prevent>
+              <ul className="flex-1 divide-y divide-line overflow-y-auto px-5">
                 {items.map(({ l, p }) => {
                   const v = p.variants.find((x) => x.id === l.variantId);
+                  const isAdded = l.variantId === justAdded;
                   return (
-                    <li key={l.variantId} className="flex gap-3 py-4">
-                      <Link href={`/p/${p.slug}`} onClick={() => setOpen(false)} className="relative size-20 shrink-0 overflow-hidden rounded-[10px] bg-kraft-light">
-                        <Image src={p.images[0].src} alt={p.images[0].alt} fill sizes="80px" className="object-cover" />
-                      </Link>
+                    <li key={l.variantId} ref={isAdded ? showAdded : undefined} className="flex gap-3 py-4">
+                      <div className="relative shrink-0 self-start">
+                        <Link href={`/p/${p.slug}`} onClick={() => setOpen(false)} className="relative block size-20 overflow-hidden rounded-[10px] bg-kraft-light">
+                          <Image src={p.images[0].src} alt={p.images[0].alt} fill sizes="80px" className="object-cover" />
+                        </Link>
+                        {/* The line this add put in takes a stamp once the drawer has slid in (static under reduced
+                            motion). On paper, not multiplied, so it reads over any photo. The description says it
+                            to screen readers already. */}
+                        {isAdded ? (
+                          <span aria-hidden className="pointer-events-none absolute inset-x-0 -bottom-2.5 flex justify-center">
+                            <span className="stamp-down [--stamp-delay:240ms]">
+                              <Stamp label="Added" tone="ok" rotate={-6} className="bg-paper px-2 py-1 text-[12px] shadow-ticket mix-blend-normal" />
+                            </span>
+                          </span>
+                        ) : null}
+                      </div>
                       <div className="min-w-0 flex-1">
                         <p className="font-bold leading-snug">{p.name}</p>
                         <p className="text-sm text-brown">{[v?.colour, v?.size].filter(Boolean).join(" · ")}</p>
-                        <p className="font-stencil mt-1 text-[11px] text-brown-soft">
+                        <p className="font-stencil mt-1 text-[13px] text-brown-soft">
                           {p.fulfilment === "READY" ? "Ready to ship" : `Made to order · ${p.leadTimeDays} days`}
                         </p>
                         <div className="mt-2 flex items-center justify-between">

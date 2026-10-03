@@ -48,6 +48,17 @@
   --shadow-lift: 0 2px 2px rgb(63 38 25 / 0.06), 0 18px 36px -14px rgb(63 38 25 / 0.32);
 
   --radius-ticket: 14px;
+
+  /* The space between two landing stations (each takes half above and half below). */
+  --spacing-section: clamp(4.5rem, 2rem + 6vw, 9rem);
+}
+
+/* The landing's two column splits (used from lg): copy beside a picture, or a picture beside copy. */
+@utility split-text {
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+}
+@utility split-photo {
+  grid-template-columns: minmax(0, 0.82fr) minmax(0, 1.18fr);
 }
 
 @layer base {
@@ -161,7 +172,9 @@
     box-shadow: 0 1px 2px rgb(63 38 25 / 0.3);
   }
   .press {
-    transition: transform 160ms var(--ease-out);
+    transition-property: transform, color, background-color, border-color, box-shadow;
+    transition-duration: 160ms;
+    transition-timing-function: var(--ease-out);
   }
   .press:active {
     transform: scale(0.97);
@@ -183,8 +196,14 @@
       padding-inline: 48px;
     }
   }
+  /* Below 30rem the station node shrinks and moves in, so the copy gets 12px more of a narrow phone. */
   .conveyor-indent {
-    padding-left: 44px;
+    padding-left: 32px;
+  }
+  @media (min-width: 30rem) {
+    .conveyor-indent {
+      padding-left: 44px;
+    }
   }
   @media (min-width: 48rem) {
     .conveyor-indent {
@@ -196,7 +215,7 @@
 /* ── Scroll reveals: content is visible by default; JS arms them after mount ── */
 [data-reveal][data-armed]:not([data-in]) {
   opacity: 0;
-  transform: translateY(16px);
+  transform: translateY(12px);
 }
 [data-reveal="stamp"][data-armed]:not([data-in]) {
   transform: scale(1.14) rotate(-7deg);
@@ -209,8 +228,8 @@
 }
 [data-reveal][data-armed] {
   transition:
-    opacity 600ms var(--ease-out),
-    transform 700ms var(--ease-out);
+    opacity 450ms var(--ease-out),
+    transform 550ms var(--ease-out);
   transition-delay: var(--d, 0ms);
 }
 
@@ -248,8 +267,8 @@
 }
 [data-reveal="line"][data-armed] .hang {
   transition:
-    opacity 600ms var(--ease-out),
-    transform 700ms var(--ease-out);
+    opacity 450ms var(--ease-out),
+    transform 550ms var(--ease-out);
   transition-delay: calc(var(--d, 0ms) + var(--i, 0) * 40ms);
 }
 [data-reveal="line"][data-armed]:not([data-in]) .hang {
@@ -277,7 +296,7 @@
 }
 @keyframes tape {
   to {
-    transform: translateX(-50%);
+    transform: translateX(-25%); /* one of the track's four copies */
   }
 }
 @keyframes march {
@@ -323,6 +342,9 @@
 .ball-wraps {
   transform-origin: 50% 50%;
   animation: sway 9s var(--ease-in-out) infinite;
+}
+[data-loop][data-paused] {
+  animation-play-state: paused;
 }
 .thread-march {
   animation: march 1.4s linear infinite;
@@ -426,9 +448,7 @@ html[data-show-placeholders] [data-placeholder]::after {
 
 /* ── Conveyor: the node the thread has reached goes live (the one rose element) ── */
 [data-station-node] {
-  transition:
-    background-color 300ms var(--ease-out),
-    transform 300ms var(--ease-out);
+  transition: background-color 300ms var(--ease-out);
 }
 [data-station-node][data-live] {
   background-color: var(--color-rose-deep);
@@ -529,7 +549,8 @@ html[data-hide-wa] [data-wa-button] {
   }
 }
 .stamp-down {
-  animation: stamp-down 260ms var(--ease-out) both;
+  /* --stamp-delay: wait for something else to land first (the cart drawer sliding in). */
+  animation: stamp-down 260ms var(--ease-out) var(--stamp-delay, 0ms) both;
 }
 @media (prefers-reduced-motion: reduce) {
   .stamp-down {

@@ -42,7 +42,7 @@ export function Totals({ subtotal, shipping, shippingLabel, giftWrap = 0, codFee
       ) : null}
       {discount > 0 ? (
         <div className={row}>
-          <dt>Discount{couponCode ? <span className="font-stencil ml-2 text-[11px]">{couponCode}</span> : null}</dt>
+          <dt>Discount{couponCode ? <span className="font-stencil ml-2 text-[12px]">{couponCode}</span> : null}</dt>
           <dd className="tabular font-semibold text-ok">−{formatINR(discount)}</dd>
         </div>
       ) : null}

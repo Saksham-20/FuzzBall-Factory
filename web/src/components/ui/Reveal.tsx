@@ -35,7 +35,7 @@ export function Reveal({ kind = "rise", delay = 0, as, children, style, ...rest 
           io.disconnect();
         }
       },
-      { rootMargin: "0px 0px -10% 0px", threshold: 0.08 },
+      { rootMargin: "0px 0px -4% 0px", threshold: 0.01 },
     );
     io.observe(el);
     return () => io.disconnect();

@@ -191,7 +191,7 @@ export function OrderClient({ number, isNew, confirming = false }: { number: str
 
           <dl className="mt-6 grid gap-5 border-t border-line pt-5 sm:grid-cols-2">
             <div>
-              <dt className="font-stencil text-[11px] text-brown-soft">Delivering to</dt>
+              <dt className="font-stencil text-[12px] text-brown-soft">Delivering to</dt>
               <dd className="mt-1.5 text-[15px] leading-relaxed">
                 <span className="font-semibold">{order.address.name}</span>
                 <br />
@@ -210,7 +210,7 @@ export function OrderClient({ number, isNew, confirming = false }: { number: str
               </dd>
             </div>
             <div>
-              <dt className="font-stencil text-[11px] text-brown-soft">Contact</dt>
+              <dt className="font-stencil text-[12px] text-brown-soft">Contact</dt>
               <dd className="mt-1.5 break-words text-[15px] leading-relaxed">
                 {order.contact.email}
                 <br />
@@ -218,7 +218,7 @@ export function OrderClient({ number, isNew, confirming = false }: { number: str
               </dd>
               {order.giftNote ? (
                 <>
-                  <dt className="font-stencil mt-4 text-[11px] text-brown-soft">Gift note</dt>
+                  <dt className="font-stencil mt-4 text-[12px] text-brown-soft">Gift note</dt>
                   <dd className="mt-1.5 text-[15px] leading-relaxed">{order.giftNote}</dd>
                 </>
               ) : null}

@@ -7,6 +7,8 @@
  * so the two lists cannot drift apart silently: web/src/lib/countries.test.ts checks this file against that rule.
  * Anywhere not named in a shipping zone falls into the "Rest of world" zone (code "*" in settings).
  */
+import { SITE } from "@/lib/site";
+
 export const COUNTRIES: { code: string; name: string }[] = [
   { code: "IN", name: "India" },
   { code: "AF", name: "Afghanistan" },
@@ -251,6 +253,9 @@ export const COUNTRIES: { code: string; name: string }[] = [
 
 /** Codes the shop does not ship to. Mirrors SHIPPING_BLOCKED_COUNTRIES in the API. */
 export const BLOCKED_COUNTRIES = ["CU", "IR", "KP", "SY"] as const;
+
+/** The countries a shopper can pick for delivery: India alone until international shipping opens (SITE.shipsInternational). */
+export const SHIP_TO = SITE.shipsInternational ? COUNTRIES : COUNTRIES.filter((c) => c.code === "IN");
 
 /** A country code as a name; the legacy "OTHER" code (old orders) and unknown codes degrade gracefully. */
 export const countryName = (code: string) => (code === "OTHER" ? "Other country" : (COUNTRIES.find((c) => c.code === code)?.name ?? code));

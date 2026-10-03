@@ -93,7 +93,7 @@ export function TicketThread({ ticket, onReply }: { ticket: Ticket; onReply: (bo
           {current.messages.map((m) => (
             <li key={m.id} className={m.author === "customer" ? "max-w-[46rem]" : "max-w-[46rem] sm:ml-10"}>
               <div className={m.author === "customer" ? "rounded-ticket bg-kraft-light px-5 py-4" : "rounded-ticket bg-paper px-5 py-4 shadow-ticket"}>
-                <p className="font-stencil text-[11px] text-brown">
+                <p className="font-stencil text-[12px] text-brown">
                   {m.author === "customer" ? "You" : "FuzzBall Factory"} · {when(m.at)}
                 </p>
                 <p className="mt-1.5 whitespace-pre-wrap text-cocoa">{m.body}</p>

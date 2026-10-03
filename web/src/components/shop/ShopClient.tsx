@@ -85,7 +85,8 @@ function ShopHeader({ category }: { category?: Category }) {
   );
 }
 
-export function ShopClient({ category, palette = [] }: { category?: Category; palette?: Swatch[] }) {
+/** `shelves`: the shelves the sidebar lists, from the server (those with something on them); fetched here when absent. */
+export function ShopClient({ category, palette = [], shelves }: { category?: Category; palette?: Swatch[]; shelves?: Category[] }) {
   const router = useRouter();
   const pathname = usePathname();
   const sp = useSearchParams();
@@ -104,7 +105,7 @@ export function ShopClient({ category, palette = [] }: { category?: Category; pa
     async () => ({ key: filterKey, res: await listProducts(toQuery(slug, filters, 1, PAGE_SIZE * pages)) }),
     `${filterKey}:${pages}`,
   );
-  const cats = useApi(listCategories, "categories");
+  const cats = useApi(listCategories, "categories", !shelves);
   const colours = palette;
 
   const setFilters = (patch: Partial<ShopFilters>) => {
@@ -133,8 +134,8 @@ export function ShopClient({ category, palette = [] }: { category?: Category; pa
   const shareContent = {
     url: `${SITE.url}${pathname}${search ? `?${search}` : ""}`,
     text: category
-      ? `${category.name} at FuzzBall Factory — handmade crochet, ready to ship or made to order.`
-      : "Handmade crochet at FuzzBall Factory — ready to ship, or made to order.",
+      ? `${category.name} at FuzzBall Factory: handmade crochet, ready to ship or made to order.`
+      : "Handmade crochet at FuzzBall Factory, ready to ship or made to order.",
   };
 
   const chips: { label: string; clear: () => void }[] = [];
@@ -151,7 +152,7 @@ export function ShopClient({ category, palette = [] }: { category?: Category; pa
       filters={filters}
       onChange={setFilters}
       category={slug}
-      categories={cats.data}
+      categories={shelves ?? cats.data}
       colours={colours}
       search={search}
     />
@@ -164,7 +165,6 @@ export function ShopClient({ category, palette = [] }: { category?: Category; pa
       <div className="shell pt-6 pb-24 lg:grid lg:grid-cols-[232px_minmax(0,1fr)] lg:gap-10">
         <aside
           aria-label="Filters"
-          data-lenis-prevent
           className="hidden pr-1 lg:sticky lg:top-[92px] lg:block lg:max-h-[calc(100dvh-7rem)] lg:self-start lg:overflow-y-auto lg:pb-6"
         >
           {panel}
@@ -260,7 +260,7 @@ export function ShopClient({ category, palette = [] }: { category?: Category; pa
                       </Button>
                     ) : null}
                     <Button asChild variant="secondary">
-                      <Link href="/custom">Put in a work order instead</Link>
+                      <Link href="/custom">Make me one instead</Link>
                     </Button>
                     {!active && !category ? (
                       <Button asChild variant="secondary">

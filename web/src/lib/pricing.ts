@@ -29,6 +29,9 @@ export interface CheckoutQuote {
   transitDays: string;
 }
 
+/** PLACEHOLDER(shipping-rates): days in transit inside India, until the courier's own estimate is wired in. */
+export const DOMESTIC_TRANSIT_DAYS = [3, 6] as const;
+
 export function zoneFor(country: string, settings: StoreSettings) {
   if (country === "IN") return null;
   return (
@@ -70,7 +73,7 @@ export function quoteCheckout(
 
   let shipping = 0;
   let shippingLabel = "Free shipping";
-  let transitDays = "3–6 days";
+  let transitDays = `${DOMESTIC_TRANSIT_DAYS[0]}–${DOMESTIC_TRANSIT_DAYS[1]} days`;
   if (items.length === 0) shippingLabel = "";
   else if (domestic) {
     shipping = subtotal >= settings.freeShippingAbove ? 0 : settings.domesticShipping;

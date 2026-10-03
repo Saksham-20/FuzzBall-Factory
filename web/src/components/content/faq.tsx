@@ -149,34 +149,46 @@ export const FAQ_GROUPS: FaqGroup[] = [
       },
     ],
   },
-  {
-    id: "international",
-    title: "International shipping",
-    items: [
-      {
-        id: "intl-ship",
-        q: "Do you ship outside India?",
-        a: (
-          <p>
-            Yes, to selected countries. Prices are in Indian rupees and the shipping charge depends on the zone. Rates and estimated delivery times are in the{" "}
-            <Link href="/policies/shipping#international">shipping policy</Link>.
-          </p>
-        ),
+  SITE.shipsInternational
+    ? {
+        id: "international",
+        title: "International shipping",
+        items: [
+          {
+            id: "intl-ship",
+            q: "Do you ship outside India?",
+            a: (
+              <p>
+                Yes, to selected countries. Prices are in Indian rupees and the shipping charge depends on the zone. Rates and estimated delivery times are in the{" "}
+                <Link href="/policies/shipping#international">shipping policy</Link>.
+              </p>
+            ),
+          },
+          {
+            id: "intl-duty",
+            q: "Who pays customs duties?",
+            a: <p>You do. Duties, import taxes and courier handling fees set by your country are not included in our price, and are collected on delivery by the courier or customs.</p>,
+            ld: "The buyer pays customs duties, import taxes and courier handling fees set by the destination country. They are not included in the price and are collected by the courier or customs.",
+          },
+          {
+            id: "intl-cod",
+            q: "Can I pay on delivery abroad?",
+            a: <p>No. International orders are prepaid.</p>,
+            ld: "No. International orders are prepaid only.",
+          },
+        ],
+      }
+    : {
+        id: "international",
+        title: "Outside India",
+        items: [
+          {
+            id: "intl-ship",
+            q: "Do you ship outside India?",
+            a: <p>Not yet. For now every order ships within India. International shipping comes later, and this page will say so when it does.</p>,
+          },
+        ],
       },
-      {
-        id: "intl-duty",
-        q: "Who pays customs duties?",
-        a: <p>You do. Duties, import taxes and courier handling fees set by your country are not included in our price, and are collected on delivery by the courier or customs.</p>,
-        ld: "The buyer pays customs duties, import taxes and courier handling fees set by the destination country. They are not included in the price and are collected by the courier or customs.",
-      },
-      {
-        id: "intl-cod",
-        q: "Can I pay on delivery abroad?",
-        a: <p>No. International orders are prepaid.</p>,
-        ld: "No. International orders are prepaid only.",
-      },
-    ],
-  },
   {
     id: "returns",
     title: "Returns and refunds",

@@ -55,7 +55,7 @@ function MissingBatch() {
             <Link href="/shop">See the whole shelf</Link>
           </Button>
           <Button asChild size="lg" variant="secondary">
-            <Link href="/custom">Put in a work order</Link>
+            <Link href="/custom">Make me one</Link>
           </Button>
         </div>
       </div>

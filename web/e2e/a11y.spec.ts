@@ -95,7 +95,9 @@ test.describe("tape", () => {
 
     await pause.click();
     await expect(pause).toHaveAttribute("aria-pressed", "false");
-    expect(await playState()).toBe("running");
+    // Loops rest while off screen, and this tape sits at the fold: bring it into view first.
+    await page.locator(".tape-track").first().scrollIntoViewIfNeeded();
+    await expect.poll(playState).toBe("running");
   });
 });
 

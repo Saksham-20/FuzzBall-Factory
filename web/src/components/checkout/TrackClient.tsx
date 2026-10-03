@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { MessageCircle, PackageSearch } from "lucide-react";
@@ -15,7 +15,6 @@ import { useApi } from "@/lib/api/useApi";
 import { trackSchema, type TrackValues } from "@/lib/schemas/track";
 import { ORDER_STATUS } from "@/lib/status";
 import { formatDate } from "@/lib/format";
-import { takeTrackHandoff } from "@/lib/track-handoff";
 import { waOrder } from "@/lib/whatsapp";
 
 interface Query {
@@ -27,22 +26,13 @@ interface Query {
 
 export function TrackClient({ initialOrder = "" }: { initialOrder?: string }) {
   const [query, setQuery] = useState<Query | null>(null);
-  const { register, handleSubmit, setValue, formState } = useForm<TrackValues>({
+  const { register, handleSubmit, formState } = useForm<TrackValues>({
     resolver: zodResolver(trackSchema),
     defaultValues: { number: initialOrder, contact: "" },
   });
   const { errors } = formState;
 
   const submit = handleSubmit((v) => setQuery((q) => ({ number: v.number, contact: v.contact, n: (q?.n ?? 0) + 1 })));
-
-  // The landing-page form hands over number + phone through sessionStorage (never the URL), so a full pair looks itself up.
-  useEffect(() => {
-    const handoff = takeTrackHandoff();
-    if (!handoff) return;
-    setValue("number", handoff.order);
-    setValue("contact", handoff.contact);
-    if (handoff.order.trim() && handoff.contact.trim()) void submit();
-  }, [setValue, submit]);
 
   const { data: order, error, loading } = useApi(() => trackOrder(query!.number, query!.contact), `track:${query?.number}:${query?.contact}:${query?.n}`, !!query);
 
@@ -93,13 +83,13 @@ export function TrackClient({ initialOrder = "" }: { initialOrder?: string }) {
                 <dl className="mb-5 grid grid-cols-2 gap-4 border-y border-line py-4">
                   {order.courier ? (
                     <div>
-                      <dt className="font-stencil text-[11px] text-brown-soft">Courier</dt>
+                      <dt className="font-stencil text-[12px] text-brown-soft">Courier</dt>
                       <dd className="mt-0.5 font-semibold">{order.courier}</dd>
                     </div>
                   ) : null}
                   {order.awb ? (
                     <div>
-                      <dt className="font-stencil text-[11px] text-brown-soft">AWB number</dt>
+                      <dt className="font-stencil text-[12px] text-brown-soft">AWB number</dt>
                       <dd className="font-stencil tabular mt-0.5 break-all text-[15px]">{order.awb}</dd>
                     </div>
                   ) : null}

@@ -76,7 +76,7 @@ export function MessageThread({ r, onChange }: { r: CustomRequest; onChange: (ne
           Talk to the maker
         </h2>
 
-        <div ref={scroller} role="log" aria-label="Messages" aria-live="polite" tabIndex={0} data-lenis-prevent className="max-h-[26rem] overflow-y-auto rounded-[12px] bg-cream p-3">
+        <div ref={scroller} role="log" aria-label="Messages" aria-live="polite" tabIndex={0} className="max-h-[26rem] overflow-y-auto rounded-[12px] bg-cream p-3">
           {shown.length === 0 ? (
             <p className="px-1 py-6 text-center text-[15px] text-brown">No messages yet. Ask a question or add a detail here, or continue on WhatsApp.</p>
           ) : (

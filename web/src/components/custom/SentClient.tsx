@@ -69,15 +69,15 @@ function Sent({ wo }: { wo: string }) {
 
             <div className="mt-8 grid grid-cols-2 gap-4 border-y border-line py-4 text-[15px] sm:grid-cols-3">
               <div className="col-span-2 min-w-0 sm:col-span-1">
-                <p className="font-stencil text-[11px] text-brown-soft">Request</p>
+                <p className="font-stencil text-[12px] text-brown-soft">Request</p>
                 <p className="mt-0.5 font-semibold">{r.title}</p>
               </div>
               <div>
-                <p className="font-stencil text-[11px] text-brown-soft">Quantity</p>
+                <p className="font-stencil text-[12px] text-brown-soft">Quantity</p>
                 <p className="tabular mt-0.5 font-semibold">{r.quantity}</p>
               </div>
               <div>
-                <p className="font-stencil text-[11px] text-brown-soft">Your budget</p>
+                <p className="font-stencil text-[12px] text-brown-soft">Your budget</p>
                 <p className="tabular mt-0.5 font-semibold">
                   {formatINR(r.budgetMin)} to {formatINR(r.budgetMax)}
                 </p>

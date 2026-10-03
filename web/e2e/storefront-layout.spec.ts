@@ -156,17 +156,31 @@ test.describe("whale clips", () => {
   test.describe("with motion allowed", () => {
     test.use({ reducedMotion: "no-preference" });
 
-    test("play while on screen and stop when paused", async ({ page }) => {
+    test("play one at a time while on screen, and all stop when paused", async ({ page }) => {
       await open(page, 1280, "/");
       await page.locator("#pod-h").scrollIntoViewIfNeeded();
       const clips = page.locator('section[aria-labelledby="pod-h"] video');
       await expect(clips).toHaveCount(4);
-      const first = clips.first();
-      await expect.poll(() => first.evaluate((v: HTMLVideoElement) => !v.paused), { timeout: 5_000 }).toBe(true);
-      await page.getByRole("button", { name: /^Pause video: Red whale/ }).click();
-      await expect.poll(() => first.evaluate((v: HTMLVideoElement) => v.paused)).toBe(true);
-      await expect(page.getByRole("button", { name: /^Play video: Red whale/ })).toHaveAttribute("aria-pressed", "true");
+      const playing = () => clips.evaluateAll((els) => els.filter((v) => !(v as HTMLVideoElement).paused).length);
+      await expect.poll(() => clips.first().evaluate((v: HTMLVideoElement) => !v.paused), { timeout: 5_000 }).toBe(true);
+      expect(await playing()).toBe(1);
+      // The red whale plays once through, then hands over to the yellow one.
+      await expect.poll(() => clips.nth(1).evaluate((v: HTMLVideoElement) => !v.paused), { timeout: 10_000 }).toBe(true);
+      expect(await playing()).toBe(1);
+      await page.getByRole("button", { name: /^Pause video: Yellow whale/ }).click();
+      await expect.poll(playing).toBe(0);
+      await expect(page.getByRole("button", { name: /^Play video: Yellow whale/ })).toBeVisible();
+      await expect(page).toHaveURL(/\/$/); // the button sits above the card's link
     });
+  });
+
+  test("a listed whale's card opens its listing", async ({ page }) => {
+    await open(page, 390, "/");
+    const clip = page.locator('section[aria-labelledby="pod-h"] video').nth(1);
+    await clip.scrollIntoViewIfNeeded();
+    const box = (await clip.boundingBox())!;
+    await page.mouse.click(box.x + box.width / 2, box.y + box.height / 3); // the clip itself, clear of its button
+    await expect(page).toHaveURL(/\/p\/whale-yellow$/);
   });
 
   test.describe("with reduced motion", () => {

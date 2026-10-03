@@ -3,7 +3,7 @@ import { ShippingRates } from "@/components/content/ShippingRates";
 import { GstLine } from "@/components/content/SellerDetails";
 import type { PolicyDoc } from "@/components/content/policies/types";
 import { LEGAL } from "@/lib/legal";
-import { SAMPLE_SETTINGS } from "@/lib/site";
+import { SAMPLE_SETTINGS, SITE } from "@/lib/site";
 
 // PLACEHOLDER(legal-details): tax wording follows LEGAL.gstRegistered.
 // PLACEHOLDER(policy-draft): draft for legal review. Razorpay's activation checks ask for a "Pricing details" page.
@@ -15,15 +15,15 @@ export const pricingPolicy: PolicyDoc = {
   title: "Pricing details",
   shortTitle: "Pricing details",
   description:
-    "How FuzzBall Factory prices work: rupee prices, tax, shipping charges in India and abroad, gift wrap, cash on delivery fee, work order quotes and the advance, and what is added at checkout.",
+    `How FuzzBall Factory prices work: rupee prices, tax, shipping charges in India${SITE.shipsInternational ? " and abroad" : ""}, gift wrap, cash on delivery fee, work order quotes and the advance, and what is added at checkout.`,
   intro: "What you pay and what is added before you pay. Nothing is added after you click pay.",
   summary: {
     head: "The short version",
     points: [
-      "All prices are in Indian rupees (INR). You pay in INR, including on international orders.",
+      SITE.shipsInternational ? "All prices are in Indian rupees (INR). You pay in INR, including on international orders." : "All prices are in Indian rupees (INR).",
       "Shipping, gift wrap and any cash on delivery fee show as separate lines before you pay.",
       "Custom work orders are priced by a written quote. You pay an advance to start and the balance before we ship.",
-      "Import duties and taxes charged by your country are not in our price.",
+      ...(SITE.shipsInternational ? ["Import duties and taxes charged by your country are not in our price."] : []),
     ],
   },
   sections: [
@@ -53,10 +53,10 @@ export const pricingPolicy: PolicyDoc = {
         <>
           <p>Shipping is charged per order, by destination. These are the current charges:</p>
           <ShippingRates part="india" />
-          <ShippingRates part="international" />
+          {SITE.shipsInternational ? <ShippingRates part="international" /> : null}
           <p>
             The exact charge for your address is shown at checkout before you pay. See the <Link href="/policies/shipping">shipping policy</Link>{" "}
-            for delivery times and for import duties on international parcels.
+            for delivery times{SITE.shipsInternational ? " and for import duties on international parcels" : ""}.
           </p>
         </>
       ),

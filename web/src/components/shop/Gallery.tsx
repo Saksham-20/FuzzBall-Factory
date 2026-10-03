@@ -84,7 +84,7 @@ export function Gallery({ images, name, soldOut, className }: Props) {
         {n > 1 ? (
           <span
             aria-hidden
-            className="font-stencil tabular pointer-events-none absolute right-3 bottom-3 rounded-full bg-cocoa/85 px-2.5 py-1 text-[11px] text-cream"
+            className="font-stencil tabular pointer-events-none absolute right-3 bottom-3 rounded-full bg-cocoa/85 px-2.5 py-1 text-[12px] text-cream"
           >
             {index + 1} / {n}
           </span>
@@ -127,7 +127,6 @@ export function Gallery({ images, name, soldOut, className }: Props) {
         {lightbox !== null ? (
           <div>
             <div
-              data-lenis-prevent
               className="max-h-[66dvh] touch-pan-x touch-pan-y touch-pinch-zoom overflow-auto rounded-[10px] bg-cream"
             >
               <button

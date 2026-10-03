@@ -4,7 +4,7 @@ import { cn } from "@/lib/cn";
 interface Props extends ComponentPropsWithoutRef<"div"> {
   /** Stencil header row: left/right text. */
   head?: [ReactNode, ReactNode?];
-  /** Smaller head on phones, for tickets two to a row (product grids), so both labels keep one line. */
+  /** Tighter head on phones, for tickets two to a row (product grids), so both labels keep one line. */
   compactHead?: boolean;
   /** Punched hole at the top edge. */
   hole?: boolean;
@@ -47,7 +47,7 @@ export function Ticket({ head, compactHead, hole = true, tone = "kraft", classNa
           data-ticket-head
           className={cn(
             "font-stencil tabular mb-2 flex items-center justify-between px-1 pt-3 text-brown",
-            compactHead ? "gap-2 text-[11px] sm:gap-3 sm:text-[12px]" : "gap-3 text-[12px]",
+            compactHead ? "gap-2 text-[12px] sm:gap-3" : "gap-3 text-[12px]",
           )}
         >
           <span className={layout.left}>{head[0]}</span>

@@ -5,7 +5,7 @@ import { CircleAlert, CircleCheck } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Field, Input, Select } from "@/components/ui/Field";
 import { checkShipping, type ShippingCheck } from "@/lib/api/shipping";
-import { COUNTRIES } from "@/lib/countries";
+import { SHIP_TO } from "@/lib/countries";
 import { formatDate } from "@/lib/format";
 import type { Product } from "@/lib/types";
 
@@ -60,25 +60,28 @@ export function DeliveryCheck({ product, onResult }: Props) {
     <form onSubmit={submit} noValidate aria-label="Check delivery" className="rounded-ticket bg-paper p-4 shadow-ticket">
       <p className="font-semibold">Check delivery</p>
       <div className="mt-3 flex flex-col gap-3">
-        <Field label="Country">
-          {(p) => (
-            <Select
-              {...p}
-              value={country}
-              onChange={(e) => {
-                setCountry(e.target.value);
-                setPinError(undefined);
-                reset();
-              }}
-            >
-              {COUNTRIES.map(({ code, name }) => (
-                <option key={code} value={code}>
-                  {name}
-                </option>
-              ))}
-            </Select>
-          )}
-        </Field>
+        {/* India only for now: a picker with one country in it is just noise. */}
+        {SHIP_TO.length > 1 ? (
+          <Field label="Country">
+            {(p) => (
+              <Select
+                {...p}
+                value={country}
+                onChange={(e) => {
+                  setCountry(e.target.value);
+                  setPinError(undefined);
+                  reset();
+                }}
+              >
+                {SHIP_TO.map(({ code, name }) => (
+                  <option key={code} value={code}>
+                    {name}
+                  </option>
+                ))}
+              </Select>
+            )}
+          </Field>
+        ) : null}
         <div className="flex items-start gap-2">
           {country === "IN" ? (
             <Field label="Pincode" error={pinError} className="min-w-0 flex-1">

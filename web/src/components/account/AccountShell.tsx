@@ -60,7 +60,7 @@ export function AccountShell({ children }: { children: ReactNode }) {
         <div className="lg:sticky lg:top-24 lg:self-start">
           <div className="flex items-center justify-between gap-3 lg:block">
             <div className="min-w-0">
-              <p className="font-stencil text-[11px] text-brown-soft">Signed in as</p>
+              <p className="font-stencil text-[12px] text-brown-soft">Signed in as</p>
               <p className="truncate font-semibold">{user?.name}</p>
             </div>
             <button

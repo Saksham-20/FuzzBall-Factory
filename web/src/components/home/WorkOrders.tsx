@@ -6,32 +6,39 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Reveal } from "@/components/ui/Reveal";
 import { StationSection } from "@/components/home/StationSection";
+import { TheCrew } from "@/components/home/TheCrew";
+import { serverProducts } from "@/lib/catalog-server";
 import { SAMPLE_SETTINGS } from "@/lib/site";
 
 const STEPS = [
-  { t: "Describe it", d: "Tell us what you want. Add reference photos, pick colours, set a budget." },
-  { t: "Get a quote, then say yes", d: `We reply with a price and a timeline. Accept, counter, or pass — pay ${SAMPLE_SETTINGS.depositPct}% to start once you do.` },
+  { t: "Describe it", d: "Tell us what you want and when you need it. Add reference photos, pick colours, set a budget." },
+  { t: "Get a quote, then say yes", d: `We reply with a price and a timeline. Accept, counter or pass. Once you accept, pay ${SAMPLE_SETTINGS.depositPct}% to start.` },
   { t: "Watch it get made", d: "See progress photos, approve the final piece, pay the rest, and we ship it." },
 ] as const;
 
-export function WorkOrders() {
+export async function WorkOrders() {
+  // "Customize a whale" opens the form on a listed whale (its photo and price as the base); before any is listed it
+  // opens the form with the whale idea filled in.
+  const [whale] = await serverProducts({ category: "keychains", max: 1 });
   return (
     <StationSection
       id="work-orders"
       n="03"
       name="Work Orders"
-      className="kraft perforated py-[clamp(4.5rem,9vw,7.5rem)]"
+      headingId="work-orders-h"
+      className="kraft perforated py-[var(--spacing-section)]"
       style={{ ["--hole" as string]: "var(--color-kraft-light)" }}
     >
-      <div className="grid items-center gap-14 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16">
+      <div className="grid items-center gap-14 lg:split-text lg:gap-16">
         <div>
-          <Reveal as="h2" className="font-display text-[clamp(2.5rem,5.6vw,4.5rem)]">
+          <h2 id="work-orders-h" className="font-display text-[clamp(2.5rem,5.6vw,4.5rem)]">
             Got an idea? Put in a work order.
-          </Reveal>
+          </h2>
           <ol className="mt-8 space-y-0 divide-y divide-cocoa/15 border-y border-cocoa/15">
             {STEPS.map((s, i) => (
               <Reveal as="li" key={s.t} delay={i * 50} className="grid grid-cols-[2.25rem_1fr] gap-x-3 py-4">
-                <span className="font-stencil tabular grid size-8 place-items-center rounded-full bg-cocoa text-[13px] text-cream">{i + 1}</span>
+                {/* Outlined, not filled: a filled cocoa disc is the thread's station node. */}
+                <span className="font-stencil tabular grid size-8 place-items-center rounded-full border-[1.5px] border-cocoa text-[13px] text-cocoa">{i + 1}</span>
                 <div>
                   <h3 className="font-bold">{s.t}</h3>
                   <p className="mt-0.5 leading-relaxed text-brown">{s.d}</p>
@@ -41,14 +48,14 @@ export function WorkOrders() {
           </ol>
           <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3">
             <Button asChild size="lg">
-              <Link href="/custom">Start a work order</Link>
+              <Link href="/custom">Make me one</Link>
             </Button>
-            <Link href="/shop" className="inline-flex min-h-11 items-center gap-1.5 font-semibold text-cocoa underline">
+            <Link href={whale ? `/custom?from=${whale.slug}` : "/custom?idea=whale"} className="inline-flex min-h-11 items-center gap-1.5 font-semibold text-cocoa underline">
               Customize a whale <ArrowRight className="size-4" />
             </Link>
           </div>
           <p className="mt-5 max-w-[52ch] text-sm text-brown">
-            Not quite right? Counter the quote or walk away — no obligation until you accept and pay the deposit.
+            Not quite right? Counter the quote or walk away. Nothing is owed until you accept and pay the deposit.
           </p>
         </div>
 
@@ -100,6 +107,7 @@ export function WorkOrders() {
           </Ticket>
         </Reveal>
       </div>
+      <TheCrew />
     </StationSection>
   );
 }

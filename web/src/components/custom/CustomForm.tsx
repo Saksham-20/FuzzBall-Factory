@@ -13,6 +13,7 @@ import { ErrorNote, SwatchPicker } from "@/components/ui/misc";
 import { ImageUploader } from "@/components/ui/ImageUploader";
 import { ThreadStepper } from "@/components/custom/ThreadStepper";
 import { clearDraft, saveDraft, type CustomDraft } from "@/components/custom/draft";
+import { IDEAS, type IdeaKey } from "@/lib/custom-ideas";
 import { mergePalette } from "@/components/custom/palette";
 import { createRequest } from "@/lib/api/custom";
 import { getSettings } from "@/lib/api/settings";
@@ -49,11 +50,13 @@ interface Props {
   initial: CustomDraft | null;
   product?: Product;
   from?: string;
+  /** Opened from a piece on the storefront (/custom?idea=turtle): its title and shelf are filled in. */
+  idea?: IdeaKey;
   categories: Category[];
   resume: boolean;
 }
 
-export function CustomForm({ initial, product, from, categories, resume }: Props) {
+export function CustomForm({ initial, product, from, idea, categories, resume }: Props) {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
   const { data: settings } = useApi(getSettings, "settings");
@@ -87,6 +90,15 @@ export function CustomForm({ initial, product, from, categories, resume }: Props
     if (!getValues("title")) setValue("title", `Custom ${product.name}`);
   }, [product, getValues, setValue]);
 
+  // Prefill from the storefront idea (only for a fresh draft; the shelf only if the shop has it)
+  useEffect(() => {
+    if (!idea || prefilled.current) return;
+    prefilled.current = true;
+    const { title, category } = IDEAS[idea];
+    if (!getValues("title")) setValue("title", title);
+    if (!getValues("category") && categories.some((c) => c.slug === category)) setValue("category", category);
+  }, [idea, categories, getValues, setValue]);
+
   // Contact prefill
   useEffect(() => {
     if (user?.phone && !getValues("phone")) setValue("phone", user.phone);
@@ -102,10 +114,10 @@ export function CustomForm({ initial, product, from, categories, resume }: Props
   useEffect(() => {
     const t = setTimeout(() => {
       if (done.current) return;
-      saveDraft({ values: getValues(), step, from, prefilled: prefilled.current });
+      saveDraft({ values: getValues(), step, from, idea, prefilled: prefilled.current });
     }, 350);
     return () => clearTimeout(t);
-  }, [v, step, from, getValues]);
+  }, [v, step, from, idea, getValues]);
 
   // Move focus to the new step's heading (not on first paint)
   useEffect(() => {
@@ -134,7 +146,7 @@ export function CustomForm({ initial, product, from, categories, resume }: Props
   async function send(values: CustomFormValues) {
     setSubmitError(undefined);
     if (!user) {
-      saveDraft({ values, step: 3, from, prefilled: prefilled.current });
+      saveDraft({ values, step: 3, from, idea, prefilled: prefilled.current });
       router.push(`/login?next=${encodeURIComponent("/custom?resume=1")}`);
       return;
     }
@@ -509,7 +521,7 @@ function SummaryGroup({ title, onEdit, children }: { title: string; onEdit: () =
   return (
     <section aria-label={title} className="py-4">
       <div className="mb-2 flex items-center justify-between gap-3">
-        <h3 className="font-stencil text-[11px] text-brown-soft">{title}</h3>
+        <h3 className="font-stencil text-[12px] text-brown-soft">{title}</h3>
         <button type="button" onClick={onEdit} className="-my-2 min-h-11 text-sm font-semibold underline [@media(hover:hover)_and_(pointer:fine)]:hover:text-brown">
           Edit<span className="sr-only"> {title.toLowerCase()}</span>
         </button>

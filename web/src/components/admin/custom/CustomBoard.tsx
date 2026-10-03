@@ -21,7 +21,6 @@ export function CustomBoard({ rows }: { rows: CustomRequest[] }) {
       role="region"
       aria-label="Work order board. Scroll sideways for more columns."
       tabIndex={0}
-      data-lenis-prevent
       className="-mx-4 flex snap-x snap-proximity items-start gap-4 overflow-x-auto px-4 pb-4 scroll-pl-4 md:mx-0 md:px-0"
     >
       {COLUMNS.map((c) => (

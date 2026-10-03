@@ -53,7 +53,7 @@ function actionsFor(requests: CustomRequest[]): Action[] {
 
 const QUICK = [
   { href: "/track", label: "Track an order", icon: PackageSearch },
-  { href: "/custom", label: "Start a work order", icon: Scissors },
+  { href: "/custom", label: "Make me one", icon: Scissors },
   { href: "/shop", label: "Keep shopping", icon: ShoppingBag },
 ] as const;
 
@@ -183,7 +183,7 @@ function ActionList({ requests }: { requests: CustomRequest[] }) {
         <li key={a.number}>
           <Link href={`/account/custom/${a.number}`} className="press group flex min-h-16 items-center justify-between gap-4 px-4 py-3.5">
             <span className="min-w-0">
-              <span className="font-stencil tabular block text-[11px] text-brown-soft">
+              <span className="font-stencil tabular block text-[12px] text-brown-soft">
                 {a.number} · {a.label}
               </span>
               <span className="mt-1 block truncate font-semibold">{a.title}</span>

@@ -9,7 +9,7 @@ export const waGeneral = () =>
   waLink("Hi FuzzBall Factory! I have a question about your crochet pieces.");
 
 export const waProduct = (name: string, price: number, url: string) =>
-  waLink(`Hi! I'm interested in *${name}* (${formatINR(price)}) ${url} — is it available?`);
+  waLink(`Hi! I'm interested in *${name}* (${formatINR(price)}). Is it available?\n${url}`);
 
 export const waRealLight = (name?: string) =>
   waLink(

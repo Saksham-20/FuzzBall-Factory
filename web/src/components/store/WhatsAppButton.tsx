@@ -28,7 +28,8 @@ export function WhatsAppButton() {
   }, []);
 
   return (
-    <div data-wa-button className="fixed right-4 bottom-4 z-40 flex items-center gap-3 md:right-6 md:bottom-6" style={{ bottom: "calc(1rem + var(--sticky-offset, 0px))" }}>
+    // A landmark of its own (it sits outside <main> and the footer), so screen readers can find and skip it.
+    <aside aria-label="WhatsApp chat" data-wa-button className="fixed right-4 bottom-4 z-40 flex items-center gap-3 md:right-6 md:bottom-6" style={{ bottom: "calc(1rem + var(--sticky-offset, 0px))" }}>
       {/* Announced to screen readers only when it appears (text inserted into a live region), not on load. */}
       <span role="status" className="sr-only">
         {nudge ? "Questions? Chat with the maker on WhatsApp" : ""}
@@ -51,6 +52,6 @@ export function WhatsAppButton() {
       >
         <MessageCircle className="size-6" strokeWidth={1.8} />
       </a>
-    </div>
+    </aside>
   );
 }

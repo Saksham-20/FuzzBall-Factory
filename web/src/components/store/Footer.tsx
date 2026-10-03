@@ -48,7 +48,7 @@ export async function Footer() {
           <nav aria-label="Help">
             <h2 className={head}>Help</h2>
             <ul className={col}>
-              <li><Link href="/custom">Start a work order</Link></li>
+              <li><Link href="/custom">Make me one</Link></li>
               <li><Link href="/track">Track your order</Link></li>
               <li><Link href="/policies/shipping">Shipping</Link></li>
               <li><Link href="/policies/refund">Returns &amp; refunds</Link></li>

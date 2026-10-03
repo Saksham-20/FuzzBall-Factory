@@ -23,7 +23,8 @@ export default defineConfig({
     // A production build in its own dist dir, on its own port, so it never touches the `.next`
     // a running `next start` serves. Mock data, whatever a local .env says.
     command: `npx next build && npx next start -p ${PORT}`,
-    env: { NEXT_DIST_DIR: ".next-e2e", NEXT_PUBLIC_USE_MOCK: "true" },
+    // International shipping is off at launch; NEXT_PUBLIC_SHIPS_INTERNATIONAL=true runs the overseas journey instead.
+    env: { NEXT_DIST_DIR: ".next-e2e", NEXT_PUBLIC_USE_MOCK: "true", NEXT_PUBLIC_SHIPS_INTERNATIONAL: process.env.NEXT_PUBLIC_SHIPS_INTERNATIONAL ?? "" },
     url: `http://localhost:${PORT}`,
     reuseExistingServer: !process.env.CI,
     timeout: 300_000,

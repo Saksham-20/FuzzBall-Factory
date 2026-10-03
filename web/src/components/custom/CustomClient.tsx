@@ -9,31 +9,34 @@ import { loadDraft } from "@/components/custom/draft";
 import { ErrorNote, PageHeader, Skeleton } from "@/components/ui/misc";
 import { getProduct, listCategories } from "@/lib/api/catalog";
 import { useApi } from "@/lib/api/useApi";
+import { ideaKey, type IdeaKey } from "@/lib/custom-ideas";
 import { batchLabel, formatINR } from "@/lib/format";
 import type { Product } from "@/lib/types";
 
 const noop = () => () => {};
 
 /** Waits for the browser (the draft lives in localStorage) before mounting the form, so it never hydrates with the wrong values. */
-export function CustomClient({ from, resume }: { from?: string; resume: boolean }) {
+export function CustomClient({ from, idea, resume }: { from?: string; idea?: IdeaKey; resume: boolean }) {
   const mounted = useSyncExternalStore(noop, () => true, () => false);
   return (
     <div className="shell py-8 md:py-12">
-      <PageHeader title={from ? "Customize a piece" : "Put in a work order"} />
+      <PageHeader title={from ? "Customize a piece" : "Make me one"} />
       <p className="mt-3 max-w-[60ch] text-brown">
         {from
           ? "Tell us what to change: colours, size, a name, the details. We'll send back a quote you can accept, counter or pass on."
-          : "Describe what you'd like made. We'll send back a quote with a price and a timeline. Nothing is charged until you accept it."}
+          : "Describe what you'd like made and it becomes a work order. We'll send back a quote with a price and a timeline. Nothing is charged until you accept it."}
       </p>
-      <div className="mx-auto mt-8 max-w-[820px]">{mounted ? <Loaded from={from} resume={resume} /> : <Skeleton className="h-[520px] rounded-ticket" />}</div>
+      <div className="mx-auto mt-8 max-w-[820px]">
+        {mounted ? <Loaded from={from} idea={idea} resume={resume} /> : <Skeleton className="h-[520px] rounded-ticket" />}
+      </div>
     </div>
   );
 }
 
-function Loaded({ from, resume }: { from?: string; resume: boolean }) {
+function Loaded({ from, idea, resume }: { from?: string; idea?: IdeaKey; resume: boolean }) {
   const [draft] = useState(() => loadDraft());
-  // A draft for a different base product is set aside; one for the same product (or none) is kept.
-  const usable = draft && (!from || draft.from === from) ? draft : null;
+  // A draft for a different base product or idea is set aside; one for the same (or none) is kept.
+  const usable = draft && (!from || draft.from === from) && (!idea || draft.idea === idea) ? draft : null;
   const activeFrom = from ?? usable?.from;
 
   const cats = useApi(listCategories, "categories");
@@ -49,7 +52,15 @@ function Loaded({ from, resume }: { from?: string; resume: boolean }) {
     <div className="space-y-6">
       {activeFrom && base.error ? <ErrorNote>We couldn&apos;t find that piece, so this is a new work order instead.</ErrorNote> : null}
       {product ? <BaseProduct product={product} /> : null}
-      <CustomForm key={activeFrom ?? "new"} initial={usable} product={product} from={product ? activeFrom : undefined} categories={cats.data} resume={resume} />
+      <CustomForm
+        key={activeFrom ?? idea ?? "new"}
+        initial={usable}
+        product={product}
+        from={product ? activeFrom : undefined}
+        idea={product ? undefined : (idea ?? ideaKey(usable?.idea))}
+        categories={cats.data}
+        resume={resume}
+      />
     </div>
   );
 }

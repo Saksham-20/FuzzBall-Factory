@@ -4,7 +4,6 @@ import { Header } from "@/components/store/Header";
 import { Footer } from "@/components/store/Footer";
 import { CartDrawer } from "@/components/store/CartDrawer";
 import { WhatsAppButton } from "@/components/store/WhatsAppButton";
-import { SmoothScroll } from "@/components/store/SmoothScroll";
 
 export default async function StoreLayout({ children }: { children: ReactNode }) {
   const categories = await serverActiveCategories();
@@ -21,7 +20,6 @@ export default async function StoreLayout({ children }: { children: ReactNode })
       <Footer />
       <CartDrawer />
       <WhatsAppButton />
-      <SmoothScroll />
     </>
   );
 }

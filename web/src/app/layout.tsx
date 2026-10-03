@@ -3,6 +3,7 @@ import type { Metadata, Viewport } from "next";
 import { Toaster } from "sonner";
 import { figtree, modak, stencil } from "@/app/fonts";
 import { Providers } from "@/app/providers";
+import { PauseOffscreenLoops } from "@/components/store/PauseOffscreenLoops";
 import { SITE } from "@/lib/site";
 import "./globals.css";
 
@@ -22,6 +23,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html lang="en-IN" className={`${modak.variable} ${figtree.variable} ${stencil.variable}`}>
       <body className="min-h-dvh antialiased">
         <Providers>{children}</Providers>
+        <PauseOffscreenLoops />
         <Toaster
           position="bottom-center"
           mobileOffset={{ bottom: 84 }}

@@ -42,6 +42,11 @@ export const checkoutSchema = z
 
 export type CheckoutValues = z.infer<typeof checkoutSchema>;
 
+/** The checkout while shipping is India only (SITE.shipsInternational off): an address abroad, saved earlier, is refused. */
+export const checkoutSchemaIndia = checkoutSchema.superRefine((v, ctx) => {
+  if (v.country !== "IN") ctx.addIssue({ code: "custom", path: ["country"], message: "We ship within India for now. Use an address in India." });
+});
+
 export const CHECKOUT_DEFAULTS: CheckoutValues = {
   name: "",
   email: "",

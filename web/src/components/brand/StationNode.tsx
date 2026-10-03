@@ -15,8 +15,7 @@ export function StationNode({ n, name, className }: Props) {
     <div className={cn("pointer-events-none absolute z-20 flex flex-col items-center", className)}>
       <span
         data-station-node
-        data-reveal="stamp"
-        className="font-stencil tabular grid size-9 place-items-center rounded-full bg-cocoa text-[13px] text-cream shadow-ticket md:size-11 md:text-[15px]"
+        className="font-stencil tabular grid size-8 place-items-center rounded-full bg-cocoa text-[12px] text-cream shadow-ticket min-[30rem]:size-9 min-[30rem]:text-[13px] md:size-11 md:text-[15px]"
       >
         {n}
       </span>

@@ -8,6 +8,8 @@ export interface CustomDraft {
   step: number;
   /** Slug of the product being customized, if any. */
   from?: string;
+  /** The storefront idea the form was opened with (custom-ideas.ts), if any. */
+  idea?: string;
   /** True once the base product's category and colours have been filled in. */
   prefilled?: boolean;
 }

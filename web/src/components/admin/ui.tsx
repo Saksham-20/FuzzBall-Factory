@@ -31,7 +31,7 @@ export function Panel({ title, actions, children, className, flush }: { title?: 
 
 /** Horizontally scrollable table wrapper so wide tables work on phones. */
 export function TableWrap({ children }: { children: ReactNode }) {
-  return <div className="overflow-x-auto" data-lenis-prevent><table className="w-full min-w-[640px] border-collapse text-left text-[15px]">{children}</table></div>;
+  return <div className="overflow-x-auto"><table className="w-full min-w-[640px] border-collapse text-left text-[15px]">{children}</table></div>;
 }
 export function Th({ className, ...p }: ComponentPropsWithoutRef<"th">) {
   return <th scope="col" className={cn("font-stencil border-b border-line px-4 py-3 text-[11px] text-brown-soft", className)} {...p} />;

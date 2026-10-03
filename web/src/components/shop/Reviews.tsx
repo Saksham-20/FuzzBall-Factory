@@ -130,13 +130,13 @@ export function Reviews({ product }: { product: Pick<Product, "id" | "name"> }) 
                 <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
                   <Stars n={r.rating} />
                   <span className="font-semibold">{r.author}</span>
-                  {r.verified ? <span className="font-stencil text-[11px] text-ok">Verified buyer</span> : null}
+                  {r.verified ? <span className="font-stencil text-[13px] text-ok">Verified buyer</span> : null}
                   <span className="tabular text-sm text-brown">{formatDate(r.createdAt, { day: "numeric", month: "short", year: "numeric" })}</span>
                 </div>
                 <p className="mt-2 leading-relaxed">{r.body}</p>
                 {r.reply ? (
                   <div className="mt-3 max-w-[60ch] rounded-ticket bg-kraft-light p-4">
-                    <p className="font-stencil text-[11px] text-cocoa">FuzzBall Factory replied</p>
+                    <p className="font-stencil text-[12px] text-cocoa">FuzzBall Factory replied</p>
                     <p className="mt-1.5 leading-relaxed">{r.reply}</p>
                   </div>
                 ) : null}

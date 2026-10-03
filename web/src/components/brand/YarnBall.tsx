@@ -24,6 +24,8 @@ interface Props {
   small?: boolean;
   /** Renders an invisible anchor at the loose end so the conveyor thread can start there. */
   tailAnchor?: boolean;
+  /** Places the anchor with classes (e.g. a different point per breakpoint) instead of at YARN_TAIL. */
+  tailClassName?: string;
   className?: string;
   title?: string;
 }
@@ -34,7 +36,7 @@ interface Props {
  * wraps rock gently inside the round clip; that layer is an HTML box, so the
  * rocking stays on the compositor.
  */
-export function YarnBall({ tone = "rose", color, spin = true, small, tailAnchor, className, title }: Props) {
+export function YarnBall({ tone = "rose", color, spin = true, small, tailAnchor, tailClassName, className, title }: Props) {
   const c = (color && shadesOf(color)) || TONES[tone];
   const w = WRAPS[small ? "low" : "full"];
   return (
@@ -49,6 +51,8 @@ export function YarnBall({ tone = "rose", color, spin = true, small, tailAnchor,
         <svg
           viewBox="10 10 380 380"
           className={cn("absolute inset-0 size-full", spin && "ball-wraps")}
+          data-loop={spin ? "" : undefined}
+          data-wraps
           fill="none"
           strokeLinecap="round"
         >
@@ -74,8 +78,8 @@ export function YarnBall({ tone = "rose", color, spin = true, small, tailAnchor,
         <span
           data-thread-start
           aria-hidden
-          className="pointer-events-none absolute size-px"
-          style={{ left: `${YARN_TAIL.x}%`, top: `${YARN_TAIL.y}%` }}
+          className={cn("pointer-events-none absolute size-px", tailClassName)}
+          style={tailClassName ? undefined : { left: `${YARN_TAIL.x}%`, top: `${YARN_TAIL.y}%` }}
         />
       ) : null}
     </div>

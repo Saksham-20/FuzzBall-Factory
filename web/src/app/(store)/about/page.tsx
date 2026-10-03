@@ -37,7 +37,7 @@ export default function AboutPage() {
               priority
             />
           </div>
-          <figcaption className="font-stencil mt-2 text-[12px] text-brown-soft">One of the crew, hooked by hand.</figcaption>
+          <figcaption className="mt-2 text-sm text-brown-soft">One of the crew, hooked by hand.</figcaption>
         </figure>
       }
       sections={[
@@ -132,7 +132,7 @@ export default function AboutPage() {
                   <Link href="/shop">Shop the shelf</Link>
                 </Button>
                 <Button asChild size="lg" variant="secondary">
-                  <Link href="/custom">Start a work order</Link>
+                  <Link href="/custom">Make me one</Link>
                 </Button>
                 <Button asChild size="lg" variant="ghost">
                   <Link href="/contact">Contact us</Link>

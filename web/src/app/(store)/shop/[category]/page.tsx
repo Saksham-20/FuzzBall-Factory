@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ShopClient, ShopFallback } from "@/components/shop/ShopClient";
-import { serverCategories, serverCategory, serverProducts } from "@/lib/catalog-server";
+import { serverActiveCategories, serverCategories, serverCategory, serverProducts } from "@/lib/catalog-server";
 import { paletteOf } from "@/lib/palette";
 import { JsonLd, breadcrumbLd } from "@/lib/json-ld";
 
@@ -30,7 +30,10 @@ export default async function CategoryPage({ params }: Props) {
   const c = await serverCategory(category);
   // An unknown shelf is a real 404 (status code and all), so search engines drop the URL.
   if (!c) notFound();
-  const palette = paletteOf(await serverProducts({ category: c.slug }));
+  const [products, active] = await Promise.all([serverProducts({ category: c.slug }), serverActiveCategories()]);
+  const palette = paletteOf(products);
+  // The sidebar lists shelves with something on them, plus this one even while it is empty.
+  const shelves = active.some((x) => x.slug === c.slug) ? active : [...active, c];
   return (
     <>
       <JsonLd
@@ -41,7 +44,7 @@ export default async function CategoryPage({ params }: Props) {
         ])}
       />
       <Suspense fallback={<ShopFallback category={c} />}>
-        <ShopClient category={c} palette={palette} />
+        <ShopClient category={c} palette={palette} shelves={shelves} />
       </Suspense>
     </>
   );

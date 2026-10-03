@@ -32,7 +32,7 @@ export function Header({ categories }: { categories: Category[] }) {
   return (
     <header
       className={cn(
-        "sticky top-0 z-40 transition-[background-color,box-shadow,backdrop-filter] duration-200 ease-out",
+        "sticky top-0 z-40 transition-[background-color,box-shadow] duration-200 ease-out",
         isScrolled ? "bg-cream/92 shadow-[0_1px_0_var(--color-line)] backdrop-blur-md" : "bg-cream",
       )}
     >
@@ -97,7 +97,7 @@ export function Header({ categories }: { categories: Category[] }) {
             {count > 0 ? (
               <span
                 key={count}
-                className="font-stencil tabular absolute top-0.5 right-0 grid min-w-[18px] animate-[bump_360ms_var(--ease-out)] place-items-center rounded-full bg-cocoa px-1 text-[11px] leading-[18px] text-cream"
+                className="font-stencil tabular absolute top-0.5 right-0 grid min-w-[18px] animate-[bump_360ms_var(--ease-out)] place-items-center rounded-full bg-cocoa px-1 text-[12px] leading-[18px] text-cream"
               >
                 {count}
               </span>
@@ -121,7 +121,7 @@ export function Header({ categories }: { categories: Category[] }) {
                     <X className="size-5" />
                   </Dialog.Close>
                 </div>
-                <nav aria-label="Mobile" className="mt-8 flex flex-1 flex-col gap-1 overflow-y-auto" data-lenis-prevent>
+                <nav aria-label="Mobile" className="mt-8 flex flex-1 flex-col gap-1 overflow-y-auto">
                   {NAV.map((n) => (
                     <Dialog.Close key={n.href} asChild>
                       <Link href={n.href} className="font-display py-1.5 text-[2.6rem] text-cocoa">
@@ -129,7 +129,7 @@ export function Header({ categories }: { categories: Category[] }) {
                       </Link>
                     </Dialog.Close>
                   ))}
-                  <p className="font-stencil mt-6 mb-1 text-[11px] text-brown-soft">Browse by</p>
+                  <p className="font-stencil mt-6 mb-1 text-[12px] text-brown-soft">Browse by</p>
                   <ul className="grid grid-cols-2 gap-x-4">
                     {categories.map((c) => (
                       <li key={c.slug}>
