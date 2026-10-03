@@ -26,7 +26,7 @@ colors:
 typography:
   display:
     fontFamily: "Modak, 'Arial Rounded MT Bold', ui-rounded, sans-serif"
-    fontSize: "clamp(3.1rem, 9.4vw, 7.5rem)"
+    fontSize: "clamp(3.1rem, min(9.4vw, 15svh), 7.5rem)"
     fontWeight: 400
     lineHeight: 0.92
     letterSpacing: "-0.005em"
@@ -63,8 +63,10 @@ spacing:
   gutter: "16px"
   gutter-md: "32px"
   gutter-lg: "48px"
+  conveyor-xs: "32px"
   conveyor: "44px"
   conveyor-md: "104px"
+  section: "clamp(4.5rem, 2rem + 6vw, 9rem)"
 components:
   button-primary:
     backgroundColor: "{colors.cocoa}"
@@ -134,7 +136,7 @@ components:
 
 **Creative North Star: "The Factory Floor"**
 
-The store takes its name literally: a tiny, cozy factory where yarn goes in and fuzzballs come out, and the production line is the order status. Every surface is a material from that floor. Cream paper is the ground, cocoa is the ink, job tickets are kraft with a punched hole, statuses are rubber stamps, and butter tape holds things down. One live thing moves through it all: the dusty rose yarn thread, which leaves the hero's yarn ball and runs down the page through numbered stations.
+The store takes its name literally: a tiny, cozy factory where yarn goes in and fuzzballs come out, and the production line is the order status. Every surface is a material from that floor. Cream paper is the ground, cocoa is the ink, job tickets are kraft with a punched hole, statuses are rubber stamps, and butter tape holds things down. One live thing moves through it all: the dusty rose yarn thread, which pays out of the hero's yarn ball, through the punched hole of a whale ticket hanging from it, and runs down the page through four numbered stations to the last ticket, where its loose end parks.
 
 Density follows the job. The home page persuades, with big display type, giant cropped category words and room around each station. Shop, checkout, account and admin work in tighter layouts inside the same world, where the brand lives in the details: stencil labels, batch numbers, stamps and tickets rather than decoration. The world is a pastel boutique's opposite: no photo carousel, no row of category circles, no testimonial slider.
 
@@ -190,11 +192,11 @@ A warm, papery palette: ink and paper carry almost everything, butter is the one
 **Character:** A chunky, bubbly display voice that looks stuffed with yarn, against a clean, friendly sans. Stencil labels stamp batch numbers, stations and statuses like markings on factory crates.
 
 ### Hierarchy
-- **Display** (400, clamp(3.1rem, 9.4vw, 7.5rem), 0.92): the hero line. The shelf's giant cropped category words go further, up to clamp(3.75rem, 14.5vw, 11.5rem).
+- **Display** (400, clamp(3.1rem, min(9.4vw, 15svh), 7.5rem), 0.92): the hero line. It follows the screen's height as well as its width, so a short laptop (1366×657 and smaller) keeps the buttons, the hanging ticket and the tape on the first screen.
 - **Headline** (400, clamp(2.5rem, 5.6vw, 4.5rem), 0.92): section headings. Smaller steps at clamp(1.875rem, 4.2vw, 2.5rem) and clamp(2rem, 4vw, 3rem) for subsections.
 - **Title** (700, 1.0625rem, 1.375, -0.01em): product names on tickets.
 - **Body** (400, 16px, 1.5): reading copy. 15px for dense lists and footer links.
-- **Label** (800, 12px, 0.07em, uppercase): ticket heads, station tags and footer headings. 11px in badges, 11px in ticket heads in two-up phone grids.
+- **Label** (800, 12px, 0.07em, uppercase): ticket heads, station tags, badges and footer headings; 13px for status lines and stamps. 12px is the floor: stencil never goes smaller, even in two-up phone grids.
 
 Headings balance their lines and paragraphs avoid orphans (`text-wrap: balance` and `pretty`). Batch, order and work-order numbers use tabular numerals.
 
@@ -205,7 +207,9 @@ Headings balance their lines and paragraphs avoid orphans (`text-wrap: balance` 
 
 ## Layout
 
-Content sits in a centred shell up to 1280px wide, with side gutters of 16px on phones, 32px from 768px and 48px from 1024px. On the home page a conveyor column is kept free on the left for the yarn thread: content that the thread runs past is indented 44px (104px from 768px), and numbered station nodes sit on the thread.
+Content sits in a centred shell up to 1280px wide, with side gutters of 16px on phones, 32px from 768px and 48px from 1024px. On the home page a conveyor column is kept free on the left for the yarn thread: content that the thread runs past is indented 32px on the smallest phones, 44px from 480px and 104px from 768px, and numbered station nodes sit on the thread, level with each station's heading.
+
+Home sections breathe by one token, `--spacing-section` (clamp(4.5rem, 2rem + 6vw, 9rem)): a station takes half of it above and half below, so two stations meet one token apart, and the kraft band takes the whole of it inside its own edges. Two-column stations use one of two named splits: `split-text` (1.1fr / 0.9fr) when the words lead, `split-photo` (0.82fr / 1.18fr) when the picture does.
 
 Breakpoints are Tailwind's defaults (640, 768, 1024, 1280px) plus one of the project's own: station tickets pin while scrolling only on screens at least 1024px wide and 736px tall, so a shorter laptop scrolls them rather than pinning one half off screen. Hover effects go behind the `hf:` variant, for devices that really hover; a few older ones (dialog close buttons, the admin sidebar, footer links) still apply on touch.
 
@@ -248,7 +252,7 @@ Paper goods you could pick up off the workbench: tickets with punched holes, rub
 - **Focus:** a 2.5px ring 3px outside the button, rose-deep, or butter on cocoa.
 
 ### Chips
-- **Badges:** 11px stencil labels on a pill with a wash: Ready to ship (green), Made to order with its lead time (amber), One of one (butter), Sold (cocoa with cream text). A dashed "Sample" badge marks sample products while the site runs on sample data.
+- **Badges:** 12px stencil labels on a pill with a wash: Ready to ship (green), Made to order with its lead time (amber), One of one (butter), Sold (cocoa with cream text). A dashed "Sample" badge marks sample products while the site runs on sample data.
 - **Tabs:** pill triggers, 44px tall, 15px semibold brown text; the active tab fills cocoa with cream text.
 
 ### Cards / Containers
@@ -256,7 +260,7 @@ Paper goods you could pick up off the workbench: tickets with punched holes, rub
 - **Background:** kraft by default, or paper when the ticket sits on a kraft field.
 - **Shadow Strategy:** Ticket at rest, Lift on hover (see Elevation & Depth).
 - **Internal Padding:** 10px.
-- **Head:** a row of stencil labels above the content (a batch number on the left, a label or badge on the right). It never wraps: a text label gives way before a badge does, and truncates with an ellipsis.
+- **Head:** a row of stencil labels above the content (a batch number on the left, a label or badge on the right). It never wraps: a text label gives way before a badge does, and truncates with an ellipsis. Where a price would be cut, the word goes instead (the hero's whale ticket under 360px shows only its price).
 
 ### Inputs / Fields
 - **Style:** paper fill, 1.5px `line-strong` border, 12px corners, 48px tall, 16px sides, 16px text (so phones don't zoom). Placeholders in soft brown.
@@ -265,21 +269,24 @@ Paper goods you could pick up off the workbench: tickets with punched holes, rub
 - **Choices:** radio options are paper cards (12px corners) whose border turns cocoa when checked; checkboxes are 20px with 6px corners, in cocoa.
 
 ### Navigation
-- **Header:** sticky; the logo on the left, the main links from 1024px, icon buttons on the right (a deep rose dot on the wishlist once something is saved). It frosts over the page once you scroll.
+- **Header:** sticky; the logo on the left, the main links from 1024px (Shop, Make me one, Track order), icon buttons on the right (a deep rose dot on the wishlist once something is saved). It frosts over the page once you scroll.
 - **Mobile menu:** a drawer from the left, up to 420px wide, over a 45% cocoa scrim, with links set in the display face.
 - **Footer:** the one cocoa band, with stencil column headings in kraft, kraft-light links, a butter WhatsApp chip and butter focus rings.
 
 ### Rubber Stamps
-Statuses are stamps: a stencil label inside a 2px border with a 1.5px inner outline, inked in the status colour with a multiply blend so the paper shows through, and tilted. Each status family has its own shape (rectangle, circle or dashed ticket), so colour is never the only signal.
+Statuses are stamps: a stencil label inside a 2px border with a 1.5px inner outline, inked in the status colour with a multiply blend so the paper shows through, and tilted. Each status family has its own shape (rectangle, circle or dashed ticket), so colour is never the only signal. A stamp that lands on a photo sits on paper without the multiply, so it reads on any picture: the "Added" stamp on the cart line an add has just put in.
+
+### The Hero
+The display line, one sub-line, two buttons and a trust line (where it ships, how to pay) on the left. On the right, a yarn ball at the column's right edge (288px at 1024px wide, 320px from about 1100px, never more than 40% of the screen's height) with the whale ticket hanging from its thread below the ball's lower left: the pod photo, the lowest whale price, a link to the shelf. Stacked, below 1024px, the ball shrinks (44% of the width up to 200px, 240px from 768px) and the ticket hangs beside it, above the headline. Beside the ticket, the sub-line's measure narrows with the screen so the text always ends well clear of it. Until a whale is listed, the buttons ask for one (a work order) or open WhatsApp instead of sending anyone to an empty shelf.
 
 ### The Yarn Thread and Stations
-The signature interaction. A rose thread leaves the hero's yarn ball, drops into the left gutter and winds gently down the page, drawn as you scroll, through numbered station nodes; the node the thread has reached turns deep rose. The part still to come is a line of tiny cross-stitches (x) that the drawn thread covers. A crochet hook rides the thread's tip, rocking gently as it goes. On order timelines the thread's stroke tells the state: solid rose for done, a marching dash for in progress, dotted kraft for still to come, and a loose curl when the next move is the customer's. Under reduced motion the thread is fully drawn and nothing moves.
+The signature interaction. A rose thread pays out of the hero's yarn ball, whose wraps turn as it unwinds. It runs through the whale ticket's punched hole, rounds the ticket's corner, sweeps under the hero copy into the left gutter and winds down the page, drawn as you scroll, through four station nodes: 01 The Shelf, 02 Hook Floor, 03 Work Orders, 04 Shipping Dock. The node the thread has reached turns deep rose and takes a small stamp (1.18 to 1 over 280ms) when the reader's own scrolling brings it there. The thread never climbs on its way down. Its loose end leaves the gutter and parks on the edge of the last ticket ("Pick your whale"), with the hook resting on it. The part still to come is a line of tiny cross-stitches (x) that the drawn thread covers. A crochet hook rides the thread's tip, rocking gently as it goes. On order timelines the thread's stroke tells the state: solid rose for done, a marching dash for in progress, dotted kraft for still to come, and a loose curl when the next move is the customer's. Under reduced motion the thread is fully drawn and nothing moves.
 
 ### The Tape
-A butter strip of stencil words with yarn-ball glyphs between them, tilted -1.2° and looping right to left at a slow, constant speed (42s per pass, linear). Pointing at the words holds them still. A 24px cocoa pause button with a butter glyph rides the tape at the left content edge, clear of the WhatsApp button, and its choice is remembered across pages. Under reduced motion the tape stands still and the button is gone.
+A butter strip of stencil words with yarn-ball glyphs between them, tilted -1.2° and looping right to left at a slow, constant speed (42s per pass, linear). Pointing at the words holds them still, and the loop pauses while the tape is off screen. A 24px cocoa pause button with a butter glyph rides the tape at the left content edge, clear of the WhatsApp button, on a solid butter cap that runs to the tape's left end; the words slide in under the cap through a 40px fade, so a stopped tape never shows a word cut around the button. Its choice is remembered across pages. Under reduced motion the tape stands still and the button is gone.
 
 ### Motion
-Entrances and UI use a strong ease-out (`cubic-bezier(0.23, 1, 0.32, 1)`), on-screen movement a strong ease-in-out (`cubic-bezier(0.77, 0, 0.175, 1)`), drawers `cubic-bezier(0.32, 0.72, 0, 1)`. Blocks reveal once as they scroll in (fade and a 16px rise over 600-700ms); the hero lines rise in turn 70ms apart; the batch ticket swings from its hole and settles. Under reduced motion loops stop and every reveal shows whole.
+Entrances and UI use a strong ease-out (`cubic-bezier(0.23, 1, 0.32, 1)`), on-screen movement a strong ease-in-out (`cubic-bezier(0.77, 0, 0.175, 1)`), drawers `cubic-bezier(0.32, 0.72, 0, 1)`. Scrolling is the browser's own: no smooth-scroll library. Blocks reveal once as they scroll in (fade and a 12px rise over 450-550ms, starting just before they reach the screen); headings never wait on a reveal. The hero lines rise in turn 70ms apart, the thread pays out of the ball once, and the whale ticket swings from its hole and settles. The shelf's whale clips play one at a time in page order, each handing over when it ends, and only while on screen: a clip comes into the running once its card is 40% on screen and leaves it below 10%, measured where the card sits rather than where its drop-in moves it. Every loop pauses off screen. When an add opens the cart drawer, the new line's "Added" stamp lands once the drawer has slid in (`--stamp-delay`, 240ms). Under reduced motion loops stop, clips wait to be played and every reveal shows whole.
 
 ## Do's and Don'ts
 
@@ -292,6 +299,8 @@ Entrances and UI use a strong ease-out (`cubic-bezier(0.23, 1, 0.32, 1)`), on-sc
 - **Do** put hover effects only on devices that hover, and give every press a 0.97 scale.
 - **Do** give moving text a pause button (the tape has one), and stop every loop under reduced motion.
 - **Do** label sample photos and products as samples until the maker's own arrive.
+- **Do** say "Make me one" on every way into a custom piece (buttons, nav); keep "work order" for the thing itself (tickets, stamps, WO-### addresses).
+- **Do** keep stencil at 12px or larger.
 
 ### Don't:
 - **Don't** put an eyebrow label above a heading.

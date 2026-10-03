@@ -20,7 +20,7 @@ Status: **draft, awaiting approval** (2026-09-21). Inputs: `PRODUCT.md`, `docs/r
 
 - **Frontend:** Next.js 16 (App Router) + TypeScript. Server rendering matters here: WhatsApp/Instagram link previews (OG images) and SEO for product pages. CRA is deprecated, so neither CRA project is a base.
 - **Styling:** Tailwind v4 with CSS-variable design tokens (`@theme`), plus `cn()` + Radix primitives + react-hook-form + zod (the CityFreshKart kit, ported to TS).
-- **Motion:** Motion (framer-motion) for UI springs; Lenis for smooth scroll; SVG path drawing for the thread. Everything honours `prefers-reduced-motion`. (GSAP was planned and never used; removed.)
+- **Motion:** Motion (framer-motion) for UI springs; native scrolling (Lenis was tried and removed on 2026-10-03: wheel smoothing added input latency and an always-on frame loop); SVG path drawing for the thread. Everything honours `prefers-reduced-motion`. (GSAP was planned and never used; removed.)
 - **Backend:** NestJS + Prisma + PostgreSQL, a small single-seller API built from HomeKrafted modules (auth, guards, payments, uploads, notifications, whatsapp). Drop vendors, wallet, meals, riders.
 - **Auth:** email/phone + password (argon2), JWT access + rotating refresh in httpOnly cookies (CityFreshKart cookie pattern + HomeKrafted refresh rotation), optional Google sign-in later. Roles: `customer`, `admin`.
 - **Payments:** Razorpay Orders + Checkout for cart; Razorpay Payment Links for custom-order deposit/balance; verified webhook; COD for ready-to-ship only under a price cap with a COD fee.

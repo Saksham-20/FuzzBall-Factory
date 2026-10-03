@@ -1,6 +1,6 @@
 # 001 — Stop `.press` from swallowing every hover transition
 
-- **Status**: TODO
+- **Status**: DONE (2026-10-03)
 - **Commit**: 364770d
 - **Severity**: MEDIUM (site-wide, one-line fix, highest leverage)
 - **Category**: Easing & duration (declared transitions never run)

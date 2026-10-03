@@ -80,6 +80,18 @@
 
 ## Reliability
 
+### The admin dashboard files early-morning orders under the previous day
+
+**What:** `api/src/admin/admin-dashboard.service.ts` buckets revenue per IST day with `("createdAt" AT TIME ZONE 'Asia/Kolkata')::date`. `createdAt` is a `timestamp` without time zone holding UTC, so that reads the UTC clock as if it were IST and moves each order 5h30 the wrong way. An order paid after midnight IST lands on the day before for at least the first 5h30 of every day (11h when the database session runs in UTC), so "Today" revenue reads ₹0 every morning. `api/test/admin.e2e-spec.ts` (dashboard: counts and sums real rows) fails when run in that window; found at 00:05 IST on 2026-10-04.
+
+**Why:** The maker reads "Today" first thing; it is wrong for a large part of every day, and the test passes or fails by the clock.
+
+**Context:** Convert from UTC first: `(("createdAt" AT TIME ZONE 'UTC') AT TIME ZONE 'Asia/Kolkata')::date`. Add a regression case that creates a paid order at 00:05 IST today, so the old SQL fails the test at any hour. API-only redeploy (restart `fuzzball-api`).
+
+**Effort:** S
+**Priority:** P1
+**Depends on:** None
+
 ### Work-order emails still poll for their transaction to commit
 
 **What:** Write the email outbox row inside the same database transaction as the state change, so `CustomStateService.dispatchWhenCommitted` (a chain of `setTimeout` checks for the timeline event) can go.
@@ -118,6 +130,18 @@
 **Priority:** P1 if GST-registered, else P2
 **Depends on:** Maker's CA; GSTIN status
 
+### India-only launch: the API still takes overseas orders
+
+**What:** International shipping is switched off in the storefront (`SITE.shipsInternational`, env `NEXT_PUBLIC_SHIPS_INTERNATIONAL`, off by default): checkout and the saved-address form offer India alone and refuse an address abroad, the product page's delivery check has no country picker, and the landing page, FAQ and the shipping and pricing policies say we ship within India. The API does not know about the switch, so a hand-made request could still place an overseas order.
+
+**Why:** The owner launches in India first (2026-10-03). A storefront that promised "worldwide" would break that promise at checkout.
+
+**Context:** Add the same switch to the API (`PAYMENTS`-style env, or a setting), refuse non-`IN` addresses in `api/src/shipping/address-validation.ts` while it is off, and drop the "keep at least one international zone" rule in `SettingsClient.tsx` for an India-only shop. The terms and refund policy drafts still describe international orders; the lawyer review should confirm the India-only wording (`docs/LEGAL_REVIEW.md`).
+
+**Effort:** S
+**Priority:** P2
+**Depends on:** None
+
 ### International launch depends on the maker's Razorpay account
 
 **What:** Overseas cards only work once Razorpay's international payments are enabled on the maker's account (an application on top of KYC), and the test order with an international card is listed in `docs/DEPLOY_PROD.md`.
@@ -142,13 +166,13 @@
 **Priority:** P3
 **Depends on:** None
 
-### Home door words are sized from a per-letter estimate
+### Phone landscape: the hero's buttons start below the first screen
 
-**What:** `Shelf.tsx` sizes the category words on the home page from their length (`MODAK_EM_PER_LETTER`). Real category words from the admin may contain wide letters (m, w) that run past the chip.
+**What:** Turned sideways (844×390, 932×430, 667×375), a phone gets the stacked hero: ball and whale ticket on top, then the headline, so the buttons sit 300-420px below the first screen. The headline already shrinks with the screen's height (`min(9.4vw, 15svh)`).
 
-**Why:** The storefront now reads the real catalogue everywhere (server-side `lib/catalog-server.ts`), so the words are no longer the seed set the estimate was tuned for.
+**Why:** Few shoppers browse sideways, but those who do see a ball and a ticket and no way in until they scroll.
 
-**Context:** Measure the rendered word instead, or cap the word length in the admin category form.
+**Context:** Give short, wide screens the side-by-side layout with a smaller ball and ticket: a custom variant such as `@media (orientation: landscape) and (max-height: 32rem)` on the hero's `lg:` classes in `web/src/components/home/Hero.tsx`, and the same test in `ConveyorThread.tsx` where it decides `stacked`, so the thread's route matches. Re-run the hero checks (thread through the hole, never climbing, clear of the copy).
 
 **Effort:** S
 **Priority:** P3
@@ -182,44 +206,6 @@
 **Priority:** P3
 **Depends on:** None
 
-### The tape runs out of words on wide screens
-
-**What:** `web/src/components/brand/Tape.tsx` renders its words twice and the loop moves the track by one copy, so the strip stays full only while one copy is at least as wide as the tape. One copy is about 1,110px on the home page and 990px on the sign-in panel. On a 1440px screen the right end of the home tape runs bare for about a third of every 42-second loop (up to 360px of empty tape); at 1920px for three quarters of it; at 2560px all the time.
-
-**Why:** Bare tape at the end of the strip reads as a glitch on the hero, at the widths most laptops and desktops have.
-
-**Context:** Render four copies and move the track by `-25%` instead of `-50%` (the `tape` keyframes in `globals.css`): the same speed, and the strip stays full up to about 3,300px. Keep the extra copies `aria-hidden` like the second one. `plans/004` adds `data-loop` to the same `.tape-track` element.
-
-**Effort:** S
-**Priority:** P2
-**Depends on:** None
-
-## Motion
-
-### Run the animation plans (plans/001–005)
-
-**What:** Five self-contained plans for the storefront's existing motion: `.press` swallowing hover transitions, calmer and earlier reveals, the station-node stamp, pausing off-screen loops, and the header's animated blur.
-
-**Why:** 001 alone brings back every eased hover on the site; the rest are smaller feel and performance fixes.
-
-**Context:** `plans/README.md` gives the order and the line references (anchored on quoted code). Each plan has its own feel check.
-
-**Effort:** M
-**Priority:** P2
-**Depends on:** None
-
-### Thread start measured before the ball settles; font-ready rebuild outlives the page
-
-**What:** `ConveyorThread.tsx` measures the thread's start while the hero ball's 900ms entrance may still be running and never re-measures it, and its `document.fonts.ready` callback isn't cancelled on unmount.
-
-**Why:** The thread can start a few pixels off the ball's tail, and a late callback runs `build()` on a torn-down component.
-
-**Context:** Re-run `build()` once the entrance ends (`animationend` on `.hero-ball`), and guard the fonts callback with a disposed flag in the effect cleanup.
-
-**Effort:** S
-**Priority:** P3
-**Depends on:** None
-
 ## Infrastructure
 
 ### The web env template never ships
@@ -235,6 +221,62 @@
 **Depends on:** None
 
 ## Completed
+
+### Home door words are sized from a per-letter estimate
+
+**What:** `Shelf.tsx` sizes the category words on the home page from their length (`MODAK_EM_PER_LETTER`). Real category words from the admin may contain wide letters (m, w) that run past the chip.
+
+**Why:** The storefront now reads the real catalogue everywhere (server-side `lib/catalog-server.ts`), so the words are no longer the seed set the estimate was tuned for.
+
+**Context:** Obsolete: the landing redesign removed `Shelf.tsx` and its door words; the home page shows the whales instead.
+
+**Effort:** S
+**Priority:** P3
+**Depends on:** None
+
+**Completed:** 2026-10-03 (not versioned yet)
+
+### The tape runs out of words on wide screens
+
+**What:** `web/src/components/brand/Tape.tsx` renders its words twice and the loop moves the track by one copy, so the strip stays full only while one copy is at least as wide as the tape. One copy is about 1,110px on the home page and 990px on the sign-in panel. On a 1440px screen the right end of the home tape runs bare for about a third of every 42-second loop (up to 360px of empty tape); at 1920px for three quarters of it; at 2560px all the time.
+
+**Why:** Bare tape at the end of the strip reads as a glitch on the hero, at the widths most laptops and desktops have.
+
+**Context:** `Tape.tsx` renders four copies and the `tape` keyframes move the track by one (`-25%`): the same speed, and the strip stays full up to about 2,700px on the home page (the home copy is now 915px). Measured bare tape at the worst point of the loop: 0px at 1440, 1920 and 2560 (was 557px at 1440).
+
+**Effort:** S
+**Priority:** P2
+**Depends on:** None
+
+**Completed:** 2026-10-03 (not versioned yet)
+
+### Run the animation plans (plans/001–005)
+
+**What:** Five self-contained plans for the storefront's existing motion: `.press` swallowing hover transitions, calmer and earlier reveals, the station-node stamp, pausing off-screen loops, and the header's animated blur.
+
+**Why:** 001 alone brings back every eased hover on the site; the rest are smaller feel and performance fixes.
+
+**Context:** All five ran during the landing redesign; each plan's status is DONE (2026-10-03) and `plans/README.md` records the order.
+
+**Effort:** M
+**Priority:** P2
+**Depends on:** None
+
+**Completed:** 2026-10-03 (not versioned yet)
+
+### Thread start measured before the ball settles; font-ready rebuild outlives the page
+
+**What:** `ConveyorThread.tsx` measures the thread's start while the hero ball's 900ms entrance may still be running and never re-measures it, and its `document.fonts.ready` callback isn't cancelled on unmount.
+
+**Why:** The thread can start a few pixels off the ball's tail, and a late callback runs `build()` on a torn-down component.
+
+**Context:** `ConveyorThread.tsx` rebuilds on the ball's `animationend` and guards the `document.fonts.ready` callback with a `disposed` flag set in the effect's cleanup.
+
+**Effort:** S
+**Priority:** P3
+**Depends on:** None
+
+**Completed:** 2026-10-03 (not versioned yet)
 
 ### Turn off SSH password login on the test server
 

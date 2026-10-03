@@ -15,14 +15,13 @@ _Resolved: `razorpay-test` and `razorpay-checkout` (the fake payment windows). L
 | id | Where | What it is | Replace with |
 |---|---|---|---|
 | `catalogue` | `web/src/lib/mock/catalog.ts` (mock mode only) | Four whale-keychain fixtures (the maker's own photos; price, stock and lead time are stand-ins) and 8 shelves. The API seed creates no products at all | Real products via the admin / API. A real-API build never contains the fixtures |
-| `sample-product` | Every `ProductTicket` while on mock data | Marks sample products on screen | Disappears once `sample` is not set |
+| `sample-product` | Every `ProductTicket`, and the whale cards on the home page (`web/src/components/home/WhalePod.tsx`), while on mock data | Marks sample products on screen | Disappears once `sample` is not set |
 | `category-images` | `api/prisma/seed-data/categories.ts`, `web/src/lib/mock/catalog.ts` | Shelf cover photos reuse the maker's own photos (`web/public/maker/`) until a shelf has a product of its own. Empty shelves are hidden from menus | A real cover per shelf in `/admin/categories` |
-| `copy-fibers` | `web/src/components/home/YarnRoom.tsx` | Generic list of fibers | The yarns actually used |
 | `copy-process` | `web/src/components/home/HookFloor.tsx` | Making-process wording | The maker's real process |
-| `copy-leadtimes` | `web/src/components/home/HookFloor.tsx` | "Ready 1–2 days / Made to order 4–10 days" | Real lead times |
+| `copy-leadtimes` | `web/src/components/home/HookFloor.tsx` | "Ready 1–2 days / Made to order 4–10 days", and the arrival windows the ruler draws from them (plus `DOMESTIC_TRANSIT_DAYS`) | Real lead times |
 | `example-work-order` | `web/src/components/home/WorkOrders.tsx` | Illustrative work order (WO-027, ₹1,850) | Keep as an example, or swap for a real (consented) one |
-| `shipping-rates` | `web/src/lib/site.ts` (`SAMPLE_SETTINGS`), `ShippingDock.tsx` | ₹79 domestic, free above ₹999, intl from ₹899, gift wrap ₹59, COD cap ₹2,000 / fee ₹49, 50% deposit | Real rates; later moved to admin Settings |
-| `maker-note` | `web/src/components/home/MakerNote.tsx` | Generic "Hi, I'm the maker" copy. The stall photo is real (`web/public/maker/founder-isb-stall.jpg`) | The maker's name and own words |
+| `shipping-rates` | `web/src/lib/site.ts` (`SAMPLE_SETTINGS`), `ShippingDock.tsx`, `web/src/lib/pricing.ts` (`DOMESTIC_TRANSIT_DAYS`) | ₹79 domestic, free above ₹999, intl from ₹899, gift wrap ₹59, COD cap ₹2,000 / fee ₹49, 50% deposit; 3–6 days in transit inside India | Real rates; later moved to admin Settings. Transit days from the courier |
+| `maker-note` | `web/src/components/home/HookFloor.tsx` (the note on the Hook Floor station) | Generic "Hi, I'm the maker" copy. The stall photo is real (`web/public/maker/founder-isb-stall.jpg`) | The maker's name and own words |
 | `instagram` | `SITE.instagram` (the maker note's button) | `instagram.com/fuzzballfactory`, read off the stall's QR card | Confirmed handle |
 | `whatsapp-number` | `web/src/lib/site.ts` (`NEXT_PUBLIC_WHATSAPP`) | `910000000000` | The real WhatsApp Business number (digits, with country code) |
 | `contact-email` | `web/src/lib/site.ts` | `hello@fuzzballfactory.example` | Real email |

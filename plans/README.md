@@ -8,17 +8,19 @@ These cover the motion that already existed before the landing polish. The motio
 
 | # | Plan | Severity | Status |
 | --- | --- | --- | --- |
-| 001 | [Stop `.press` from swallowing every hover transition](001-press-keeps-hover-transitions.md) | MEDIUM | TODO |
-| 002 | [Scroll reveals: fire earlier, finish faster, leave headings alone](002-reveals-earlier-and-fewer.md) | MEDIUM | TODO |
-| 003 | [Station node stamps when the thread reaches it](003-station-node-stamps-when-thread-arrives.md) | LOW | TODO |
-| 004 | [Pause decorative loops while off screen](004-pause-loops-offscreen.md) | LOW | TODO |
-| 005 | [Header: stop animating `backdrop-filter`](005-header-no-backdrop-filter-transition.md) | LOW | TODO |
+| 001 | [Stop `.press` from swallowing every hover transition](001-press-keeps-hover-transitions.md) | MEDIUM | DONE |
+| 002 | [Scroll reveals: fire earlier, finish faster, leave headings alone](002-reveals-earlier-and-fewer.md) | MEDIUM | DONE |
+| 003 | [Station node stamps when the thread reaches it](003-station-node-stamps-when-thread-arrives.md) | LOW | DONE |
+| 004 | [Pause decorative loops while off screen](004-pause-loops-offscreen.md) | LOW | DONE |
+| 005 | [Header: stop animating `backdrop-filter`](005-header-no-backdrop-filter-transition.md) | LOW | DONE |
 
 ## Recommended order
 
 1. **001** first: one line, site-wide, and it makes every later hover check meaningful.
 2. **002**, then **003**: both touch how sections arrive; do 002 first so the node stamp in 003 is judged against the calmer reveals. 003 also removes a dead `data-reveal="stamp"` attribute that 002 does not touch.
 3. **004** and **005** are independent and can go in any order.
+
+All five landed on 2026-10-03. Two had moved since the audit: the live node's attribute was already written only on change (003 added just the stamp), and 002's heading list now also covers the whale and crew sections, which came later. The Shelf section it names is no longer on the page.
 
 No plan depends on another's code. 001, 002, 003 and 004 all edit `web/src/app/globals.css`, each in a different block, so they can land in any order without conflicts.
 

@@ -1,6 +1,6 @@
 # 004 — Pause decorative loops while they are off screen
 
-- **Status**: TODO
+- **Status**: DONE (2026-10-03)
 - **Commit**: 364770d
 - **Severity**: LOW
 - **Category**: Performance / Accessibility

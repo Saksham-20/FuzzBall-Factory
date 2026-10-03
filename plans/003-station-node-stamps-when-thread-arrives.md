@@ -1,6 +1,6 @@
 # 003 — Station node stamps when the thread reaches it (and stop per-frame attribute churn)
 
-- **Status**: TODO
+- **Status**: DONE (2026-10-03)
 - **Commit**: 364770d
 - **Severity**: LOW (missed opportunity + small perf fix)
 - **Category**: Missed opportunities / Performance

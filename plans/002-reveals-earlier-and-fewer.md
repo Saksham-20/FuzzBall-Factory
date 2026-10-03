@@ -1,6 +1,6 @@
 # 002 — Scroll reveals: fire earlier, finish faster, and leave headings alone
 
-- **Status**: TODO
+- **Status**: DONE (2026-10-03)
 - **Commit**: 364770d
 - **Severity**: MEDIUM
 - **Category**: Purpose & frequency / Cohesion
