@@ -5,8 +5,8 @@
 | RPO (data you can lose) | 24 hours | Nightly encrypted `pg_dump` offsite (`ops/backup/`) plus a dump before every migration. Tighten to ~15 minutes with WAL archiving (pgBackRest or the provider's point-in-time recovery) if the shop's volume justifies it |
 | RTO (time to be back) | 2 hours | New server from `ops/install.sh`, restore the dump, deploy the last release |
 
-What is backed up: the database (orders, payments, accounts, catalogue, custom orders, audit log), and the uploads folder when
-`BACKUP_UPLOADS=true` (only if Cloudinary is not used; with Cloudinary the images live there). What is not: secrets (keep them in
+What is backed up: the database (orders, payments, accounts, catalogue, custom orders, audit log), and the uploads folder
+(every product and customer photo lives on the server; `BACKUP_UPLOADS=false` only if Cloudinary is ever switched on). What is not: secrets (keep them in
 a password manager, separately), the age **private** key (offline, in two places), and the code (it is in git, releases are rebuilt).
 
 Backups are encrypted with `age` before they leave the server, so the bucket holds nothing readable. **Losing the private key

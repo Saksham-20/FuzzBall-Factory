@@ -14,7 +14,6 @@ These take days to weeks, so start them early:
 | Domain + DNS | TLS certificate, cookies, webhook URL, email domain |
 | Razorpay live account (KYC) and international cards enabled | Live payments; `PAYMENTS_MODE=razorpay` |
 | Resend account and verified domain (SPF, DKIM, DMARC) | Order, reset and contact emails; required for live payments |
-| Cloudinary account | Uploads must not sit on the server's disk with live payments |
 | Real products, photos, prices, WhatsApp number, legal text, GSTIN status | `docs/PLACEHOLDERS.md` lists every stand-in; a launch build (`LAUNCH_BUILD=true`) refuses unresolved ones |
 
 ## Server (once)
@@ -27,7 +26,7 @@ These take days to weeks, so start them early:
 5. Database: `sudo -u postgres psql -v app_password="<strong password>" -f ops/postgres/setup.sql`, copy
    `ops/postgres/fuzzball.conf` into Postgres' `conf.d/`, apply the rules in `ops/postgres/pg_hba.md`, restart Postgres.
 6. `/etc/fuzzball/api.env`: replace every `__PLACEHOLDER__` (secrets from `openssl rand -base64 48`). The API refuses to boot with a weak or missing value.
-7. Backups: create `/etc/fuzzball/backup.env` (keys in `ops/backup/backup.sh`), then `sudo ops/backup/install-backup.sh` and run one backup by hand. Keep the **age private key offline**.
+7. Backups: create `/etc/fuzzball/backup.env` (keys in `ops/backup/backup.sh`), then `sudo ops/backup/install-backup.sh` and run one backup by hand. Keep the **age private key offline**. Photos are stored on this server (`UPLOADS_DIR`, outside the release), so the nightly backup carries them too; without it, a lost disk loses every product photo.
 
 ## GitHub (once)
 

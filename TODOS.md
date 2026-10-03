@@ -208,6 +208,30 @@
 
 ## Infrastructure
 
+### The live server has no offsite backup, and now holds every photo
+
+**What:** Since 2026-10-04 every uploaded photo is stored on the live server's disk (`UPLOADS_DIR`), next to the database. The box has no backup timer: `ops/backup/` (nightly encrypted `pg_dump` plus the uploads folder, `BACKUP_UPLOADS` now defaults to true) was never installed there. The only copies are the server's own pre-purge and pre-migration dumps.
+
+**Why:** One lost disk or a bad `rm` loses every order, account and product photo, with nothing to restore from.
+
+**Context:** Needs an rclone remote (Backblaze B2 or similar) and an `age` key pair (private key offline, in two places). Then `/etc/fuzzball/backup.env`, `ops/backup/install-backup.sh`, one manual run, and a test restore (`docs/RUNBOOK_DR.md`). The live box keeps uploads in `/var/www/fuzzball/uploads`, not the `ops/` layout's `shared/uploads`, so point the tar at the real folder or move it first.
+
+**Effort:** S
+**Priority:** P1
+**Depends on:** The maker choosing a storage provider for the bucket
+
+### Landing clips and posters are re-checked on every visit
+
+**What:** Files in `web/public` (the whale clips, their posters, the maker photos) are served with `Cache-Control: public, max-age=0`, so browsers revalidate them each visit.
+
+**Why:** The four clips are 1.4 MB together; a returning visitor on a phone waits on round trips the cache could skip.
+
+**Context:** Add a `headers()` rule in `web/next.config.ts` for `/maker/:path*` (for example `max-age=86400, stale-while-revalidate=604800`), or rename files when they change and cache them for a year. Not AV1: re-encoding the current H.264 clips to AV1 (SVT-AV1) was measured on 2026-10-04 and comes out 48% larger at VMAF 96, smaller only at VMAF 92 (visible loss). AV1 only pays off encoded from the camera originals, with H.264 kept as the fallback `<source>`.
+
+**Effort:** S
+**Priority:** P3
+**Depends on:** None
+
 ### The web env template never ships
 
 **What:** `web/.gitignore` ignores `.env*`, which also catches `.env.example`.

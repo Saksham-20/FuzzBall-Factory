@@ -78,7 +78,7 @@ Add: risk of loss stays with us until delivery; EU EUR 3 duty and US de minimis 
 1. Log retention: the page says IPs drop after 30 days; DPDP r.6(1)(e) wants security logs kept 1 year from ~May 2027. Keep today's wording accurate now; change code and wording together in the May 2027 task (T-DPDP in the plan).
 2. Notice must stand alone at each collection point (signup, checkout, work-order form, support form), with how to withdraw consent and complain to the Board. Withdrawal must be as easy as giving consent (in-account control).
 3. Children: 18+ only (matches terms).
-4. Name processors: Razorpay (own fiduciary), Resend, Cloudinary, courier, host. Link each one's policy. Not yet verified.
+4. Name processors: Razorpay (own fiduciary), Resend, courier, host (uploaded photos are stored on our own server since 2026-10-04; add Cloudinary only if it is switched on). Link each one's policy. Not yet verified.
 5. Add a GDPR/UK addendum: lawful bases, Art 15-22 rights, supervisory-authority complaint, Art 27 representative (once decided). **[LAWYER]**
 6. Keep policy and grievance officer live now (SPDI Rules 4-5).
 7. Retention periods (orders about 8 years) **[CA]**; **support tickets are new data** (plan task S1 adds a row).
@@ -106,7 +106,7 @@ Product-level line: "Original handmade design. Not an official product."
 - Rule numbers for E-Commerce Rules 4 and 7 (mirrors disagree).
 - Crochet goods on the GST handicraft list; FEMA realisation period and courier export caps.
 - Whether Legal Metrology exempts handcrafted items.
-- Resend, Cloudinary, Razorpay data-processing terms.
+- Resend, Razorpay and the hosting provider's data-processing terms.
 - Artisan card status (decides Toys QCO exemption).
 - Any case law on unboxing-video preconditions (none found).
 

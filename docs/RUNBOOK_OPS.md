@@ -37,7 +37,7 @@ Logs never contain passwords, tokens, reset links or query strings (redacted in 
 | 429 from `/api/auth/...` | nginx or the API's login lock-out working as intended | Wait; an account locked after 5 wrong passwords lifts in 15 minutes |
 | Emails not arriving | Resend problem, or the outbox is retrying | Admin > Emails ("Gave up" lists the ones to resend by hand), or `select * from "EmailOutbox" where status <> 'SENT'`; rows retry on a 1/5/15/60/240 minute schedule, then show FAILED and alert |
 | Payment taken, order still "pending" | Webhook delayed or blocked | The storefront polls for ~30 s; Razorpay retries the webhook for 24 h; check Razorpay's webhook log; the `razorpay/verify` call from the browser also settles it |
-| Disk filling | Logs, dumps, uploads | `journalctl --vacuum-size=500M`; `/var/backups/fuzzball` keeps 10 pre-migration and 3 nightly dumps; uploads are on Cloudinary in production |
+| Disk filling | Logs, dumps, uploads | `journalctl --vacuum-size=500M`; `/var/backups/fuzzball` keeps 10 pre-migration and 3 nightly dumps; photos live in `/var/www/fuzzball/shared/uploads` (AVIF, a few hundred KB each: `du -sh` it) and are backed up nightly; grow the disk past ~70% |
 
 ## Support inbox
 
@@ -78,7 +78,7 @@ After rotating, deploy nothing until one health check passes.
 ## Capacity (launch sizing)
 
 One 2 GB VPS runs everything: storefront (cap 450M), API (cap 400M), Postgres (~400M with `ops/postgres/fuzzball.conf`), nginx. That
-serves a small shop comfortably (the catalogue is cached server side, images come from Cloudinary). Resize before launch if the
+serves a small shop comfortably (the catalogue is cached server side; photos are served from the server's disk and Next keeps resized copies for a day). Resize before launch if the
 provider's plan is smaller, and when memory stays above 80% or the API's p95 latency climbs. Postgres `max_connections` is 30
 against an API pool of 10: change one, change the other.
 

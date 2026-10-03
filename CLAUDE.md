@@ -29,7 +29,7 @@ Also: `TODOS.md` (deferred work by priority), `plans/` (self-contained fixes for
 - **Support system**: every contact message, grievance, takedown notice and data request is a ticket (`api/src/support`, admin at `/admin/support`, customer views at `/support/ticket/[number]` and `/account/support`). The same table is the grievance register. Runbook: `docs/RUNBOOK_OPS.md`; routes: `docs/API.md`.
 - **Sample data is gone**: the seed makes only the admin, settings and the 8 shelves (with the maker's photos). Existing databases clean up with `npm run purge-samples` in `api/` (dry run, then `-- --yes`). The first products to list are the whales (`docs/WHALE_LISTING.md`). Legal facts live in `web/src/lib/legal.ts` (empty until the maker supplies them); research and lawyer checklist in `docs/LEGAL_REVIEW.md`.
 - **Placeholders are tagged**: `PLACEHOLDER(id)` in code, `data-placeholder` in the DOM (footer toggle shows them), full registry in `docs/PLACEHOLDERS.md`. Keep registry up to date when adding any stand-in.
-- Still needed from the maker: real products/photos/prices, WhatsApp number, legal details, Razorpay/Cloudinary/Resend accounts.
+- Still needed from the maker: real products/photos/prices, WhatsApp number, legal details, Razorpay/Resend accounts.
 
 ## Commands (web)
 

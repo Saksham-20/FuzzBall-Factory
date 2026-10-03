@@ -26,8 +26,8 @@ Generate real secrets: `openssl rand -base64 48` for `JWT_ACCESS_SECRET` and `JW
 (`src/config/env.ts`): a bad or missing variable fails fast with one readable message.
 `NODE_ENV` has no default: the API refuses to boot without it (copy `.env.example`, which sets `development`).
 In production these must also be set on purpose: `PAYMENTS_MODE` (`razorpay` or `mock`), `WEB_ORIGIN` and
-`TRUST_PROXY`; live payments (`razorpay`) additionally require the Razorpay keys and webhook secret,
-`CLOUDINARY_URL` and `RESEND_API_KEY`. `HOST` defaults to `127.0.0.1` in production (behind nginx) and
+`TRUST_PROXY`; live payments (`razorpay`) additionally require the Razorpay keys and webhook secret and
+`RESEND_API_KEY`. Without `CLOUDINARY_URL`, production also needs an absolute `UPLOADS_DIR` outside the release. `HOST` defaults to `127.0.0.1` in production (behind nginx) and
 `0.0.0.0` elsewhere; `COOKIE_SECURE` defaults to true in production. One variable is read outside the schema:
 `npm run seed` creates no products, customers or coupons. The only seeded login is the admin from `ADMIN_EMAIL` /
 `ADMIN_PASSWORD` (the dev `.env.example` uses `admin@fuzzball.test` / `fuzzball123`). A database seeded before
@@ -121,4 +121,5 @@ curl -s -b jar $B/orders/FB-1001               # the guest cookie from the POST 
 curl -s -X POST $B/orders/track -H 'content-type: application/json' -d '{"number":"FB-1001","contact":"9800000001"}'
 ```
 
-Uploads go to `./uploads` unless `CLOUDINARY_URL` is set; every image is re-encoded to WebP (max 2000px, EXIF removed).
+Uploads go to `UPLOADS_DIR` (default `./uploads`) unless `CLOUDINARY_URL` is set; every image is re-encoded to AVIF
+(quality 74, full colour, max 2560px, EXIF removed). Files stored before 2026-10-04 are WebP and still served.

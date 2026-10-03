@@ -24,7 +24,7 @@ Status: **draft, awaiting approval** (2026-09-21). Inputs: `PRODUCT.md`, `docs/r
 - **Backend:** NestJS + Prisma + PostgreSQL, a small single-seller API built from HomeKrafted modules (auth, guards, payments, uploads, notifications, whatsapp). Drop vendors, wallet, meals, riders.
 - **Auth:** email/phone + password (argon2), JWT access + rotating refresh in httpOnly cookies (CityFreshKart cookie pattern + HomeKrafted refresh rotation), optional Google sign-in later. Roles: `customer`, `admin`.
 - **Payments:** Razorpay Orders + Checkout for cart; Razorpay Payment Links for custom-order deposit/balance; verified webhook; COD for ready-to-ship only under a price cap with a COD fee.
-- **Images:** Cloudinary (easiest for a solo maker: auto WebP/AVIF, resizing) behind HomeKrafted's storage-driver interface so local disk works in dev.
+- **Images (decided 2026-10-04):** stored on the VPS's own disk (`UPLOADS_DIR`, outside the release, in the nightly backup). Every upload is re-encoded to an AVIF master (quality 74, 4:4:4, max 2560px); Next's optimiser cuts and caches the displayed sizes (AVIF, `q=90`). The Cloudinary driver stays behind the storage-driver interface if storage or CPU ever outgrows the box.
 - **Email:** Resend. **WhatsApp:** Phase 1 wa.me prefilled links everywhere; Phase 2 Cloud API utility templates (HomeKrafted `whatsapp.service.ts`).
 - **Deploy (decided):** one VPS, **systemd + nginx** (no pm2, no Vercel), one origin with the API under `/api`. Releases are built in CI and swapped with a symlink; migrations run from CI through an SSH tunnel after a database dump; rollback is a symlink swap. Background work (expiry sweeps, purges, refund retries, email outbox) runs on Postgres advisory-locked crons inside the API: **no Redis** until more than one API instance is needed. Everything is in `ops/`; see `docs/DEPLOY_PROD.md` and the two runbooks.
 
@@ -161,5 +161,5 @@ Dashboard (today's orders, pending quotes, revenue, low stock, queue load) · Pr
 - Logo files (PNG/SVG) saved into the repo — the WhatsApp temp paths won't persist.
 - Product list: names, categories, prices, photos, lead times, fibers, sizes.
 - WhatsApp business number, business email, legal name + address (policies/grievance).
-- Razorpay account (test keys to start), Cloudinary account, Resend account, domain.
+- Razorpay account (test keys to start), Resend account, domain.
 - International shipping: which countries, flat rates or per-zone.

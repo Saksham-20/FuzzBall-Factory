@@ -73,4 +73,4 @@ cd api && npm run test:e2e # the API against your local database
 - [`docs/DEPLOY_VPS.md`](docs/DEPLOY_VPS.md): the test server
 - [`docs/research-brief.md`](docs/research-brief.md): domain research
 
-Still needed from the maker before launch: real products, photos and prices, the WhatsApp number, legal details, and Razorpay, Cloudinary and Resend accounts.
+Still needed from the maker before launch: real products, photos and prices, the WhatsApp number, legal details, and Razorpay and Resend accounts.
